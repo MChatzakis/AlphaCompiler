@@ -2,6 +2,6 @@
 
 int main(){
     printf("test20\n");
-    printf("2020202-\n");
+    printf("20-\n");
     return 0;
 }
