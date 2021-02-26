@@ -12,7 +12,7 @@
     #include <stdlib.h>
     #include <stdio.h>
 
-    #define YY_DECL int (void* ylval)
+    #define YY_DECL int yylex(void* ylval)
 %}
 
 %option prefix = "alpha_yy"
