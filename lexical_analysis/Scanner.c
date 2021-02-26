@@ -740,7 +740,7 @@ char *yytext;
     #include <stdlib.h>
     #include <stdio.h>
 
-    #define YY_DECL int yylex (void* ylval)
+    #define YY_DECL voi (void* ylval)
 #line 745 "Scanner.c"
 /* Flex Macros */
 /*id          [letter|Uletter][letter|Uletter|_|digit]* */
