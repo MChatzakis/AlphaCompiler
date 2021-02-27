@@ -32,7 +32,7 @@ digit       [0-9]
 /* Rule Section */
 %%
 
-{letter}    { fprintf(stderr, "Vrika Pezo Xaraktika: %s\n", yytext);}
+{letter}    { fprintf(stderr, "Vrika Pezo Xaraktika: %s\n", yytext); return NULL;}
 {Uletter}   { fprintf(stderr, "Vrika Kefalaio Xaraktika: %s\n", yytext);}
 {digit}     { fprintf(stderr, "Vrika Psifio: %s\n", yytext);}
 {id}        { fprintf(stderr, "Vrika Identifier: %s\n", yytext);}
