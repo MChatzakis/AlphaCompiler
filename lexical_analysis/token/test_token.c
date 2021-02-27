@@ -4,7 +4,7 @@ int yy_lex(alpha_token_t *head)
 {
     long int i;
 
-    for (i = 0; i < 1000000; i++)
+    for (i = 0; i <  10000; i++)
     {
         alpha_token_insert(head, i + 1, "Test1", "Test2");
     }
@@ -19,7 +19,7 @@ int main()
 
     yy_lex(head);
 
-    //alpha_token_print(head);
+    alpha_token_print(head);
     return 0;
 }
 
