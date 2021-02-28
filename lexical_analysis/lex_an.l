@@ -14,7 +14,9 @@
     #include "token/Token.h"
 
     #define YY_DECL int yylex(void* ylval)
-    #define DEBUG 0
+    #define LEX_EOF 0
+    #define DEFAULT_STR_SIZE 128
+    #define DEBUG 1
 %}
 
 %option prefix = "alpha_yy"
@@ -73,10 +75,10 @@ integer     [0-9]+
 real        [0-9]+\.[0-9]+
 space       [\r \t\v] 
 newline     \n
-string      \"[^\n"]*\" 
+string      \"
 
 line_comment    "//".* 
-block_comment   "/*".*"*/"
+block_comment   "/*"
 
 /*integer     (0[xX][0-9A-Fa-f]+)|([0-9]+)*/
 /*real [0-9]*\.[0-9](e|E)?[0-9]* */
@@ -276,7 +278,7 @@ block_comment   "/*".*"*/"
                         }
 
 {assign}                {
-                            //fprintf(stderr, "Vrika =: %s\n", yytext);
+                            fprintf(stderr, "Vrika =: %s\n", yytext);
                             alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                         }
 
@@ -291,48 +293,48 @@ block_comment   "/*".*"*/"
                         }
                     
 {mul}                   {
-                            //fprintf(stderr, "Vrika *: %s\n", yytext);
+                            fprintf(stderr, "Vrika *: %s\n", yytext);
                             alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                         }
 
 {div}                   {
-                            //fprintf(stderr, "Vrika /: %s\n", yytext);
+                            fprintf(stderr, "Vrika /: %s\n", yytext);
                             alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                         }
 
 {modulo}                {
-                            //fprintf(stderr, "Vrika Modulo : %s\n", yytext);
+                            fprintf(stderr, "Vrika Modulo : %s\n", yytext);
                             alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                         }
                     
 {equal}             {
-                        //fprintf(stderr, "Vrika ==: %s\n", yytext);
+                        fprintf(stderr, "Vrika ==: %s\n", yytext);
                         alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                     }
                     
 {not_equal}         {
-                        //fprintf(stderr, "Vrika !=: %s\n", yytext);
+                        fprintf(stderr, "Vrika !=: %s\n", yytext);
                         alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                     }
                     
 {plus_plus}         {
-                        //fprintf(stderr, "Vrika ++: %s\n", yytext);
+                        fprintf(stderr, "Vrika ++: %s\n", yytext);
                         alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                     }
                     
 {minus_minus}       {
-                        //fprintf(stderr, "Vrika --: %s\n", yytext);
+                        fprintf(stderr, "Vrika --: %s\n", yytext);
                         alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                     }
                     
 {greater}           {
-                        //fprintf(stderr, "Vrika >: %s\n", yytext);
+                        fprintf(stderr, "Vrika >: %s\n", yytext);
                         alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
 
                     }
                     
 {greater_equal}     {
-                        //fprintf(stderr, "Vrika >=: %s\n", yytext);
+                        fprintf(stderr, "Vrika >=: %s\n", yytext);
                         alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
                     }
                     
@@ -348,36 +350,78 @@ block_comment   "/*".*"*/"
                     }
 
 {id}            {
-                    //fprintf(stderr, "Vrika Identifier: %s\n", yytext);
+                    fprintf(stderr, "Vrika Identifier: %s\n", yytext);
                     alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
 
                 }
                 
 {integer}       {
-                    //fprintf(stderr, "Vrika Akeraio: %s\n", yytext);
+                    fprintf(stderr, "Vrika Akeraio: %s\n", yytext);
                     alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
 
                 }
                 
 {real}          {
-                    //fprintf(stderr, "Vrika Pragmatiko: %s\n", yytext);
+                    fprintf(stderr, "Vrika Pragmatiko: %s\n", yytext);
                     alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
 
                 }
                 
 {space}         {
-                    //fprintf(stderr, "Vrika Keno: %s\n", yytext);
+                    fprintf(stderr, "Vrika Keno: %s\n", yytext);
                 }
 
 {newline}       { 
-                        //fprintf(stderr, "Vrika Newline: %s\n", yytext);
+                    fprintf(stderr, "Vrika Newline: %s\n", yytext);
                 }
                  
 {string}        {
+                    char *str;
+                    int c, size_change = 1, counter = 0;
+                   
                     fprintf(stderr, "Vrika String: %s\n", yytext);
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, "DEN TO EXOYME FTIAXEI AKOMA!");
+                    
+                    str = (char *)malloc(DEFAULT_STR_SIZE*sizeof(char));
+                    memset((void*)str, 0, DEFAULT_STR_SIZE);
 
+                    while((c = input()) != LEX_EOF){
+                        if( c == '\\'){
+                            
+                            if( (c = input()) == 'n'){
+                                *(str+counter) = '\n';
+                            }
+                            else if( c == 't'){
+                                *(str+counter) = '\t';
+                            }
+                            else if( c == '"'){
+                                *(str+counter) = '\"';
+                            }
+                            else{ 
+                                unput(c);
+                                *(str+counter) = '\\';
+                                fprintf(stderr,"Warning: Used \\ without special sequence.\n");
+                            }
+                        }
+                        else if(c == '"'){
+                            *(str+counter) = '\0';
+                            break;
+                        }
+                        else{
+                            
+                           *(str+counter) =  c; 
+                        }
+                        
+                        counter++;
+                        if(counter >= size_change * DEFAULT_STR_SIZE){
+                            size_change++;
+                            str = (char *)realloc((void*)str, size_change * DEFAULT_STR_SIZE);
+                        }
+
+                    }
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, str, "DEN TO EXOYME FTIAXEI AKOMA!");
+                    free(str);
                 }
+                
 
 {line_comment}  {
                     if(DEBUG){
@@ -387,9 +431,43 @@ block_comment   "/*".*"*/"
                 }
                 
 {block_comment} {
+                    int c;
+                    int c_stack = 1;
+                    int starting_line = yylineno;
+
                     if(DEBUG){
                         fprintf(stderr, "Vrika Block Comment: %s\n", yytext);
                     }
+
+                    while((c = input()) != LEX_EOF){
+                        if( c == '*'){
+                            if( (c = input()) == '/' ){
+                                c_stack--;
+                                printf("Vrika comment pou kleinei. To stack einai %d.\n",c_stack);
+                                if(c_stack == 0){
+                                    printf("Block comment apo %d ews %d.\n", starting_line, yylineno);
+                                    break;
+                                }
+                            }
+                            else{
+                                unput(c);
+                            }
+                        }
+                        else if( c == '/') {
+                            if( (c = input()) == '*' ){
+                                c_stack++;
+                                printf("Vrika nested comment. To stack einai %d.\n",c_stack);
+                            }
+                            else{
+                                unput(c);
+                            }
+                        }
+                    }
+
+                    if(c_stack != 0 ){
+                        printf("Den exoun kleisei ta sxolia!\n");
+                        exit(-1);
+                    }       
                 }
 
 %%

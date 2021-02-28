@@ -1,1 +1,1 @@
-s = "Hello\nPeople" ;
+s = "Hello\t\"People\"" ;
