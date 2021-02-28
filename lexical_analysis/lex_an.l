@@ -378,9 +378,7 @@ block_comment   "/*"
 {string}        {
                     char *str;
                     int c, size_change = 1, counter = 0;
-                   
-                    fprintf(stderr, "Vrika String: %s\n", yytext);
-                    
+                                       
                     str = (char *)malloc(DEFAULT_STR_SIZE*sizeof(char));
                     memset((void*)str, 0, DEFAULT_STR_SIZE);
 
@@ -418,6 +416,11 @@ block_comment   "/*"
                         }
 
                     }
+
+                    if(DEBUG){
+                        fprintf(stderr, "Vrika String: %s\n", str);
+                    }
+
                     alpha_token_insert((alpha_token_t *)ylval, yylineno, str, "DEN TO EXOYME FTIAXEI AKOMA!");
                     free(str);
                 }
