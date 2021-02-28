@@ -10,7 +10,7 @@ enum OPERATOR
     MINUS,
     MINUS_MINUS
 };
-
+/* /**/ */
 struct alpha_token_t
 {
     unsigned int numline;              /* Arithmos Grammis */
