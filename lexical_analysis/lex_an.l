@@ -1,22 +1,37 @@
 /* Definition Section */
 %{
 
-    /*#ifdef WIN32
+    #ifdef WIN32
     #define YY_NO_UNISTD_H
     static int isatty(int i) {return 0;}
     #elif _WIN32_WCE
     #define YY_NO_UNISTD_H
     static int isatty(void *i) {return 0;}
-    #endif*/
+    #endif
     
     #include <stdlib.h>
     #include <stdio.h>
+
     #include "token/Token.h"
+    #include "../utils/Colors.h"
 
     #define YY_DECL int yylex(void* ylval)
+    
     #define LEX_EOF 0
-    #define DEFAULT_STR_SIZE 128
     #define DEBUG 1
+    
+    #define DEFAULT_STR_SIZE 128
+
+    /*
+        NOTES:
+            1) Na apofasisoume gia to output
+            2) Apothikeysi twn ipoloipwn tokens sto struct list (comments)
+            3) Dedomena twn tokens?
+            4) Enumerators?//
+            5) Polla tests, mazema kwdika
+            6) 
+    
+    */
 %}
 
 %option prefix = "alpha_yy"
