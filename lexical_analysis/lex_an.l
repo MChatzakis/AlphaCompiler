@@ -22,18 +22,6 @@
     
     #define DEFAULT_STR_SIZE 128
 
-    /*
-        NOTES:
-            1) Na apofasisoume gia to output
-            2) Apothikeysi twn ipoloipwn tokens sto struct list (comments)
-            3) Dedomena twn tokens?
-            4) Enumerators?//
-            5) Polla tests, mazema kwdika
-            6) 
-    
-    */
-
-
     
 %}
 
@@ -112,278 +100,278 @@ unknown_token .
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Curly Brace: %s\n", yytext);  
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "LEFT_CURLY_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_CURLY_BRACE");
                         }
 
 {right_curly_brace}     {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Curly Brace: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "RIGHT_CURLY_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_CURLY_BRACE");
                         }
 
 {left_square_brace}     {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Square Brace: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "LEFT_SQUARE_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_SQUARE_BRACE");
                         }
                         
 {right_square_brace}    {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Square Brace: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "RIGHT_SQUARE_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_SQUARE_BRACE");
                         }
 
 {left_parenthesis}      {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Parenthesis: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "LEFT_PARENTHESIS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_PARENTHESIS");
                         }
 
 {right_parenthesis}     {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Parenthesis: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "RIGHT_PARENTHESIS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_PARENTHESIS");
                         }
 
 {semicolon}             { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Semicolon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "SEMICOLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "SEMICOLON");
                         }
                         
 {comma}                 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Comma: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "COMMA");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "COMMA");
                         }
                         
 {fullstop}              {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Fullstop: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "FULLSTOP");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "FULLSTOP");
                         }
                         
 {colon}                 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Colon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "COLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "COLON");
                         }
                         
 {double_colon}          {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Double Colon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "DOUBLE COLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "DOUBLE COLON");
                         }
                         
 {ellipsis_mark}         {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Ellipsis Mark: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "ELLIPSIS MARK");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "ELLIPSIS MARK");
                         }
 
 {if}                    { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika IF: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "IF");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "IF");
                         }
 
 {else}                  { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika ELSE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "ELSE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "ELSE");
                         }
 
 {while}                 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika WHILE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "WHILE");  
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "WHILE");  
                         }
 
 {for}                   { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FOR: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "FOR");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FOR");
                         }
 
 {function}              { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FUNCTION: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "FUNCTION"); 
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FUNCTION"); 
                         }
 
 {return}                { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika RETURN: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "RETURN"); 
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "RETURN"); 
                         }
 
 {break}                 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika BREAK: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "BREAK");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "BREAK");
                         }
 
 {continue}              { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika CONTINUE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "CONTINUE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "CONTINUE");
                         }
 
 {and}                   { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika AND: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "AND");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "AND");
                         }
 
 {not}                   { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika NOT: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "NOT");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "NOT");
                         }
                     
 {or}                    { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika OR: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "OR");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "OR");
                         }
 
 {local}                 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika LOCAL: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "LOCAL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "LOCAL");
                         }
 
 {true}                  { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika TRUE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "TRUE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "TRUE");
                         }
 
 {false}                 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FALSE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "FALSE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FALSE");
                         }
 
 {nil}                   { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika NIL: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "NIL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "NIL");
                         }
 
 {assign}                {
                             fprintf(stderr, "Vrika =: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "ASSIGN");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "ASSIGN");
                         }
 
 {plus}                  {
                             fprintf(stderr, "Vrika +: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "PLUS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "PLUS");
                         }
 
 {minus}                 {
                             fprintf(stderr, "Vrika -: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "MINUS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MINUS");
                         }
                     
 {mul}                   {
                             fprintf(stderr, "Vrika *: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "MUL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MUL");
                         }
 
 {div}                   {
                             fprintf(stderr, "Vrika /: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "DIV");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "DIV");
                         }
 
 {modulo}                {
                             fprintf(stderr, "Vrika Modulo : %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "MODULO");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MODULO");
                         }
                     
 {equal}             {
                         fprintf(stderr, "Vrika ==: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "EQUAL");
                     }
                     
 {not_equal}         {
                         fprintf(stderr, "Vrika !=: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "NOT_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "NOT_EQUAL");
                     }
                     
 {plus_plus}         {
                         fprintf(stderr, "Vrika ++: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR,"PLUS_PLUS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"PLUS_PLUS");
                     }
                     
 {minus_minus}       {
                         fprintf(stderr, "Vrika --: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR,"MINUS_MINUS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"MINUS_MINUS");
                     }
                     
 {greater}           {
                         fprintf(stderr, "Vrika >: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "GREATER");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "GREATER");
 
                     }
                     
 {greater_equal}     {
                         fprintf(stderr, "Vrika >=: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR,"GREATER_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"GREATER_EQUAL");
                     }
                     
 {less}              {
                         //fprintf(stderr, "Vrika <: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "LESS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "LESS");
 
                     }
 
 {less_equal}        {
                         //fprintf(stderr, "Vrika <: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "LESS_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "LESS_EQUAL");
                     }
 
 {id}            {
                     fprintf(stderr, "Vrika Identifier: %s\n", yytext);
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, IDENT, yytext);
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, IDENT, yytext);
 
                 }
                 
 {integer}       {
                     fprintf(stderr, "Vrika Akeraio: %s\n", yytext);
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, CONSTINT, "INTEGER");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, CONSTINT, "INTEGER");
 
                 }
                 
 {real}          {
                     fprintf(stderr, "Vrika Pragmatiko: %s\n", yytext);
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, CONSTREAL, "REAL");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, CONSTREAL, "REAL");
 
                 }
                 
@@ -441,7 +429,7 @@ unknown_token .
                         fprintf(stderr, "Vrika String: %s\n", str);
                     }
 
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, str, STRING, "STRING"); 
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, str, STRING, "STRING"); 
                     free(str);
                 }
                 
@@ -450,7 +438,7 @@ unknown_token .
                     if(DEBUG){
                         fprintf(stderr, "Vrika Line Comment: %s\n", yytext);
                     }
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, "", COMMENT, "LINE_COMMENT");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", COMMENT, "LINE_COMMENT");
                 }
                 
 {block_comment} {
@@ -469,7 +457,7 @@ unknown_token .
                                 printf("Vrika comment pou kleinei. To stack einai %d.\n",c_stack);
                                 if(c_stack == 0){
                                     printf("Block comment apo %d ews %d.\n", starting_line, yylineno);
-                                    alpha_token_insert((alpha_token_t *)ylval, yylineno, "", COMMENT, "BLOCK_COMMENT");
+                                    alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, "", COMMENT, "BLOCK_COMMENT");
                                     break;
                                 }
                             }
@@ -481,7 +469,7 @@ unknown_token .
                             if( (c = input()) == '*' ){
                                 c_stack++;
                                 printf("Vrika nested comment. To stack einai %d.\n",c_stack);
-                                alpha_token_insert((alpha_token_t *)ylval, yylineno, "", COMMENT, "NESTED_COMMENT");
+                                alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", COMMENT, "NESTED_COMMENT");
                             }
                             else{
                                 unput(c);

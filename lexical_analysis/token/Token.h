@@ -35,7 +35,7 @@ typedef struct alpha_token_t alpha_token_t;
 
 alpha_token_t *alpha_token_init();
 
-void alpha_token_insert(alpha_token_t *head, unsigned int numline,
+void alpha_token_insert(alpha_token_t *head, unsigned int numline, unsigned int endline,
                         char *content, enum TOKEN_TYPE token_type, char *type);
 
 void alpha_token_print(alpha_token_t *token);

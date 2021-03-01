@@ -819,26 +819,14 @@ char *yytext;
     
     #define DEFAULT_STR_SIZE 128
 
-    /*
-        NOTES:
-            1) Na apofasisoume gia to output
-            2) Apothikeysi twn ipoloipwn tokens sto struct list (comments)
-            3) Dedomena twn tokens?
-            4) Enumerators?//
-            5) Polla tests, mazema kwdika
-            6) 
     
-    */
-
-
-    
-#line 836 "Scanner.c"
+#line 824 "Scanner.c"
 /* Flex Macros */
 /*integer     (0[xX][0-9A-Fa-f]+)|([0-9]+)*/
 /*real [0-9]*\.[0-9](e|E)?[0-9]* */
 /*string,block comment not ready*/
 /* Rule Section */
-#line 842 "Scanner.c"
+#line 830 "Scanner.c"
 
 #define INITIAL 0
 
@@ -1055,11 +1043,11 @@ YY_DECL
 		}
 
 	{
-#line 108 "lex_an.l"
+#line 96 "lex_an.l"
 
 
 
-#line 1063 "Scanner.c"
+#line 1051 "Scanner.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1128,418 +1116,418 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 111 "lex_an.l"
+#line 99 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Curly Brace: %s\n", yytext);  
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "LEFT_CURLY_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_CURLY_BRACE");
                         }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 118 "lex_an.l"
+#line 106 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Curly Brace: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "RIGHT_CURLY_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_CURLY_BRACE");
                         }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 125 "lex_an.l"
+#line 113 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Square Brace: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "LEFT_SQUARE_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_SQUARE_BRACE");
                         }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 132 "lex_an.l"
+#line 120 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Square Brace: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "RIGHT_SQUARE_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_SQUARE_BRACE");
                         }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 139 "lex_an.l"
+#line 127 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Parenthesis: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "LEFT_PARENTHESIS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_PARENTHESIS");
                         }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 146 "lex_an.l"
+#line 134 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Parenthesis: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "RIGHT_PARENTHESIS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_PARENTHESIS");
                         }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 153 "lex_an.l"
+#line 141 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Semicolon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "SEMICOLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "SEMICOLON");
                         }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 160 "lex_an.l"
+#line 148 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Comma: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "COMMA");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "COMMA");
                         }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 167 "lex_an.l"
+#line 155 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Fullstop: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "FULLSTOP");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "FULLSTOP");
                         }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 174 "lex_an.l"
+#line 162 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Colon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "COLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "COLON");
                         }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 181 "lex_an.l"
+#line 169 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Double Colon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "DOUBLE COLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "DOUBLE COLON");
                         }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 188 "lex_an.l"
+#line 176 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Ellipsis Mark: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, PUNCTUATION, "ELLIPSIS MARK");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "ELLIPSIS MARK");
                         }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 195 "lex_an.l"
+#line 183 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika IF: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "IF");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "IF");
                         }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 202 "lex_an.l"
+#line 190 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika ELSE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "ELSE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "ELSE");
                         }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 209 "lex_an.l"
+#line 197 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika WHILE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "WHILE");  
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "WHILE");  
                         }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 216 "lex_an.l"
+#line 204 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FOR: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "FOR");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FOR");
                         }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 223 "lex_an.l"
+#line 211 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FUNCTION: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "FUNCTION"); 
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FUNCTION"); 
                         }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 230 "lex_an.l"
+#line 218 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika RETURN: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "RETURN"); 
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "RETURN"); 
                         }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 237 "lex_an.l"
+#line 225 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika BREAK: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "BREAK");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "BREAK");
                         }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 244 "lex_an.l"
+#line 232 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika CONTINUE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "CONTINUE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "CONTINUE");
                         }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 251 "lex_an.l"
+#line 239 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika AND: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "AND");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "AND");
                         }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 258 "lex_an.l"
+#line 246 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika NOT: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "NOT");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "NOT");
                         }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 265 "lex_an.l"
+#line 253 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika OR: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "OR");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "OR");
                         }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 272 "lex_an.l"
+#line 260 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika LOCAL: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "LOCAL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "LOCAL");
                         }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 279 "lex_an.l"
+#line 267 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika TRUE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "TRUE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "TRUE");
                         }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 286 "lex_an.l"
+#line 274 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FALSE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "FALSE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FALSE");
                         }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 293 "lex_an.l"
+#line 281 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika NIL: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, KEYWORD, "NIL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "NIL");
                         }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 300 "lex_an.l"
+#line 288 "lex_an.l"
 {
                             fprintf(stderr, "Vrika =: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "ASSIGN");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "ASSIGN");
                         }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 305 "lex_an.l"
+#line 293 "lex_an.l"
 {
                             fprintf(stderr, "Vrika +: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "PLUS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "PLUS");
                         }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 310 "lex_an.l"
+#line 298 "lex_an.l"
 {
                             fprintf(stderr, "Vrika -: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "MINUS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MINUS");
                         }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 315 "lex_an.l"
+#line 303 "lex_an.l"
 {
                             fprintf(stderr, "Vrika *: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "MUL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MUL");
                         }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 320 "lex_an.l"
+#line 308 "lex_an.l"
 {
                             fprintf(stderr, "Vrika /: %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "DIV");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "DIV");
                         }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 325 "lex_an.l"
+#line 313 "lex_an.l"
 {
                             fprintf(stderr, "Vrika Modulo : %s\n", yytext);
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "MODULO");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MODULO");
                         }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 330 "lex_an.l"
+#line 318 "lex_an.l"
 {
                         fprintf(stderr, "Vrika ==: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "EQUAL");
                     }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 335 "lex_an.l"
+#line 323 "lex_an.l"
 {
                         fprintf(stderr, "Vrika !=: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "NOT_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "NOT_EQUAL");
                     }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 340 "lex_an.l"
+#line 328 "lex_an.l"
 {
                         fprintf(stderr, "Vrika ++: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR,"PLUS_PLUS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"PLUS_PLUS");
                     }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 345 "lex_an.l"
+#line 333 "lex_an.l"
 {
                         fprintf(stderr, "Vrika --: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR,"MINUS_MINUS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"MINUS_MINUS");
                     }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 350 "lex_an.l"
+#line 338 "lex_an.l"
 {
                         fprintf(stderr, "Vrika >: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "GREATER");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "GREATER");
 
                     }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 356 "lex_an.l"
+#line 344 "lex_an.l"
 {
                         fprintf(stderr, "Vrika >=: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR,"GREATER_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"GREATER_EQUAL");
                     }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 361 "lex_an.l"
+#line 349 "lex_an.l"
 {
                         //fprintf(stderr, "Vrika <: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "LESS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "LESS");
 
                     }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 367 "lex_an.l"
+#line 355 "lex_an.l"
 {
                         //fprintf(stderr, "Vrika <: %s\n", yytext);
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, OPERATOR, "LESS_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "LESS_EQUAL");
                     }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 372 "lex_an.l"
+#line 360 "lex_an.l"
 {
                     fprintf(stderr, "Vrika Identifier: %s\n", yytext);
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, IDENT, yytext);
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, IDENT, yytext);
 
                 }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 378 "lex_an.l"
+#line 366 "lex_an.l"
 {
                     fprintf(stderr, "Vrika Akeraio: %s\n", yytext);
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, CONSTINT, "INTEGER");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, CONSTINT, "INTEGER");
 
                 }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 384 "lex_an.l"
+#line 372 "lex_an.l"
 {
                     fprintf(stderr, "Vrika Pragmatiko: %s\n", yytext);
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yytext, CONSTREAL, "REAL");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, CONSTREAL, "REAL");
 
                 }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 390 "lex_an.l"
+#line 378 "lex_an.l"
 {
                     fprintf(stderr, "Vrika Keno: %s\n", yytext);
                 }
@@ -1547,14 +1535,14 @@ YY_RULE_SETUP
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 394 "lex_an.l"
+#line 382 "lex_an.l"
 { 
                     fprintf(stderr, "Vrika Newline: %s\n", yytext);
                 }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 398 "lex_an.l"
+#line 386 "lex_an.l"
 {
                     char *str;
                     int c, size_change = 1, counter = 0;
@@ -1601,23 +1589,23 @@ YY_RULE_SETUP
                         fprintf(stderr, "Vrika String: %s\n", str);
                     }
 
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, str, STRING, "STRING"); 
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, str, STRING, "STRING"); 
                     free(str);
                 }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 449 "lex_an.l"
+#line 437 "lex_an.l"
 {
                     if(DEBUG){
                         fprintf(stderr, "Vrika Line Comment: %s\n", yytext);
                     }
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, "", COMMENT, "LINE_COMMENT");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", COMMENT, "LINE_COMMENT");
                 }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 456 "lex_an.l"
+#line 444 "lex_an.l"
 {
                     int c;
                     int c_stack = 1;
@@ -1634,7 +1622,7 @@ YY_RULE_SETUP
                                 printf("Vrika comment pou kleinei. To stack einai %d.\n",c_stack);
                                 if(c_stack == 0){
                                     printf("Block comment apo %d ews %d.\n", starting_line, yylineno);
-                                    alpha_token_insert((alpha_token_t *)ylval, yylineno, "", COMMENT, "BLOCK_COMMENT");
+                                    alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, "", COMMENT, "BLOCK_COMMENT");
                                     break;
                                 }
                             }
@@ -1646,7 +1634,7 @@ YY_RULE_SETUP
                             if( (c = input()) == '*' ){
                                 c_stack++;
                                 printf("Vrika nested comment. To stack einai %d.\n",c_stack);
-                                alpha_token_insert((alpha_token_t *)ylval, yylineno, "", COMMENT, "NESTED_COMMENT");
+                                alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", COMMENT, "NESTED_COMMENT");
                             }
                             else{
                                 unput(c);
@@ -1664,7 +1652,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 500 "lex_an.l"
+#line 488 "lex_an.l"
 {
                         fprintf_red(stderr, "ERROR: Unkown token given!\n");
                         exit(-1);
@@ -1672,10 +1660,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 505 "lex_an.l"
+#line 493 "lex_an.l"
 ECHO;
 	YY_BREAK
-#line 1679 "Scanner.c"
+#line 1667 "Scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2692,7 +2680,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 505 "lex_an.l"
+#line 493 "lex_an.l"
 
 
 /* Code Section */
