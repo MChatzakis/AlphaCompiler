@@ -100,266 +100,266 @@ unknown_token .
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Curly Brace: %s\n", yytext);  
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_CURLY_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION LEFT_CURLY_BRACE");
                         }
 
 {right_curly_brace}     {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Curly Brace: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_CURLY_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION RIGHT_CURLY_BRACE");
                         }
 
 {left_square_brace}     {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Square Brace: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_SQUARE_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION LEFT_SQUARE_BRACE");
                         }
                         
 {right_square_brace}    {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Square Brace: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_SQUARE_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION RIGHT_SQUARE_BRACE");
                         }
 
 {left_parenthesis}      {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Parenthesis: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "LEFT_PARENTHESIS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION LEFT_PARENTHESIS");
                         }
 
 {right_parenthesis}     {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Parenthesis: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "RIGHT_PARENTHESIS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION RIGHT_PARENTHESIS");
                         }
 
 {semicolon}             { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Semicolon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "SEMICOLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION SEMICOLON");
                         }
                         
 {comma}                 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Comma: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "COMMA");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION COMMA");
                         }
                         
 {fullstop}              {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Fullstop: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "FULLSTOP");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION FULLSTOP");
                         }
                         
 {colon}                 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Colon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "COLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION COLON");
                         }
                         
 {double_colon}          {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Double Colon: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "DOUBLE COLON");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION DOUBLE COLON");
                         }
                         
 {ellipsis_mark}         {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Ellipsis Mark: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "ELLIPSIS MARK");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION ELLIPSIS MARK");
                         }
 
 {if}                    { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika IF: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "IF");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD IF");
                         }
 
 {else}                  { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika ELSE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "ELSE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD ELSE");
                         }
 
 {while}                 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika WHILE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "WHILE");  
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD WHILE");  
                         }
 
 {for}                   { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FOR: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FOR");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD FOR");
                         }
 
 {function}              { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FUNCTION: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FUNCTION"); 
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD FUNCTION"); 
                         }
 
 {return}                { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika RETURN: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "RETURN"); 
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD RETURN"); 
                         }
 
 {break}                 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika BREAK: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "BREAK");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD BREAK");
                         }
 
 {continue}              { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika CONTINUE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "CONTINUE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD CONTINUE");
                         }
 
 {and}                   { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika AND: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "AND");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD AND");
                         }
 
 {not}                   { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika NOT: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "NOT");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD NOT");
                         }
                     
 {or}                    { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika OR: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "OR");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD OR");
                         }
 
 {local}                 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika LOCAL: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "LOCAL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD LOCAL");
                         }
 
 {true}                  { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika TRUE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "TRUE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD TRUE");
                         }
 
 {false}                 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FALSE: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "FALSE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD FALSE");
                         }
 
 {nil}                   { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika NIL: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "NIL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, KEYWORD, "KEYWORD NIL");
                         }
 
 {assign}                {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika =: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "ASSIGN");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR ASSIGN");
                         }
 
 {plus}                  {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika +: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "PLUS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR PLUS");
                         }
 
 {minus}                 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika -: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MINUS");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR MINUS");
                         }
                     
 {mul}                   {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika *: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MUL");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR MUL");
                         }
 
 {div}                   {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika /: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "DIV");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR DIV");
                         }
 
 {modulo}                {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Modulo : %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "MODULO");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR MODULO");
                         }
                     
 {equal}             {
                         if(DEBUG){
                             fprintf(stderr, "Vrika ==: %s\n", yytext);
                         }
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR EQUAL");
                     }
                     
 {not_equal}         {
                         if(DEBUG){
                             fprintf(stderr, "Vrika !=: %s\n", yytext);
                         }
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "NOT_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR NOT_EQUAL");
                     }
                     
 {plus_plus}         {
                         if(DEBUG){
                             fprintf(stderr, "Vrika ++: %s\n", yytext);
                         }
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"PLUS_PLUS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"OPERATOR PLUS_PLUS");
                     }
                     
 {minus_minus}       {
                         if(DEBUG){
                             fprintf(stderr, "Vrika --: %s\n", yytext);
                         }
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"MINUS_MINUS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"OPERATOR MINUS_MINUS");
                     }
                     
 {greater}           {
                         if(DEBUG){
                             fprintf(stderr, "Vrika >: %s\n", yytext);
                         }
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "GREATER");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR GREATER");
 
                     }
                     
@@ -367,14 +367,14 @@ unknown_token .
                         if(DEBUG){
                             fprintf(stderr, "Vrika >=: %s\n", yytext);
                         }
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"GREATER_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR,"OPERATOR GREATER_EQUAL");
                     }
                     
 {less}              {
                         if(DEBUG){
                             fprintf(stderr, "Vrika <: %s\n", yytext);
                         }
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "LESS");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR LESS");
 
                     }
 
@@ -382,14 +382,14 @@ unknown_token .
                         if(DEBUG){
                             fprintf(stderr, "Vrika <: %s\n", yytext);
                         }
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "LESS_EQUAL");
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, OPERATOR, "OPERATOR LESS_EQUAL");
                     }
 
 {id}            {
                     if(DEBUG){
                         fprintf(stderr, "Vrika Identifier: %s\n", yytext);
                     }
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, IDENT, yytext);
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, IDENT, "ID");
 
                 }
                 
@@ -397,7 +397,7 @@ unknown_token .
                     if(DEBUG){
                         fprintf(stderr, "Vrika Akeraio: %s\n", yytext);
                     }
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, CONSTINT, "INTEGER");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, CONST_INT, "CONST_INT");
 
                 }
                 
@@ -405,7 +405,7 @@ unknown_token .
                     if(DEBUG){
                         fprintf(stderr, "Vrika Pragmatiko: %s\n", yytext);
                     }
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, CONSTREAL, "REAL");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, CONST_REAL, "CONST_REAL");
 
                 }
                 
@@ -423,7 +423,7 @@ unknown_token .
                  
 {string}        {
                     char *str;
-                    int c, size_change = 1, counter = 0;
+                    int c, size_change = 1, counter = 0, valid = 0, starting_line = yylineno;
                                        
                     str = (char *)malloc(DEFAULT_STR_SIZE*sizeof(char));
                     memset((void*)str, 0, DEFAULT_STR_SIZE);
@@ -442,12 +442,13 @@ unknown_token .
                             }
                             else{ 
                                 unput(c);
-                                *(str+counter) = '\\';
-                                fprintf_yellow(stderr,"[Lexical Analysis] -- Warning: Used \\ without special sequence.\n");
+                                *(str+counter) = '\\'; 
+                                fprintf_yellow(stderr,"[Lexical Analysis] -- WARNING: Used \\ without special sequence. for string starting at line %u.\n", starting_line);
                             }
                         }
-                        else if(c == '"'){
+                        else if(c == '\"'){ //<- auto prepei nanai etsi h sketo "..
                             *(str+counter) = '\0';
+                            valid = 1;
                             break;
                         }
                         else{
@@ -467,6 +468,11 @@ unknown_token .
                         fprintf(stderr, "Vrika String: %s\n", str);
                     }
 
+                    if(!valid){
+                        fprintf_red(stderr, "[Lexical Analysis] -- ERROR: String starting at line %u has not closed.\n", starting_line);
+                        exit(-1);
+                    }
+
                     alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, str, STRING, "STRING"); 
                     free(str);
                 }
@@ -476,7 +482,7 @@ unknown_token .
                     if(DEBUG){
                         fprintf(stderr, "Vrika Line Comment: %s\n", yytext);
                     }
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", COMMENT, "LINE_COMMENT");
+                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", LINE_COMMENT, "COMMENT LINE_COMMENT");
                 }
                 
 {block_comment} {
@@ -499,7 +505,7 @@ unknown_token .
                                     if(DEBUG){
                                         printf("Block comment apo %d ews %d.\n", starting_line, yylineno);
                                     }
-                                    alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, "", COMMENT, "BLOCK_COMMENT");
+                                    alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, "", BLOCK_COMMENT, "COMMENT BLOCK_COMMENT");
                                     break;
                                 }
                             }
@@ -513,7 +519,7 @@ unknown_token .
                                 if(DEBUG){
                                     printf("Vrika nested comment. To stack einai %d.\n",c_stack);
                                 }
-                                alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", COMMENT, "NESTED_COMMENT");
+                                alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", NESTED_COMMENT, "COMMENT NESTED_COMMENT");
                             }
                             else{
                                 unput(c);
@@ -525,6 +531,7 @@ unknown_token .
                         if(DEBUG){
                             printf("Den exoun kleisei ta sxolia!\n");
                         }
+                        fprintf_red(stderr ,"[Lexical Analysis] -- ERROR: Comment Never Ends at line %u\n", starting_line);
                         exit(-1);
                     }
                     
@@ -532,7 +539,7 @@ unknown_token .
                 }
 
 {unknown_token}     {
-                        fprintf_red(stderr, "ERROR: Unkown token given!\n");
+                        fprintf_red(stderr, "[Lexical Analysis] -- ERROR: Unkown token \"%s\" given at line %d\n",yytext, yylineno);
                         exit(-1);
                     }
 

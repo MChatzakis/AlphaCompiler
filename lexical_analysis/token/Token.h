@@ -7,26 +7,23 @@ enum TOKEN_TYPE {
   UNDEFINED,
   KEYWORD,
   OPERATOR,
-  CONSTINT,
-  CONSTREAL,
+  CONST_INT,
+  CONST_REAL,
   STRING,
   IDENT,
-  COMMENT,
+  LINE_COMMENT,
+  BLOCK_COMMENT,
+  NESTED_COMMENT,
   PUNCTUATION
 };
-
-// enum COMMENT_TYPE { LINE_COMMENT, BLOCK_COMMENT, NESTED_COMMENT };
-
-// enum OPERATOR_TYPE { PLUS, PLUS_PLUS, MINUS, MINUS_MINUS };
 
 struct alpha_token_t {
   unsigned int numline;  /* Arithmos Grammis */
   unsigned int endline;  /* Arithmos telous grammis */
   unsigned int numToken; /* Arithmos Token */
-
-  char *content;                     /* Periexomena Token*/
+  char *content;         /* Periexomena Token*/
+  char *type; /* Eidos Token px "KEYWORD IF" \\ STRING || arr[KEYWORD_IF]  */
   enum TOKEN_TYPE token_type;        /* Typos Token */
-  char *type;                        /* Eidos Token */
   struct alpha_token_t *alpha_yylex; /* Next Token */
 };
 

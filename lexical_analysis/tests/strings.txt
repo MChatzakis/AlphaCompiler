@@ -1,1 +1,6 @@
 s = "Hello\n\t\"People\"" ;
+
+//p = "aaaa ;
+
+n = "Hello World"
+

@@ -54,8 +54,9 @@ void fprintf_cyan(FILE *stream, const char *str, ...) {
   va_end(args);
 }
 
+/*
 int main() {
   printf("normal\n");
   fprintf_red(stdout, "red\n");
   printf("normal");
-}
+}*/

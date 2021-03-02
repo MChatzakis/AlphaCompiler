@@ -1,10 +1,10 @@
 #include "Token.h"
 #include <string.h>
 
-char token_types_str[][12] = {"UNDEFINED", "KEYWORD",    "OPERATOR",
+/*char token_types_str[][12] = {"UNDEFINED", "KEYWORD",    "OPERATOR",
                               "CONST_INT", "CONST_REAL", "STRING",
                               "ID",        "COMMENT",    "PUNCTUATION"};
-
+*/
 alpha_token_t *alpha_token_init() {
   alpha_token_t *head;
   head = (alpha_token_t *)malloc(sizeof(alpha_token_t));
@@ -70,34 +70,20 @@ void alpha_token_print(alpha_token_t *token) {
 
   if (token->token_type == STRING || token->token_type == IDENT) {
     printf("%u: #%u  \"%s\" %s \"%s\" <-char*\n", token->numline,
-           token->numToken, token->content, token_types_str[token->token_type],
-           token->content);
-  } else if (token->token_type == CONSTINT) {
+           token->numToken, token->content, token->type, token->content);
+  } else if (token->token_type == CONST_INT) {
     printf("%u: #%u  \"%s\" %s %s <-integer\n", token->numline, token->numToken,
-           token->content, token_types_str[token->token_type], token->content);
-  } else if (token->token_type == CONSTREAL) {
+           token->content, token->type, token->content);
+  } else if (token->token_type == CONST_REAL) {
     printf("%u: #%u  \"%s\" %s %s <-real\n", token->numline, token->numToken,
-           token->content, token_types_str[token->token_type], token->content);
-  } else if (token->token_type == COMMENT) {
-    if (strcmp(token->type, "LINE_COMMENT") == 0) {
-      printf("%u: #%u  \"%s\" %s %s <-enumerated\n", token->numline,
-             token->numToken, token->content,
-             token_types_str[token->token_type], token->type);
-    } else if (strcmp(token->type, "BLOCK_COMMENT") == 0) {
-      printf("%u: #%u  \"%d - %d\" %s %s <-enumerated\n", token->numline,
-             token->numToken, token->numline, token->endline,
-             token_types_str[token->token_type], token->type);
-      // printf("Starting line: %u\n", token->numline);
-      // printf("End line: %u\n", token->endline);
-    } else if (strcmp(token->type, "NESTED_COMMENT") == 0) {
-      printf("%u: #%u  \"%s\" %s %s <-enumerated\n", token->numline,
-             token->numToken, token->content,
-             token_types_str[token->token_type], token->type);
-    }
+           token->content, token->type, token->content);
+  } else if (token->token_type == BLOCK_COMMENT ||
+             token->token_type == NESTED_COMMENT) {
+    printf("%u: #%u  \"%u - %u\" %s <-enumerated\n", token->numline,
+           token->numToken, token->numline, token->endline, token->type);
   } else {
-    printf("%u: #%u  \"%s\" %s %s <-enumerated\n", token->numline,
-           token->numToken, token->content, token_types_str[token->token_type],
-           token->type);
+    printf("%u: #%u  \"%s\" %s <-enumerated\n", token->numline, token->numToken,
+           token->content, token->type);
   }
 }
 
