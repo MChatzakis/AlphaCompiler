@@ -1,6 +1,14 @@
-s = "Hello\n\t\"People\"" ;
+/*s = "Hello\n\t\"People\"" ;
 
-//p = "aaaa ;
+p = "aaaa ;
 
 n = "Hello World"
+*/
+
+"Manos\Nikos"
+
+"Panw
+Katw"
+
+"Dipla\tPioDipla"
 

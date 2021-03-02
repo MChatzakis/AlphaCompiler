@@ -53,8 +53,10 @@ unsigned int comment_stack_pop(comment_stack_t *st) {
 
   tmp = st->top->starting_line;
   del = st->top;
+
   st->top = st->top->next;
   st->size--;
+
   del->next = NULL;
   free(del);
 
@@ -76,4 +78,11 @@ void comment_stack_print(comment_stack_t *st) {
     printf("Starting line: %u.\n", curr->starting_line);
     curr = curr->next;
   }
+}
+
+void comment_stack_free(comment_stack_t *st) {
+  assert(st);
+  assert(st->size == 0);
+  st->top = NULL;
+  free(st);
 }

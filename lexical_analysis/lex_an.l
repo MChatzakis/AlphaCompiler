@@ -13,6 +13,7 @@
     #include <stdio.h>
 
     #include "token/Token.h"
+    #include "comment_stack/comment_stack.h"
     #include "../utils/Colors.h"
 
     #define YY_DECL int yylex(void* ylval)
@@ -460,6 +461,7 @@ unknown_token .
                         if(counter >= size_change * DEFAULT_STR_SIZE){
                             size_change++;
                             str = (char *)realloc((void*)str, size_change * DEFAULT_STR_SIZE);
+
                         }
 
                     }
@@ -470,11 +472,12 @@ unknown_token .
 
                     if(!valid){
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: String starting at line %u has not closed.\n", starting_line);
-                        free(str);
-                        exit(-1);
+                        //free(str);
+                        //exit(-1);
                     }
-
-                    alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, str, STRING, "STRING"); 
+                    else{
+                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, str, STRING, "STRING"); 
+                    }
                     free(str);
                 }
                 
@@ -490,6 +493,10 @@ unknown_token .
                     int c;
                     int c_stack = 1;
                     int starting_line = yylineno;
+                    comment_stack_t* cs;
+
+                    cs = comment_stack_init();
+                    comment_stack_push(cs, yylineno);
 
                     if(DEBUG){
                         fprintf(stderr, "Vrika Block Comment: %s\n", yytext);
@@ -498,16 +505,23 @@ unknown_token .
                     while((c = input()) != LEX_EOF){
                         if( c == '*'){
                             if( (c = input()) == '/' ){
-                                c_stack--;
+                                //c_stack--;
+                                starting_line = comment_stack_pop(cs);
                                 if(DEBUG){
-                                    printf("Vrika comment pou kleinei. To stack einai %d.\n",c_stack);
+                                    printf("Vrika comment pou kleinei. To stack einai %d.\n",cs->size);
                                 }
-                                if(c_stack == 0){
+                                if(comment_stack_is_empty(cs)){
                                     if(DEBUG){
                                         printf("Block comment apo %d ews %d.\n", starting_line, yylineno);
                                     }
                                     alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, "", BLOCK_COMMENT, "COMMENT BLOCK_COMMENT");
                                     break;
+                                }
+                                else{
+                                    if(DEBUG){
+                                        printf("Vrika nested comment. To stack einai %d.\n",cs->size);
+                                    }
+                                    alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, "", NESTED_COMMENT, "COMMENT NESTED_COMMENT");
                                 }
                             }
                             else{
@@ -516,11 +530,13 @@ unknown_token .
                         }
                         else if( c == '/') {
                             if( (c = input()) == '*' ){
-                                c_stack++;
-                                if(DEBUG){
-                                    printf("Vrika nested comment. To stack einai %d.\n",c_stack);
+                                //c_stack++;
+                                comment_stack_push(cs, yylineno);
+                                /*if(DEBUG){
+                                    printf("Vrika nested comment. To stack einai %d.\n",cs->size);
                                 }
                                 alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", NESTED_COMMENT, "COMMENT NESTED_COMMENT");
+                                */
                             }
                             else{
                                 unput(c);
@@ -528,20 +544,23 @@ unknown_token .
                         }
                     }
 
-                    if(c_stack != 0 ){
+                    while(!comment_stack_is_empty(cs)){
                         if(DEBUG){
                             printf("Den exoun kleisei ta sxolia!\n");
                         }
-                        fprintf_red(stderr ,"[Lexical Analysis] -- ERROR: Comment Never Ends at line %u\n", starting_line);
-                        exit(-1);
+                        fprintf_red(stderr ,"[Lexical Analysis] -- ERROR: Comment Never Ends at line %u\n", comment_stack_pop(cs));
+                        /*if(comment_stack_is_empty(cs)){
+                            exit(-1);
+                        }*/
                     }
                     
-
+                    comment_stack_free(cs);
                 }
+
 
 {unknown_token}     {
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: Unkown token \"%s\" given at line %d\n",yytext, yylineno);
-                        exit(-1);
+                        //exit(-1);
                     }
 
 %%

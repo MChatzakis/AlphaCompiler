@@ -1,3 +1,14 @@
+/**
+ * @file Token.h
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2021-03-02
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+ 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,11 +29,11 @@ enum TOKEN_TYPE {
 };
 
 struct alpha_token_t {
-  unsigned int numline;  /* Arithmos Grammis */
-  unsigned int endline;  /* Arithmos telous grammis */
-  unsigned int numToken; /* Arithmos Token */
-  char *content;         /* Periexomena Token*/
-  char *type; /* Eidos Token px "KEYWORD IF" \\ STRING || arr[KEYWORD_IF]  */
+  unsigned int numline;              /* Arithmos Grammis */
+  unsigned int endline;              /* Arithmos telous grammis */
+  unsigned int numToken;             /* Arithmos Token */
+  char *content;                     /* Periexomena Token*/
+  char *type;                        /* Eidos Token */
   enum TOKEN_TYPE token_type;        /* Typos Token */
   struct alpha_token_t *alpha_yylex; /* Next Token */
 };

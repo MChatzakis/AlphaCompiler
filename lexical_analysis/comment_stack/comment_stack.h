@@ -20,3 +20,4 @@ int comment_stack_push(comment_stack_t *st, unsigned int n);
 unsigned int comment_stack_top(comment_stack_t *st);
 unsigned int comment_stack_pop(comment_stack_t *st);
 void comment_stack_print(comment_stack_t *st);
+void comment_stack_free(comment_stack_t *st);
