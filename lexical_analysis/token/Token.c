@@ -15,6 +15,7 @@ alpha_token_t *alpha_token_init() {
   head->content = NULL;
   head->token_type = UNDEFINED;
   head->type = NULL;
+  head->alpha_yylex = NULL;
 
   return head;
 }
@@ -44,12 +45,13 @@ void alpha_token_insert(alpha_token_t *head, unsigned int numline,
   ptr->alpha_yylex = NULL;
 
   if (content != NULL) {
-    ptr->content = (char *)malloc(strlen(content) * sizeof(char));
+    ptr->content = (char *)malloc((strlen(content)+1) * sizeof(char));
+    //printf("Content length: %zu\n",strlen(content));
     strcpy(ptr->content, content);
   }
 
   if (type != NULL) {
-    ptr->type = (char *)malloc(strlen(type) * sizeof(char));
+    ptr->type = (char *)malloc((strlen(type)+1) * sizeof(char));
     strcpy(ptr->type, type);
   }
 
@@ -115,6 +117,7 @@ void alpha_token_free_list(alpha_token_t *head) {
     prev->content = NULL;
     free(prev->type);
     prev->type = NULL;
+    prev->alpha_yylex = NULL;
 
     free(prev);
     prev = NULL;

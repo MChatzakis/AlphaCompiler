@@ -470,6 +470,7 @@ unknown_token .
 
                     if(!valid){
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: String starting at line %u has not closed.\n", starting_line);
+                        free(str);
                         exit(-1);
                     }
 
@@ -566,5 +567,6 @@ int main(int argc, char **argv){
     printf(" ---------------- Lexical Analysis ---------------- \n\n");
 
     alpha_token_print_list(head);
+    alpha_token_free_list(head);
     return 0;
 }

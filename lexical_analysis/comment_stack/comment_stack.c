@@ -21,7 +21,7 @@ int comment_stack_push(comment_stack_t *st, unsigned int n) {
 
   new_node = malloc(sizeof(comment_node_t));
   if (new_node == NULL) {
-    return 1;
+    return -1;
   }
 
   new_node->next = st->top;
@@ -43,6 +43,7 @@ unsigned int comment_stack_top(comment_stack_t *st) {
 unsigned int comment_stack_pop(comment_stack_t *st) {
 
   unsigned int tmp;
+  comment_node_t *del;
 
   assert(st);
 
@@ -51,8 +52,11 @@ unsigned int comment_stack_pop(comment_stack_t *st) {
   }
 
   tmp = st->top->starting_line;
+  del = st->top;
   st->top = st->top->next;
   st->size--;
+  del->next = NULL;
+  free(del);
 
   return tmp;
 }
@@ -69,7 +73,7 @@ void comment_stack_print(comment_stack_t *st) {
   printf("Comment stack \\/:\n");
   curr = st->top;
   while (curr) {
-    printf("%u.\n", curr->starting_line);
+    printf("Starting line: %u.\n", curr->starting_line);
     curr = curr->next;
   }
 }
