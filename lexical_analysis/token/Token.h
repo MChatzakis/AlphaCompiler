@@ -46,8 +46,8 @@ void alpha_token_insert(alpha_token_t *head, unsigned int numline,
                         unsigned int endline, char *content,
                         enum TOKEN_TYPE token_type, char *type);
 
-void alpha_token_print(alpha_token_t *token);
+void alpha_token_print(alpha_token_t *token, FILE *ost);
 
-void alpha_token_print_list(alpha_token_t *head);
+void alpha_token_print_list(alpha_token_t *head, FILE *ost);
 
 void alpha_token_free_list(alpha_token_t *head);

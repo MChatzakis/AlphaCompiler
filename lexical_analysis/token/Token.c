@@ -67,36 +67,36 @@ void alpha_token_insert(alpha_token_t *head, unsigned int numline,
   curr->alpha_yylex = ptr;
 }
 
-void alpha_token_print(alpha_token_t *token) {
+void alpha_token_print(alpha_token_t *token, FILE *ost) {
   assert(token);
 
   if (token->token_type == STRING || token->token_type == IDENT) {
-    printf("%u: #%u  \"%s\" %s \"%s\" <-char*\n", token->numline,
+    fprintf(ost,"%u: #%u  \"%s\" %s \"%s\" <-char*\n", token->numline,
            token->numToken, token->content, token->type, token->content);
   } else if (token->token_type == CONST_INT) {
-    printf("%u: #%u  \"%s\" %s %s <-integer\n", token->numline, token->numToken,
+    fprintf(ost,"%u: #%u  \"%s\" %s %s <-integer\n", token->numline, token->numToken,
            token->content, token->type, token->content);
   } else if (token->token_type == CONST_REAL) {
-    printf("%u: #%u  \"%s\" %s %s <-real\n", token->numline, token->numToken,
+    fprintf(ost, "%u: #%u  \"%s\" %s %s <-real\n", token->numline, token->numToken,
            token->content, token->type, token->content);
   } else if (token->token_type == BLOCK_COMMENT ||
              token->token_type == NESTED_COMMENT) {
-    printf("%u: #%u  \"%u - %u\" %s <-enumerated\n", token->numline,
+    fprintf(ost, "%u: #%u  \"%u - %u\" %s <-enumerated\n", token->numline,
            token->numToken, token->numline, token->endline, token->type);
   } else {
-    printf("%u: #%u  \"%s\" %s <-enumerated\n", token->numline, token->numToken,
+    fprintf(ost, "%u: #%u  \"%s\" %s <-enumerated\n", token->numline, token->numToken,
            token->content, token->type);
   }
 }
 
-void alpha_token_print_list(alpha_token_t *head) {
+void alpha_token_print_list(alpha_token_t *head, FILE *ost) {
   alpha_token_t *curr;
   curr = head;
 
   while (curr != NULL) {
     // printf("Token [%u,%u,%s,%s]\n", curr->numline, curr->numToken,
     // curr->content, curr->type);
-    alpha_token_print(curr);
+    alpha_token_print(curr, ost);
     curr = curr->alpha_yylex;
   }
 }

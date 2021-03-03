@@ -566,8 +566,46 @@ unknown_token .
 %%
 
 /* Code Section */
+
 int main(int argc, char **argv){
-    yylineno = 1;
+    
+    FILE *ost;
+    int opt;
+
+    alpha_token_t *head;
+    head = alpha_token_init();
+    
+    ost = stdout;
+    yyin = stdin;
+
+    while ((opt = getopt(argc, argv, "i:o:")) != -1)
+    {
+        switch (opt)
+        { 
+        case 'i':
+            if(!(yyin = fopen(strdup (optarg), "r"))){
+                fprintf(stderr, "Cannot read file: %s\n", strdup (optarg));
+                return 1;
+            }
+            break;
+        case 'o':
+            if(!(ost = fopen(strdup (optarg), "w+"))){
+                fprintf(stderr, "Cannot open file: %s\n", strdup (optarg));
+                return 1;
+            }
+            break;
+        }
+    }
+    alpha_yylex( (void *) head);
+    fprintf(ost, " ---------------- Lexical Analysis ---------------- \n\n");
+    alpha_token_print_list(head , ost);
+    alpha_token_free_list(head);
+
+    return 0;     
+}
+
+/*int old_main(int argc, char **argv){
+    //yylineno = 1;
     alpha_token_t *head;
     head = alpha_token_init();
 
@@ -589,4 +627,4 @@ int main(int argc, char **argv){
     
     alpha_token_free_list(head);
     return 0;
-}
+}*/

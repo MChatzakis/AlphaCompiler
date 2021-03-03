@@ -1,3 +1,10 @@
 !lala
+"string\str"
+//"no close
 
-x = 10;
+/*
+    /*
+    /*
+    /*
+    */
+*/    */

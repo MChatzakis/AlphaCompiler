@@ -1,0 +1,33 @@
+x = 100;
+y = x % 2;
+
+while(x--){ // x != 0
+    y = x * y ;
+    if(x <= 0){
+        break;
+    }else{
+        continue;
+    }
+}
+
+function getInfo(z = 10.5, t = 20.5){
+    /* 
+        This does some random stuff!
+    */
+
+    sum = (z + t)*233;
+    
+    return sum; 
+}
+
+
+/*This
+does
+/* Nothing!*/
+*/
+function doNothing(mm,nn){
+    u = "This is nothing";
+    u = NIL;
+    u = "This is newline\n";
+    p = [1,2,3];
+}
