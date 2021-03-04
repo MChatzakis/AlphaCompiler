@@ -18,7 +18,7 @@
 
     #define YY_DECL int yylex(void* ylval)
     
-    #define LEX_EOF 0
+    #define LEX_EOF EOF
     #define DEBUG 0
     
     #define DEFAULT_STR_SIZE 128
