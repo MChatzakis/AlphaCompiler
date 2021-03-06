@@ -1,10 +1,16 @@
-#include "Token.h"
-#include <string.h>
+/**
+ * @file Token.c
+ * @author Manos Chatzakis (4238) Nikos Fanourakis (4237)
+ * @brief Implementation of Token.h library
+ * @date 2021-03-06
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 
-/*char token_types_str[][12] = {"UNDEFINED", "KEYWORD",    "OPERATOR",
-                              "CONST_INT", "CONST_REAL", "STRING",
-                              "ID",        "COMMENT",    "PUNCTUATION"};
-*/
+#include <string.h>
+#include "Token.h"
+
 alpha_token_t *alpha_token_init() {
   alpha_token_t *head;
   head = (alpha_token_t *)malloc(sizeof(alpha_token_t));
@@ -46,7 +52,6 @@ void alpha_token_insert(alpha_token_t *head, unsigned int numline,
 
   if (content != NULL) {
     ptr->content = (char *)malloc((strlen(content)+1) * sizeof(char));
-    //printf("Content length: %zu\n",strlen(content));
     strcpy(ptr->content, content);
   }
 
@@ -94,8 +99,6 @@ void alpha_token_print_list(alpha_token_t *head, FILE *ost) {
   curr = head;
 
   while (curr != NULL) {
-    // printf("Token [%u,%u,%s,%s]\n", curr->numline, curr->numToken,
-    // curr->content, curr->type);
     alpha_token_print(curr, ost);
     curr = curr->alpha_yylex;
   }

@@ -1,18 +1,24 @@
 !lala
+#lala
+$lala
+~lala
 "string\str"
-//"no close
 
+//"no close -->this would print error because string is not closed
 /*
-//
     /*
     /*
     /*
+    /*
+    /*
+    /*
+    /*
+    /*
+    /*
+    /*/*/*
+    */*/*/
     */
-*/    */
-*/
-
-/*kati//kati allo*/
-
-//kati edw/*kati allo
-
-pame katwme enter */
+    */
+    */
+    */
+    */

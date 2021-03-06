@@ -1,3 +1,13 @@
+/**
+ * @file comment_stack.c
+ * @author Manos Chatzakis (4238) Nikos Fanourakis (4237)
+ * @brief Implementation of comment_stack.h
+ * @date 2021-03-06
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #include "comment_stack.h"
 #include <assert.h>
 
@@ -6,6 +16,7 @@ comment_stack_t *comment_stack_init() {
   st = malloc(sizeof(comment_stack_t));
   st->size = 0;
   st->top = NULL;
+  return st;
 }
 
 int comment_stack_is_empty(comment_stack_t *st) {

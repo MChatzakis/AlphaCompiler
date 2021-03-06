@@ -1,6 +1,5 @@
 /* Definition Section */
 %{
-
     #ifdef WIN32
     #define YY_NO_UNISTD_H
     static int isatty(int i) {return 0;}
@@ -18,12 +17,15 @@
 
     #define YY_DECL int yylex(void* ylval)
     
-    #define LEX_EOF EOF
+    //New lex is incombatible with posix
+    #define LEX_EOF 0 
+    #define POSIX_EOF EOF
+    
+    //Enable this for debugging prints
     #define DEBUG 0
     
+    //The default string size
     #define DEFAULT_STR_SIZE 128
-
-    
 %}
 
 %option prefix = "alpha_yy"
@@ -33,18 +35,18 @@
 
 /* Flex Macros */
 
-left_curly_brace   "{"
-right_curly_brace  "}"
-left_square_brace  "["
-right_square_brace "]"
-left_parenthesis   "("
-right_parenthesis  ")"
-semicolon          ";"
-comma              ","
-fullstop           "."
-colon              ":"
-ellipsis_mark      ".."
-double_colon       "::"
+left_brace          "{"
+right_brace         "}"
+left_bracket        "["
+right_bracket       "]"
+left_parenthesis    "("
+right_parenthesis   ")"
+semicolon           ";"
+comma               ","
+fullstop            "."
+colon               ":"
+double_fullstop     ".."
+double_colon        "::"
 
 if          "if" 
 else        "else"
@@ -89,41 +91,37 @@ block_comment   "/*"
 
 unknown_token .
 
-/*integer     (0[xX][0-9A-Fa-f]+)|([0-9]+)*/
-/*real [0-9]*\.[0-9](e|E)?[0-9]* */
-/*string,block comment not ready*/
-
 /* Rule Section */
 %%
 
 
-{left_curly_brace}      { 
+{left_brace}      { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Curly Brace: %s\n", yytext);  
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION LEFT_CURLY_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION LEFT_BRACE");
                         }
 
-{right_curly_brace}     {
+{right_brace}     {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Curly Brace: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION RIGHT_CURLY_BRACE");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION RIGHT_BRACE");
                         }
 
-{left_square_brace}     {
+{left_bracket}     {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Square Brace: %s\n", yytext); 
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION LEFT_SQUARE_BRACE");
-                        }
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION LEFT_BRACKET");
+                    }
                         
-{right_square_brace}    {
+{right_bracket}    {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Square Brace: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION RIGHT_SQUARE_BRACE");
-                        }
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION RIGHT_BRACKET");
+                    }
 
 {left_parenthesis}      {
                             if(DEBUG){
@@ -174,11 +172,11 @@ unknown_token .
                             alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION DOUBLE COLON");
                         }
                         
-{ellipsis_mark}         {
+{double_fullstop}         {
                             if(DEBUG){
-                                fprintf(stderr, "Vrika Ellipsis Mark: %s\n", yytext);
+                                fprintf(stderr, "Vrika Double Fullstop: %s\n", yytext);
                             }
-                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION ELLIPSIS MARK");
+                            alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION DOUBLE FULLSTOP");
                         }
 
 {if}                    { 
@@ -429,7 +427,7 @@ unknown_token .
                     str = (char *)malloc(DEFAULT_STR_SIZE*sizeof(char));
                     memset((void*)str, 0, DEFAULT_STR_SIZE);
 
-                    while((c = input()) != LEX_EOF){
+                    while((c = input()) > LEX_EOF){ /*It was != LEX_EOF*/
                         if( c == '\\'){
                             
                             if( (c = input()) == 'n'){
@@ -438,13 +436,17 @@ unknown_token .
                             else if( c == 't'){
                                 *(str+counter) = '\t';
                             }
-                            else if( c == '"'){
+                            else if( c == '\"'){ //edw " i mipos \"
                                 *(str+counter) = '\"';
+                            }
+                            /*That was missing!*/
+                            else if( c == '\\'){
+                                *(str+counter) = '\\';
                             }
                             else{ 
                                 unput(c);
                                 *(str+counter) = '\\'; 
-                                fprintf_yellow(stderr,"[Lexical Analysis] -- WARNING: Used \\ without special sequence. for string starting at line %u.\n", starting_line);
+                                fprintf_yellow(stderr,"[Lexical Analysis] -- WARNING: Used \\ without special sequence (n,t,\\,\") inside the string starting in line: %u\n"    , starting_line);
                             }
                         }
                         else if(c == '\"'){ //<- auto prepei nanai etsi h sketo "..
@@ -478,6 +480,7 @@ unknown_token .
                     else{
                         alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, str, STRING, "STRING"); 
                     }
+
                     free(str);
                 }
                 
@@ -492,8 +495,10 @@ unknown_token .
 {block_comment} {
                     int c;
                     int c_stack = 1;
-                    int starting_line = yylineno;
+                    int starting_line;
                     comment_stack_t* cs;
+
+                    starting_line = yylineno;
 
                     cs = comment_stack_init();
                     comment_stack_push(cs, yylineno);
@@ -502,7 +507,7 @@ unknown_token .
                         fprintf(stderr, "Vrika Block Comment: %s\n", yytext);
                     }
 
-                    while((c = input()) != LEX_EOF){
+                    while((c = input()) > LEX_EOF){
                         if( c == '*'){
                             if( (c = input()) == '/' ){
                                 //c_stack--;
@@ -571,6 +576,7 @@ int main(int argc, char **argv){
     
     FILE *ost;
     int opt;
+    char* file_name;
 
     alpha_token_t *head;
     head = alpha_token_init();
@@ -583,48 +589,34 @@ int main(int argc, char **argv){
         switch (opt)
         { 
         case 'i':
-            if(!(yyin = fopen(strdup (optarg), "r"))){
-                fprintf(stderr, "Cannot read file: %s\n", strdup (optarg));
+            file_name = strdup (optarg);
+            if(!(yyin = fopen(file_name, "r"))){
+                fprintf(stderr, "Cannot read file: %s\n", file_name);
+                free(file_name);
                 return 1;
             }
+            free(file_name);
             break;
         case 'o':
-            if(!(ost = fopen(strdup (optarg), "w+"))){
-                fprintf(stderr, "Cannot open file: %s\n", strdup (optarg));
+            file_name = strdup (optarg);
+            if(!(ost = fopen(file_name, "w+"))){
+                fprintf(stderr, "Cannot open file: %s\n", file_name);
+                free(file_name);
                 return 1;
             }
+            free(file_name);
             break;
         }
     }
     alpha_yylex( (void *) head);
+    
     fprintf(ost, " ---------------- Lexical Analysis ---------------- \n\n");
+    
     alpha_token_print_list(head , ost);
     alpha_token_free_list(head);
-
+    
+    fclose(ost);
+    fclose(yyin);
+    
     return 0;     
 }
-
-/*int old_main(int argc, char **argv){
-    //yylineno = 1;
-    alpha_token_t *head;
-    head = alpha_token_init();
-
-    if(argc > 1){
-        if(!(yyin = fopen(argv[1], "r"))){
-            fprintf(stderr, "Cannot read file: %s\n", argv[1]);
-            return 1;
-        }
-    }
-    else{
-        yyin = stdin;
-    }
-
-    alpha_yylex( (void *) head);
-    
-    printf(" ---------------- Lexical Analysis ---------------- \n\n");
-
-    alpha_token_print_list(head);
-    
-    alpha_token_free_list(head);
-    return 0;
-}*/
