@@ -3,13 +3,13 @@
  * @author Manos Chatzakis (4238) Nikos Fanourakis (4237)
  * @brief Implementation of Token.h library
  * @date 2021-03-06
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
-#include <string.h>
 #include "Token.h"
+#include <string.h>
 
 alpha_token_t *alpha_token_init() {
   alpha_token_t *head;
@@ -51,12 +51,12 @@ void alpha_token_insert(alpha_token_t *head, unsigned int numline,
   ptr->alpha_yylex = NULL;
 
   if (content != NULL) {
-    ptr->content = (char *)malloc((strlen(content)+1) * sizeof(char));
+    ptr->content = (char *)malloc((strlen(content) + 1) * sizeof(char));
     strcpy(ptr->content, content);
   }
 
   if (type != NULL) {
-    ptr->type = (char *)malloc((strlen(type)+1) * sizeof(char));
+    ptr->type = (char *)malloc((strlen(type) + 1) * sizeof(char));
     strcpy(ptr->type, type);
   }
 
@@ -76,21 +76,21 @@ void alpha_token_print(alpha_token_t *token, FILE *ost) {
   assert(token);
 
   if (token->token_type == STRING || token->token_type == IDENT) {
-    fprintf(ost,"%u: #%u  \"%s\" %s \"%s\" <-char*\n", token->numline,
-           token->numToken, token->content, token->type, token->content);
+    fprintf(ost, "%u: #%u  \"%s\" %s \"%s\" <-char*\n", token->numline,
+            token->numToken, token->content, token->type, token->content);
   } else if (token->token_type == CONST_INT) {
-    fprintf(ost,"%u: #%u  \"%s\" %s %s <-integer\n", token->numline, token->numToken,
-           token->content, token->type, token->content);
+    fprintf(ost, "%u: #%u  \"%s\" %s %s <-integer\n", token->numline,
+            token->numToken, token->content, token->type, token->content);
   } else if (token->token_type == CONST_REAL) {
-    fprintf(ost, "%u: #%u  \"%s\" %s %s <-real\n", token->numline, token->numToken,
-           token->content, token->type, token->content);
+    fprintf(ost, "%u: #%u  \"%s\" %s %s <-real\n", token->numline,
+            token->numToken, token->content, token->type, token->content);
   } else if (token->token_type == BLOCK_COMMENT ||
              token->token_type == NESTED_COMMENT) {
     fprintf(ost, "%u: #%u  \"%u - %u\" %s <-enumerated\n", token->numline,
-           token->numToken, token->numline, token->endline, token->type);
+            token->numToken, token->numline, token->endline, token->type);
   } else {
-    fprintf(ost, "%u: #%u  \"%s\" %s <-enumerated\n", token->numline, token->numToken,
-           token->content, token->type);
+    fprintf(ost, "%u: #%u  \"%s\" %s <-enumerated\n", token->numline,
+            token->numToken, token->content, token->type);
   }
 }
 

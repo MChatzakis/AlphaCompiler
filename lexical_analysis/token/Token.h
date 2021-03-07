@@ -27,6 +27,10 @@ enum TOKEN_TYPE {
   PUNCTUATION
 };
 
+/**
+ * @brief Token abstraction
+ * 
+ */
 struct alpha_token_t {
   unsigned int numline;              /* Arithmos Grammis */
   unsigned int endline;              /* Arithmos telous grammis */

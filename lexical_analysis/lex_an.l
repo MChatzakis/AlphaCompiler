@@ -478,7 +478,7 @@ unknown_token .
                         //exit(-1);
                     }
                     else{
-                        alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, str, STRING, "STRING"); 
+                        alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, str, STRING, "STRING"); 
                     }
 
                     free(str);
@@ -608,9 +608,10 @@ int main(int argc, char **argv){
             break;
         }
     }
+
     alpha_yylex( (void *) head);
     
-    fprintf(ost, " ---------------- Lexical Analysis ---------------- \n\n");
+    fprintf(ost, " ---------------- Lexical Analysis ---------------- \n\n");    
     
     alpha_token_print_list(head , ost);
     alpha_token_free_list(head);

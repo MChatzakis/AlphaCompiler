@@ -1,3 +1,6 @@
+"ha\
+"
+
 s = "Simple String" // this is trivial
 
 "This is\t\ttabbed" // this will be printed with "    " between is and tabbed
