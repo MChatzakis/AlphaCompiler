@@ -5,7 +5,7 @@ s = "Simple String" // this is trivial
 
 "This is\t\ttabbed" // this will be printed with "    " between is and tabbed
 
-"This is a \nnewline" // this will be printed with nnewline
+"This is a \nnewline" // this will be printed with newline
 
 "My favorite movie is \"Star Wars\"" //this will be printed as "Star Wars"
 

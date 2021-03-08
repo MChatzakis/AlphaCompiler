@@ -1043,7 +1043,7 @@ YY_DECL
 		}
 
 	{
-#line 95 "lex_an.l"
+#line 96 "lex_an.l"
 
 
 
@@ -1116,7 +1116,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 98 "lex_an.l"
+#line 99 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Curly Brace: %s\n", yytext);  
@@ -1126,7 +1126,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 105 "lex_an.l"
+#line 106 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Curly Brace: %s\n", yytext);
@@ -1136,7 +1136,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 112 "lex_an.l"
+#line 113 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Square Brace: %s\n", yytext); 
@@ -1146,7 +1146,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 119 "lex_an.l"
+#line 120 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Square Brace: %s\n", yytext);
@@ -1156,7 +1156,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 126 "lex_an.l"
+#line 127 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Parenthesis: %s\n", yytext); 
@@ -1166,7 +1166,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 133 "lex_an.l"
+#line 134 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Parenthesis: %s\n", yytext); 
@@ -1176,7 +1176,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 140 "lex_an.l"
+#line 141 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Semicolon: %s\n", yytext);
@@ -1186,7 +1186,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 147 "lex_an.l"
+#line 148 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Comma: %s\n", yytext);
@@ -1196,7 +1196,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 154 "lex_an.l"
+#line 155 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Fullstop: %s\n", yytext);
@@ -1206,7 +1206,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 161 "lex_an.l"
+#line 162 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Colon: %s\n", yytext);
@@ -1216,7 +1216,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 168 "lex_an.l"
+#line 169 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Double Colon: %s\n", yytext);
@@ -1226,7 +1226,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 175 "lex_an.l"
+#line 176 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Double Fullstop: %s\n", yytext);
@@ -1236,7 +1236,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 182 "lex_an.l"
+#line 183 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika IF: %s\n", yytext);
@@ -1246,7 +1246,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 189 "lex_an.l"
+#line 190 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika ELSE: %s\n", yytext);
@@ -1256,7 +1256,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 196 "lex_an.l"
+#line 197 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika WHILE: %s\n", yytext);
@@ -1266,7 +1266,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 203 "lex_an.l"
+#line 204 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FOR: %s\n", yytext);
@@ -1276,7 +1276,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 210 "lex_an.l"
+#line 211 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FUNCTION: %s\n", yytext);
@@ -1286,7 +1286,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 217 "lex_an.l"
+#line 218 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika RETURN: %s\n", yytext);
@@ -1296,7 +1296,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 224 "lex_an.l"
+#line 225 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika BREAK: %s\n", yytext);
@@ -1306,7 +1306,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 231 "lex_an.l"
+#line 232 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika CONTINUE: %s\n", yytext);
@@ -1316,7 +1316,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 238 "lex_an.l"
+#line 239 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika AND: %s\n", yytext);
@@ -1326,7 +1326,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 245 "lex_an.l"
+#line 246 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika NOT: %s\n", yytext);
@@ -1336,7 +1336,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 252 "lex_an.l"
+#line 253 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika OR: %s\n", yytext);
@@ -1346,7 +1346,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 259 "lex_an.l"
+#line 260 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika LOCAL: %s\n", yytext);
@@ -1356,7 +1356,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 266 "lex_an.l"
+#line 267 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika TRUE: %s\n", yytext);
@@ -1366,7 +1366,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 273 "lex_an.l"
+#line 274 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika FALSE: %s\n", yytext);
@@ -1376,7 +1376,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 280 "lex_an.l"
+#line 281 "lex_an.l"
 { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika NIL: %s\n", yytext);
@@ -1386,7 +1386,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 287 "lex_an.l"
+#line 288 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika =: %s\n", yytext);
@@ -1396,7 +1396,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 294 "lex_an.l"
+#line 295 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika +: %s\n", yytext);
@@ -1406,7 +1406,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 301 "lex_an.l"
+#line 302 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika -: %s\n", yytext);
@@ -1416,7 +1416,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 308 "lex_an.l"
+#line 309 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika *: %s\n", yytext);
@@ -1426,7 +1426,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 315 "lex_an.l"
+#line 316 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika /: %s\n", yytext);
@@ -1436,7 +1436,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 322 "lex_an.l"
+#line 323 "lex_an.l"
 {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Modulo : %s\n", yytext);
@@ -1446,7 +1446,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 329 "lex_an.l"
+#line 330 "lex_an.l"
 {
                         if(DEBUG){
                             fprintf(stderr, "Vrika ==: %s\n", yytext);
@@ -1456,7 +1456,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 336 "lex_an.l"
+#line 337 "lex_an.l"
 {
                         if(DEBUG){
                             fprintf(stderr, "Vrika !=: %s\n", yytext);
@@ -1466,7 +1466,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 343 "lex_an.l"
+#line 344 "lex_an.l"
 {
                         if(DEBUG){
                             fprintf(stderr, "Vrika ++: %s\n", yytext);
@@ -1476,7 +1476,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 350 "lex_an.l"
+#line 351 "lex_an.l"
 {
                         if(DEBUG){
                             fprintf(stderr, "Vrika --: %s\n", yytext);
@@ -1486,7 +1486,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 357 "lex_an.l"
+#line 358 "lex_an.l"
 {
                         if(DEBUG){
                             fprintf(stderr, "Vrika >: %s\n", yytext);
@@ -1497,7 +1497,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 365 "lex_an.l"
+#line 366 "lex_an.l"
 {
                         if(DEBUG){
                             fprintf(stderr, "Vrika >=: %s\n", yytext);
@@ -1507,7 +1507,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 372 "lex_an.l"
+#line 373 "lex_an.l"
 {
                         if(DEBUG){
                             fprintf(stderr, "Vrika <: %s\n", yytext);
@@ -1518,7 +1518,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 380 "lex_an.l"
+#line 381 "lex_an.l"
 {
                         if(DEBUG){
                             fprintf(stderr, "Vrika <: %s\n", yytext);
@@ -1528,7 +1528,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 387 "lex_an.l"
+#line 388 "lex_an.l"
 {
                     if(DEBUG){
                         fprintf(stderr, "Vrika Identifier: %s\n", yytext);
@@ -1539,7 +1539,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 395 "lex_an.l"
+#line 396 "lex_an.l"
 {
                     if(DEBUG){
                         fprintf(stderr, "Vrika Akeraio: %s\n", yytext);
@@ -1550,7 +1550,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 403 "lex_an.l"
+#line 404 "lex_an.l"
 {
                     if(DEBUG){
                         fprintf(stderr, "Vrika Pragmatiko: %s\n", yytext);
@@ -1561,7 +1561,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 411 "lex_an.l"
+#line 412 "lex_an.l"
 {
                     if(DEBUG){
                         fprintf(stderr, "Vrika Keno: %s\n", yytext);
@@ -1571,7 +1571,7 @@ YY_RULE_SETUP
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 417 "lex_an.l"
+#line 418 "lex_an.l"
 {
                     if(DEBUG){
                         fprintf(stderr, "Vrika Newline: %s\n", yytext);
@@ -1580,7 +1580,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 423 "lex_an.l"
+#line 424 "lex_an.l"
 {
                     char *str;
                     int c, size_change = 1, counter = 0, valid = 0, starting_line = yylineno;
@@ -1597,7 +1597,7 @@ YY_RULE_SETUP
                             else if( c == 't'){
                                 *(str+counter) = '\t';
                             }
-                            else if( c == '\"'){ //edw " i mipos \"
+                            else if( c == '\"'){
                                 *(str+counter) = '\"';
                             }
                             /*That was missing!*/
@@ -1607,16 +1607,15 @@ YY_RULE_SETUP
                             else{ 
                                 unput(c);
                                 *(str+counter) = '\\'; 
-                                fprintf_yellow(stderr,"[Lexical Analysis] -- WARNING: Used \\ without special sequence (n,t,\\,\") inside the string starting in line: %u\n"    , starting_line);
+                                fprintf_yellow(stderr,"[Lexical Analysis] -- WARNING: Used \\ without special sequence (n,t,\\,\") inside the string starting in line: %u\n", starting_line);
                             }
                         }
-                        else if(c == '\"'){ //<- auto prepei nanai etsi h sketo "..
+                        else if(c == '\"'){
                             *(str+counter) = '\0';
                             valid = 1;
                             break;
                         }
                         else{
-                            
                            *(str+counter) =  c; 
                         }
                         
@@ -1624,7 +1623,6 @@ YY_RULE_SETUP
                         if(counter >= size_change * DEFAULT_STR_SIZE){
                             size_change++;
                             str = (char *)realloc((void*)str, size_change * DEFAULT_STR_SIZE);
-
                         }
 
                     }
@@ -1645,7 +1643,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 486 "lex_an.l"
+#line 484 "lex_an.l"
 {
                     if(DEBUG){
                         fprintf(stderr, "Vrika Line Comment: %s\n", yytext);
@@ -1655,10 +1653,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 493 "lex_an.l"
+#line 491 "lex_an.l"
 {
                     int c;
-                    int c_stack = 1;
                     int starting_line;
                     comment_stack_t* cs;
 
@@ -1674,7 +1671,6 @@ YY_RULE_SETUP
                     while((c = input()) > LEX_EOF){
                         if( c == '*'){
                             if( (c = input()) == '/' ){
-                                //c_stack--;
                                 starting_line = comment_stack_pop(cs);
                                 if(DEBUG){
                                     printf("Vrika comment pou kleinei. To stack einai %d.\n",cs->size);
@@ -1719,17 +1715,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 555 "lex_an.l"
+#line 551 "lex_an.l"
 {
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: Unkown token \"%s\" given at line %d\n",yytext, yylineno);
                     }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 559 "lex_an.l"
+#line 555 "lex_an.l"
 ECHO;
 	YY_BREAK
-#line 1733 "scanner.c"
+#line 1729 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2746,7 +2742,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 559 "lex_an.l"
+#line 555 "lex_an.l"
 
 
 /* Code Section */
@@ -2756,8 +2752,8 @@ int main(int argc, char **argv){
     FILE *ost;
     int opt;
     char* file_name;
-
     alpha_token_t *head;
+
     head = alpha_token_init();
     
     ost = stdout;
@@ -2772,7 +2768,7 @@ int main(int argc, char **argv){
             if(!(yyin = fopen(file_name, "r"))){
                 fprintf(stderr, "Cannot read file: %s\n", file_name);
                 free(file_name);
-                return 1;
+                return -1;
             }
             free(file_name);
             break;
@@ -2781,16 +2777,16 @@ int main(int argc, char **argv){
             if(!(ost = fopen(file_name, "w+"))){
                 fprintf(stderr, "Cannot open file: %s\n", file_name);
                 free(file_name);
-                return 1;
+                return -1;
             }
             free(file_name);
             break;
         case 'h':
-            printf("Usage:\n-i: The input file. By default input file stream is stdin.\n-o: The output file. By default output file stream is stdout.\n-h: Prints the help prompt.\n");
+            printf("Usage:\n[-i]: The input file. By default input file stream is stdin.\n[-o]: The output file. By default output file stream is stdout.\n[-h]: Prints the help prompt.\n");
             return 0;
         default:
             printf("Wrong command line arguments. Run with \"-h\" for help.\n");
-            return 1;    
+            return -1;    
         }
     }    
 

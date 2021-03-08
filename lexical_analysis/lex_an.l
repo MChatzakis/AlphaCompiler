@@ -91,25 +91,26 @@ block_comment   "/*"
 
 unknown_token .
 
+
 /* Rule Section */
 %%
 
 
-{left_brace}           { 
+{left_brace}            { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Curly Brace: %s\n", yytext);  
                             }
                             alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION LEFT_BRACE");
                         }
 
-{right_brace}     {
+{right_brace}           {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Right Curly Brace: %s\n", yytext);
                             }
                             alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, yytext, PUNCTUATION, "PUNCTUATION RIGHT_BRACE");
                         }
 
-{left_bracket}     {
+{left_bracket}      {
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Square Brace: %s\n", yytext); 
                             }
@@ -436,7 +437,7 @@ unknown_token .
                             else if( c == 't'){
                                 *(str+counter) = '\t';
                             }
-                            else if( c == '\"'){ //edw " i mipos \"
+                            else if( c == '\"'){
                                 *(str+counter) = '\"';
                             }
                             /*That was missing!*/
@@ -446,16 +447,15 @@ unknown_token .
                             else{ 
                                 unput(c);
                                 *(str+counter) = '\\'; 
-                                fprintf_yellow(stderr,"[Lexical Analysis] -- WARNING: Used \\ without special sequence (n,t,\\,\") inside the string starting in line: %u\n"    , starting_line);
+                                fprintf_yellow(stderr,"[Lexical Analysis] -- WARNING: Used \\ without special sequence (n,t,\\,\") inside the string starting in line: %u\n", starting_line);
                             }
                         }
-                        else if(c == '\"'){ //<- auto prepei nanai etsi h sketo "..
+                        else if(c == '\"'){
                             *(str+counter) = '\0';
                             valid = 1;
                             break;
                         }
                         else{
-                            
                            *(str+counter) =  c; 
                         }
                         
@@ -463,7 +463,6 @@ unknown_token .
                         if(counter >= size_change * DEFAULT_STR_SIZE){
                             size_change++;
                             str = (char *)realloc((void*)str, size_change * DEFAULT_STR_SIZE);
-
                         }
 
                     }
@@ -481,7 +480,6 @@ unknown_token .
 
                     free(str);
                 }
-                
 
 {line_comment}  {
                     if(DEBUG){
@@ -492,7 +490,6 @@ unknown_token .
                 
 {block_comment} {
                     int c;
-                    int c_stack = 1;
                     int starting_line;
                     comment_stack_t* cs;
 
@@ -508,7 +505,6 @@ unknown_token .
                     while((c = input()) > LEX_EOF){
                         if( c == '*'){
                             if( (c = input()) == '/' ){
-                                //c_stack--;
                                 starting_line = comment_stack_pop(cs);
                                 if(DEBUG){
                                     printf("Vrika comment pou kleinei. To stack einai %d.\n",cs->size);
@@ -565,8 +561,8 @@ int main(int argc, char **argv){
     FILE *ost;
     int opt;
     char* file_name;
-
     alpha_token_t *head;
+
     head = alpha_token_init();
     
     ost = stdout;
@@ -581,7 +577,7 @@ int main(int argc, char **argv){
             if(!(yyin = fopen(file_name, "r"))){
                 fprintf(stderr, "Cannot read file: %s\n", file_name);
                 free(file_name);
-                return 1;
+                return -1;
             }
             free(file_name);
             break;
@@ -590,16 +586,16 @@ int main(int argc, char **argv){
             if(!(ost = fopen(file_name, "w+"))){
                 fprintf(stderr, "Cannot open file: %s\n", file_name);
                 free(file_name);
-                return 1;
+                return -1;
             }
             free(file_name);
             break;
         case 'h':
-            printf("Usage:\n-i: The input file. By default input file stream is stdin.\n-o: The output file. By default output file stream is stdout.\n-h: Prints the help prompt.\n");
+            printf("Usage:\n[-i]: The input file. By default input file stream is stdin.\n[-o]: The output file. By default output file stream is stdout.\n[-h]: Prints the help prompt.\n");
             return 0;
         default:
             printf("Wrong command line arguments. Run with \"-h\" for help.\n");
-            return 1;    
+            return -1;    
         }
     }    
 

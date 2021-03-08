@@ -32,7 +32,7 @@ Standard closes
 */
 
 
-/* Multiline comment in one line */
+/* Multiline comment// in one line */
 
 /* 
 /* */
