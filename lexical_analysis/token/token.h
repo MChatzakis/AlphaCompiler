@@ -13,7 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum TOKEN_TYPE {
+enum TOKEN_TYPE
+{
   UNDEFINED,
   KEYWORD,
   OPERATOR,
@@ -31,7 +32,8 @@ enum TOKEN_TYPE {
  * @brief Token abstraction
  * 
  */
-struct alpha_token_t {
+struct alpha_token_t
+{
   unsigned int numline;              /* Arithmos Grammis */
   unsigned int endline;              /* Arithmos telous grammis */
   unsigned int numToken;             /* Arithmos Token */

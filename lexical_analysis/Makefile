@@ -1,46 +1,37 @@
 #Manos Chatzakis
 #Nikos Fanourakis
 
-CC = gcc #C compiler
-LC = lex #LEX compiler
+CC = gcc
+LC = lex
 
-LEX_FILE = lex_an.l #Lex filename
-C_FILE = Scanner.c #Produced c filename
+LEX_FILE = lex_an.l
+C_FILE = scanner.c
 
-LIB_FILE = token/Token.h #The lib file
-LIB_IMP_FILE = token/Token.c #The lib implementation
+LIB_FILE = token/token.h
+LIB_IMP_FILE = token/token.c
 
 STACK_FILE = comment_stack/comment_stack.h
 STACK_IMP_FILE = comment_stack/comment_stack.c
 
-COLOR_FILE = ../utils/Colors.h
-COLOR_IMP_FILE = ../utils/Colors.c
+COLOR_FILE = ../utils/colors.h
+COLOR_IMP_FILE = ../utils/colors.c
 
-GCC_FLAGS = -o #Link the lex lib to gcc (optional? may remove)
+GCC_FLAGS = -Werror -o
+EXEC_FILE = al
 
-EXEC_FILE = al  #.out filename
+all: lex gcc
 
-#create everything
-all: $(LEX_FILE) $(LIB_FILE) $(LIB_IMP_FILE) $(COLOR_FILE) $(COLOR_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE)
-	$(LC) $(LEX_FILE)
-	$(CC) $(C_FILE) $(LIB_IMP_FILE) $(STACK_IMP_FILE) $(COLOR_IMP_FILE) $(GCC_FLAGS) $(EXEC_FILE)
+run: all
+	./al
 
-#create everything and run
-run: $(LEX_FILE) $(LIB_FILE) $(LIB_IMP_FILE) $(COLOR_FILE) $(COLOR_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE)
-	$(LC) $(LEX_FILE)
-	$(CC) $(C_FILE) $(LIB_IMP_FILE) $(STACK_IMP_FILE) $(COLOR_IMP_FILE) $(GCC_FLAGS) $(EXEC_FILE)
-	./$(EXEC_FILE)
-
-#create .c only
 lex: $(LEX_FILE)
 	$(LC) $(LEX_FILE)
 
-#create .out providing .c file
 gcc: $(C_FILE) $(LIB_FILE) $(LIB_IMP_FILE) $(COLOR_FILE) $(COLOR_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE)
 	$(CC) $(C_FILE) $(LIB_IMP_FILE) $(STACK_IMP_FILE) $(COLOR_IMP_FILE) $(GCC_FLAGS) $(EXEC_FILE)
 
-#clean all
 clean:
+	$(warning Only Producable files will be deleted!)
 	rm -f $(EXEC_FILE)
 	rm -f $(C_FILE)
 

@@ -7,13 +7,16 @@
  * @copyright Copyright (c) 2021
  * 
  */
+
 #include <stdio.h>
 #include <stdlib.h>
+
 /**
  * @brief A node representing a stack element
  * 
  */
-struct comment_node_t {
+struct comment_node_t
+{
   unsigned int starting_line;
   struct comment_node_t *next;
 };
@@ -22,7 +25,8 @@ struct comment_node_t {
  * @brief A node representing the whole stack
  * 
  */
-struct comment_stack_t {
+struct comment_stack_t
+{
   unsigned int size;
   struct comment_node_t *top;
 };

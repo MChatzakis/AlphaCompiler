@@ -11,9 +11,9 @@
     #include <stdlib.h>
     #include <stdio.h>
 
-    #include "token/Token.h"
+    #include "token/token.h"
     #include "comment_stack/comment_stack.h"
-    #include "../utils/Colors.h"
+    #include "../utils/colors.h"
 
     #define YY_DECL int yylex(void* ylval)
     
@@ -29,7 +29,7 @@
 %}
 
 %option prefix = "alpha_yy"
-%option outfile = "Scanner.c"
+%option outfile = "scanner.c"
 %option noyywrap
 %option yylineno 
 
@@ -95,7 +95,7 @@ unknown_token .
 %%
 
 
-{left_brace}      { 
+{left_brace}           { 
                             if(DEBUG){
                                 fprintf(stderr, "Vrika Left Curly Brace: %s\n", yytext);  
                             }
@@ -474,8 +474,6 @@ unknown_token .
 
                     if(!valid){
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: String starting at line %u has not closed.\n", starting_line);
-                        //free(str);
-                        //exit(-1);
                     }
                     else{
                         alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, str, STRING, "STRING"); 
@@ -535,13 +533,7 @@ unknown_token .
                         }
                         else if( c == '/') {
                             if( (c = input()) == '*' ){
-                                //c_stack++;
                                 comment_stack_push(cs, yylineno);
-                                /*if(DEBUG){
-                                    printf("Vrika nested comment. To stack einai %d.\n",cs->size);
-                                }
-                                alpha_token_insert((alpha_token_t *)ylval, yylineno, yylineno, "", NESTED_COMMENT, "COMMENT NESTED_COMMENT");
-                                */
                             }
                             else{
                                 unput(c);
@@ -554,9 +546,6 @@ unknown_token .
                             printf("Den exoun kleisei ta sxolia!\n");
                         }
                         fprintf_red(stderr ,"[Lexical Analysis] -- ERROR: Comment Never Ends at line %u\n", comment_stack_pop(cs));
-                        /*if(comment_stack_is_empty(cs)){
-                            exit(-1);
-                        }*/
                     }
                     
                     comment_stack_free(cs);
@@ -565,7 +554,6 @@ unknown_token .
 
 {unknown_token}     {
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: Unkown token \"%s\" given at line %d\n",yytext, yylineno);
-                        //exit(-1);
                     }
 
 %%
