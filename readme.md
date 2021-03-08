@@ -7,4 +7,4 @@ Compile using "make" or "make all" inside the corresponding folder.
 The produced executable "al" supports input and output filestreams, for example:
 ./al -i "inputfile" -o "outputfile". By default, input filestream is stdin and output filestream is stdout. Use -h for help.	
 
-Notes: Supported escaped characters: \ + {n,t,\,"}
+Notes: Supported escaped characters: \ + {n,t,\\,"}
