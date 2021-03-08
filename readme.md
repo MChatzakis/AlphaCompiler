@@ -1,4 +1,4 @@
-### Alpha Compiler
+# Alpha Compiler
 Manos Chatzakis (csd4238@csd.uoc.gr) and Nikos Fanourakis (csd4237@csd.uoc.gr)
 
 
