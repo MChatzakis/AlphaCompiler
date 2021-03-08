@@ -572,7 +572,7 @@ int main(int argc, char **argv){
     ost = stdout;
     yyin = stdin;
 
-    while ((opt = getopt(argc, argv, "i:o:")) != -1)
+    while ((opt = getopt(argc, argv, "i:o:h")) != -1)
     {
         switch (opt)
         { 
@@ -594,8 +594,14 @@ int main(int argc, char **argv){
             }
             free(file_name);
             break;
+        case 'h':
+            printf("Usage:\n-i: The input file. By default input file stream is stdin.\n-o: The output file. By default output file stream is stdout.\n-h: Prints the help prompt.\n");
+            return 0;
+        default:
+            printf("Wrong command line arguments. Run with \"-h\" for help.\n");
+            return 1;    
         }
-    }
+    }    
 
     alpha_yylex( (void *) head);
     
