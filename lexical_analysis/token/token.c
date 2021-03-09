@@ -116,7 +116,17 @@ void alpha_token_print(alpha_token_t *token, FILE *ost)
 void alpha_token_print_list(alpha_token_t *head, FILE *ost)
 {
   alpha_token_t *curr;
+
+  assert(head);
+
+  if (head->token_type == UNDEFINED)
+  {
+    return;
+  }
+
   curr = head;
+
+  fprintf(ost, " ---------------- Lexical Analysis ---------------- \n\n");
 
   while (curr != NULL)
   {
@@ -148,4 +158,4 @@ void alpha_token_free_list(alpha_token_t *head)
     free(prev);
     prev = NULL;
   }
-}
+} 

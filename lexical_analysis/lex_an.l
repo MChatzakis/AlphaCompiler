@@ -600,10 +600,8 @@ int main(int argc, char **argv){
     }    
 
     alpha_yylex( (void *) head);
-    
-    fprintf(ost, " ---------------- Lexical Analysis ---------------- \n\n");    
-    
-    alpha_token_print_list(head , ost);
+        
+    alpha_token_print_list(head, ost);
     alpha_token_free_list(head);
     
     fclose(ost);
