@@ -18,7 +18,7 @@
     #define YY_DECL int yylex(void* ylval)
     
     //New lex is incombatible with posix
-    #define LEX_EOF 0 
+    #define LEX_EOF 0
     #define POSIX_EOF EOF
     
     //Enable this for debugging prints
