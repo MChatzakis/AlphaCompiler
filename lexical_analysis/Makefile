@@ -16,7 +16,7 @@ STACK_IMP_FILE = comment_stack/comment_stack.c
 COLOR_FILE = ../utils/colors.h
 COLOR_IMP_FILE = ../utils/colors.c
 
-GCC_FLAGS = -Werror -o
+GCC_FLAGS = -g -Werror -o
 EXEC_FILE = al
 
 all: lex gcc
