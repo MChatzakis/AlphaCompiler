@@ -13,7 +13,7 @@
 
     #include "token/token.h"
     #include "comment_stack/comment_stack.h"
-    #include "../utils/colors.h"
+    #include "utils/colors.h"
 
     #define YY_DECL int yylex(void* ylval)
     

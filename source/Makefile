@@ -13,8 +13,8 @@ LIB_IMP_FILE = token/token.c
 STACK_FILE = comment_stack/comment_stack.h
 STACK_IMP_FILE = comment_stack/comment_stack.c
 
-COLOR_FILE = ../utils/colors.h
-COLOR_IMP_FILE = ../utils/colors.c
+COLOR_FILE = utils/colors.h
+COLOR_IMP_FILE = utils/colors.c
 
 GCC_FLAGS = -g -Werror -o
 EXEC_FILE = al
