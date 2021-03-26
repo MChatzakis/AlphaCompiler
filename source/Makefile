@@ -1,37 +1,36 @@
 #Manos Chatzakis
 #Nikos Fanourakis
-
-CC = gcc
-LC = lex
-
 LEX_FILE = lex_an.l
-C_FILE = scanner.c
+LEX_C_FILE = scanner.c
 
-LIB_FILE = token/token.h
-LIB_IMP_FILE = token/token.c
+YACC_FILE = syn_an.y
+YACC_C_FILE = parser.c
+YACC_H_FILE = parser.h
 
-STACK_FILE = comment_stack/comment_stack.h
-STACK_IMP_FILE = comment_stack/comment_stack.c
+LIB_FILE = lex_libs/token/token.h
+LIB_IMP_FILE = lex_libs/token/token.c
+
+STACK_FILE = lex_libs/comment_stack/comment_stack.h
+STACK_IMP_FILE = lex_libs/comment_stack/comment_stack.c
 
 COLOR_FILE = utils/colors.h
 COLOR_IMP_FILE = utils/colors.c
 
-GCC_FLAGS = -g -Werror -o
-EXEC_FILE = al
+EXEC = calc
 
-all: lex gcc
+all: yacc lex gcc
 
-run: all
-	./al
+yacc: $(YACC_FILE)
+	bison --yacc --defines --output=$(YACC_C_FILE) $(YACC_FILE)
 
 lex: $(LEX_FILE)
-	$(LC) $(LEX_FILE)
+	lex $(LEX_FILE)
 
-gcc: $(C_FILE) $(LIB_FILE) $(LIB_IMP_FILE) $(COLOR_FILE) $(COLOR_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE)
-	$(CC) $(C_FILE) $(LIB_IMP_FILE) $(STACK_IMP_FILE) $(COLOR_IMP_FILE) $(GCC_FLAGS) $(EXEC_FILE)
+gcc: $(LEX_C_FILE) $(LIB_FILE) $(LIB_IMP_FILE) $(COLOR_FILE) $(COLOR_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE)
+	gcc $(LEX_C_FILE) $(LIB_IMP_FILE) $(STACK_IMP_FILE) $(COLOR_IMP_FILE) -Werror -Wall -o $(EXEC)
 
 clean:
-	$(warning Only Producable files will be deleted!)
-	rm -f $(EXEC_FILE)
-	rm -f $(C_FILE)
-
+	rm -f $(EXEC)
+	rm -f $(LEX_C_FILE)
+	rm -f $(YACC_C_FILE)
+	rm -f $(YACC_H_FILE)

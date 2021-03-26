@@ -11,8 +11,8 @@
     #include <stdlib.h>
     #include <stdio.h>
 
-    #include "token/token.h"
-    #include "comment_stack/comment_stack.h"
+    #include "lex_libs/token/token.h"
+    #include "lex_libs/comment_stack/comment_stack.h"
     #include "utils/colors.h"
 
     #define YY_DECL int yylex(void* ylval)
