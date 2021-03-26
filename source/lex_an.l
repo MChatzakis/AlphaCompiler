@@ -31,7 +31,7 @@
 %option prefix = "alpha_yy"
 %option outfile = "scanner.c"
 %option noyywrap
-%option yylineno 
+%option yylineno
 
 /* Flex Macros */
 
