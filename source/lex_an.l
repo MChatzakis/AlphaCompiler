@@ -28,6 +28,8 @@
     
     //The default string size
     #define DEFAULT_STR_SIZE 128
+
+    
 %}
 
 %option outfile = "scanner.c"
@@ -521,6 +523,7 @@ unknown_token .
                     }
 
                     free(str);
+                    return STRING;
                 }
 
 {line_comment}  {

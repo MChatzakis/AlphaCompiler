@@ -22,6 +22,7 @@
     extern char* yytext;
     extern FILE* yyin;
 
+    
 %}
 
 /*Declarations*/
@@ -31,6 +32,14 @@
     int int_value;
     char* string_value;
     double real_value;
+
+    struct expr_type_t{
+        enum type_t{INT_T,REAL_T,STRING_T}type;
+        int int_val;
+        double real_val;
+        char *string_val;
+    }expr_type;
+
 }
 
 %token <int_value> INTEGER
@@ -47,19 +56,133 @@
 %left AND
 %nonassoc EQUAL NOT_EQUAL
 %nonassoc LESS LESS_EQUAL GREATER GREATER_EQUAL
-%left ADD MINUS
+%left PLUS MINUS
 %left MUL DIV MODULO
 %right NOT PLUS_PLUS MINUS_MINUS UMINUS
 %left FULLSTOP DOUBLE_FULLSTOP
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
+%type <expr_type> expr
+
+
 /*Grammar*/
 %%
 
-program:    stmt;
+program:    exprs
+            |;
 
-stmt:   ;
+
+expr:       INTEGER                     {
+                                            printf("Vrika INTEGER %d\n", $1);
+                                            $$.type = INT_T;
+                                            $$.int_val = $1;
+                                        }
+            | REAL                      {
+                                            printf("Vrika REAL %f\n", $1);
+                                            $$.type = REAL_T;
+                                            $$.real_val = $1;
+                                        }
+            | STRING                    {
+                                            printf("Vrika STRING %s\n", $1);
+                                            $$.type = STRING_T;
+                                            $$.string_val = strdup($1); //prosoxi
+                                        
+                                        }
+            | ID                        {
+                                            printf("Vrika ID %s\n", $1);
+                                            //$$ = fetch($1)
+                                        }
+            | ID ASSIGN expr            {
+                                            switch($3.type){
+                                            case INT_T:
+                                                printf("ASSIGN to ID: %s the value %d\n", $1, $3.int_val);
+                                                break;
+                                            case REAL_T:
+                                                printf("ASSIGN to ID: %s the value %f\n", $1, $3.real_val);
+                                                break;
+                                            case STRING_T: 
+                                                printf("ASSIGN to ID: %s the value %s\n", $1, $3.string_val);
+                                                break;  
+                                            }
+                                            //printf("ASSIGN expression to ID %s\n", $1);
+                                            //assign($1, $3);
+                                        }
+            | expr OR expr              {
+                                            printf("OR expression\n");
+                                            //$$ = $1 || $3;
+                                        }
+            | expr AND expr             {
+                                            printf("AND expression\n");
+                                            //$$ = $1 && $3;
+                                        }
+            | expr NOT_EQUAL expr       {
+                                            printf("NOT EQUAL expression\n");
+                                            //$$ = $1 != $3;
+                                        }
+            | expr EQUAL expr           {
+                                            printf("EQUAL expression\n");
+                                            //$$ = $1 == $3;
+                                        }
+            | expr LESS_EQUAL expr      {
+                                            printf("LESS EQUAL expression\n");
+                                            //$$ = $1 <= $3;
+                                        }
+            | expr LESS expr            {
+                                            printf("LESS expression\n");
+                                            //$$ = $1 < $3;
+                                        }
+            | expr GREATER_EQUAL expr   {
+                                            printf("GREATER EQUAL\n");
+                                            //$$ = $1 >= $3;
+                                        }
+            | expr GREATER expr         {
+                                            printf("GREATER expression\n");
+                                            //$$ = $1 > $3;
+                                        }
+            | expr PLUS expr            {
+                                            //$$.a = $1.a + $3.a;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.real_val + $3.real_val;
+                                                printf("PLUS expression = %f\n", $$.real_val);
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.type = INT_T;
+                                                $$.int_val = $1.int_val + $3.int_val;
+                                                printf("PLUS expression = %d\n", $$.int_val);
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.real_val + $3.int_val;
+                                                printf("PLUS expression = %f\n", $$.real_val);
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.int_val + $3.real_val;
+                                                printf("PLUS expression = %f\n", $$.real_val);
+                                            }else{
+                                                yyerror("Addition with string is not valid!\n");
+                                            }
+
+                                        }
+            | expr MINUS expr           {
+                                            printf("MINUS expression\n");
+                                            //$$ = $1 - $3;
+                                        }
+            | expr MUL expr             {
+                                            printf("MULTIPLICATION expression\n");
+                                            //$$ = $1 * $3;
+                                        }
+            | expr DIV expr             {
+                                            printf("DIVISION expression\n");
+                                            //$$ = $1 / $3;
+                                        }
+            | expr MODULO expr          {
+                                            printf("MODULO expression\n");
+                                            //$$ = $1 % $3;
+                                        }
+            ;
+
+exprs : exprs expr | expr;
+
 
 %%
 

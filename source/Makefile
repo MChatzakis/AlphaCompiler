@@ -21,7 +21,7 @@ EXEC = calc
 all: yacc lex gcc
 
 yacc: $(YACC_FILE)
-	bison --yacc --defines --output=$(YACC_C_FILE) $(YACC_FILE)
+	bison --yacc -v --defines --output=$(YACC_C_FILE) $(YACC_FILE)
 
 lex: $(LEX_FILE)
 	lex $(LEX_FILE)
