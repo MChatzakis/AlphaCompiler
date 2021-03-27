@@ -14,6 +14,7 @@
     #include <string.h>
 
     #include "utils/colors.h"
+    #include "yacc_libs/macros.h"
 
     int yyerror(char *message);
     int yylex(void);
@@ -22,7 +23,6 @@
     extern char* yytext;
     extern FILE* yyin;
 
-    
 %}
 
 /*Declarations*/
@@ -93,97 +93,256 @@ expr:       INTEGER                     {
                                             printf("Vrika ID %s\n", $1);
                                             //$$ = fetch($1)
                                         }
-            | ID ASSIGN expr            {
-                                            switch($3.type){
-                                            case INT_T:
-                                                printf("ASSIGN to ID: %s the value %d\n", $1, $3.int_val);
-                                                break;
-                                            case REAL_T:
-                                                printf("ASSIGN to ID: %s the value %f\n", $1, $3.real_val);
-                                                break;
-                                            case STRING_T: 
-                                                printf("ASSIGN to ID: %s the value %s\n", $1, $3.string_val);
-                                                break;  
-                                            }
-                                            //printf("ASSIGN expression to ID %s\n", $1);
-                                            //assign($1, $3);
-                                        }
+            | lvalue ASSIGN expr        {;}
+
             | expr OR expr              {
-                                            printf("OR expression\n");
-                                            //$$ = $1 || $3;
+                                            $$.type = INT_T;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.int_val = $1.real_val || $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.int_val = $1.int_val || $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.int_val = $1.real_val || $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.int_val = $1.int_val || $3.real_val;
+                                            }else{
+                                                yyerror("OR with string is not valid!\n");
+                                            }
+                                            printf("OR expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
+                                            
                                         }
             | expr AND expr             {
-                                            printf("AND expression\n");
-                                            //$$ = $1 && $3;
+                                            $$.type = INT_T;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.int_val = $1.real_val && $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.int_val = $1.int_val && $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.int_val = $1.real_val && $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.int_val = $1.int_val && $3.real_val;
+                                            }else{
+                                                yyerror("AND with string is not valid!\n");
+                                            }
+                                            
+                                            printf("AND expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr NOT_EQUAL expr       {
-                                            printf("NOT EQUAL expression\n");
-                                            //$$ = $1 != $3;
+                                            $$.type = INT_T;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.int_val = $1.real_val != $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.int_val = $1.int_val != $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.int_val = $1.real_val != $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.int_val = $1.int_val != $3.real_val;
+                                            }else{
+                                                yyerror("NOT EQUAL with string is not valid!\n");
+                                            }
+                                            printf("NOT EQUAL expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr EQUAL expr           {
-                                            printf("EQUAL expression\n");
-                                            //$$ = $1 == $3;
+                                            $$.type = INT_T;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.int_val = $1.real_val == $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.int_val = $1.int_val == $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.int_val = $1.real_val == $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.int_val = $1.int_val == $3.real_val;
+                                            }else{
+                                                yyerror("EQUAL with string is not valid!\n");
+                                            }
+                                            printf("EQUAL expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr LESS_EQUAL expr      {
-                                            printf("LESS EQUAL expression\n");
-                                            //$$ = $1 <= $3;
+                                            $$.type = INT_T;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.int_val = $1.real_val <= $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.int_val = $1.int_val <= $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.int_val = $1.real_val <= $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.int_val = $1.int_val <= $3.real_val;
+                                            }else{
+                                                yyerror("LESS EQUAL with string is not valid!\n");
+                                            }
+                                            printf("LESS EQUAL expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr LESS expr            {
-                                            printf("LESS expression\n");
-                                            //$$ = $1 < $3;
+                                            $$.type = INT_T;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.int_val = $1.real_val < $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.int_val = $1.int_val < $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.int_val = $1.real_val < $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.int_val = $1.int_val < $3.real_val;
+                                            }else{
+                                                yyerror("LESS with string is not valid!\n");
+                                            }
+                                            printf("LESS expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr GREATER_EQUAL expr   {
-                                            printf("GREATER EQUAL\n");
-                                            //$$ = $1 >= $3;
+                                            $$.type = INT_T;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.int_val = $1.real_val >= $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.int_val = $1.int_val >= $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.int_val = $1.real_val >= $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.int_val = $1.int_val >= $3.real_val;
+                                            }else{
+                                                yyerror("GREATER_EQUAL with string is not valid!\n");
+                                            }
+                                            printf("GREATER_EQUAL expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr GREATER expr         {
-                                            printf("GREATER expression\n");
-                                            //$$ = $1 > $3;
+                                            $$.type = INT_T;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.int_val = $1.real_val > $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.int_val = $1.int_val > $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.int_val = $1.real_val > $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.int_val = $1.int_val > $3.real_val;
+                                            }else{
+                                                yyerror("GREATER with string is not valid!\n");
+                                            }
+                                            printf("GREATER expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr PLUS expr            {
-                                            //$$.a = $1.a + $3.a;
                                             if($1.type == REAL_T && $3.type == REAL_T){
                                                 $$.type = REAL_T;
                                                 $$.real_val = $1.real_val + $3.real_val;
-                                                printf("PLUS expression = %f\n", $$.real_val);
                                             }else if($1.type == INT_T && $3.type == INT_T){
                                                 $$.type = INT_T;
                                                 $$.int_val = $1.int_val + $3.int_val;
-                                                printf("PLUS expression = %d\n", $$.int_val);
                                             }else if($1.type == REAL_T && $3.type == INT_T){
                                                 $$.type = REAL_T;
                                                 $$.real_val = $1.real_val + $3.int_val;
-                                                printf("PLUS expression = %f\n", $$.real_val);
                                             }else if($1.type == INT_T && $3.type == REAL_T){
                                                 $$.type = REAL_T;
                                                 $$.real_val = $1.int_val + $3.real_val;
-                                                printf("PLUS expression = %f\n", $$.real_val);
                                             }else{
                                                 yyerror("Addition with string is not valid!\n");
                                             }
 
+                                            printf("PLUS expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
+
                                         }
             | expr MINUS expr           {
-                                            printf("MINUS expression\n");
-                                            //$$ = $1 - $3;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.real_val - $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.type = INT_T;
+                                                $$.int_val = $1.int_val - $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.real_val - $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.int_val - $3.real_val;
+                                            }else{
+                                                yyerror("Abstraction with string is not valid!\n");
+                                            }
+
+                                            printf("MINUS expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
+
                                         }
             | expr MUL expr             {
-                                            printf("MULTIPLICATION expression\n");
-                                            //$$ = $1 * $3;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.real_val * $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.type = INT_T;
+                                                $$.int_val = $1.int_val * $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.real_val + $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.int_val * $3.real_val;
+                                            }else{
+                                                yyerror("Addition with string is not valid!\n");
+                                            }
+
+                                            printf("MUL expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr DIV expr             {
-                                            printf("DIVISION expression\n");
-                                            //$$ = $1 / $3;
+                                            if($1.type == REAL_T && $3.type == REAL_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.real_val / $3.real_val;
+                                            }else if($1.type == INT_T && $3.type == INT_T){
+                                                $$.type = INT_T;
+                                                $$.int_val = $1.int_val / $3.int_val;
+                                            }else if($1.type == REAL_T && $3.type == INT_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.real_val / $3.int_val;
+                                            }else if($1.type == INT_T && $3.type == REAL_T){
+                                                $$.type = REAL_T;
+                                                $$.real_val = $1.int_val / $3.real_val;
+                                            }else{
+                                                yyerror("Addition with string is not valid!\n");
+                                            }
+
+                                            printf("DIV expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
             | expr MODULO expr          {
-                                            printf("MODULO expression\n");
-                                            //$$ = $1 % $3;
+                                            if($1.type == INT_T && $3.type == INT_T){
+                                                $$.type = INT_T;
+                                                $$.int_val = $1.int_val % $3.int_val;
+                                            }
+                                            printf("MODULO expression with result: ");
+                                            print_expression($$);
+                                            printf("\n");
                                         }
+            | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS   {printf("vrika paren\n");}
+            | MINUS expr %prec UMINUS                {printf("vrika uminus\n");}
+            | NOT expr                  {printf("vrika not\n");}
             ;
 
 exprs : exprs expr | expr;
 
-
+lvalue: ID  {
+                //assign($1, $3);
+                lvalue.string_val = ID.string_val;
+                printf("ASSIGN expression to ID %s the value: ", $1);
+                print_expression($3);
+                printf("\n");
+            }
+        ;
 %%
 
 int yyerror(char *message){
