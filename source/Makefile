@@ -7,8 +7,8 @@ YACC_FILE = syn_an.y
 YACC_C_FILE = parser.c
 YACC_H_FILE = parser.h
 
-LIB_FILE = lex_libs/token/token.h
-LIB_IMP_FILE = lex_libs/token/token.c
+TOKEN_FILE = lex_libs/token/token.h
+TOKEN_IMP_FILE = lex_libs/token/token.c
 
 STACK_FILE = lex_libs/comment_stack/comment_stack.h
 STACK_IMP_FILE = lex_libs/comment_stack/comment_stack.c
@@ -26,8 +26,8 @@ yacc: $(YACC_FILE)
 lex: $(LEX_FILE)
 	lex $(LEX_FILE)
 
-gcc: $(LEX_C_FILE) $(LIB_FILE) $(LIB_IMP_FILE) $(COLOR_FILE) $(COLOR_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE)
-	gcc $(LEX_C_FILE) $(LIB_IMP_FILE) $(STACK_IMP_FILE) $(COLOR_IMP_FILE) -Werror -Wall -o $(EXEC)
+gcc: $(LEX_C_FILE) $(YACC_C_FILE) $(YACC_H_FILE) $(COLOR_FILE) $(COLOR_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE)
+	gcc $(LEX_C_FILE) $(YACC_C_FILE) $(STACK_IMP_FILE) $(COLOR_IMP_FILE) -Werror -Wall -o $(EXEC)
 
 clean:
 	rm -f $(EXEC)
