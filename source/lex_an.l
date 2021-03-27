@@ -83,7 +83,7 @@ id          [a-zA-Z][a-zA-Z_0-9]*
 integer     [0-9]+
 real        [0-9]+\.[0-9]+
 space       [\r \t\v] 
-newline     \n
+newline     \n 
 string      \"
 
 line_comment    "//".* 
