@@ -70,6 +70,7 @@
 %%
 
 program:    stmts
+            |
             ;
 
 stmt:       expr SEMICOLON              {printf("Expression Found\n");}
@@ -112,6 +113,7 @@ expr:       lvalue ASSIGN expr          {printf("ASSIGNMENT Found\n");}
             | primary
             ;
 
+
 primary:    lvalue
             | call
             | objectdef
@@ -119,7 +121,7 @@ primary:    lvalue
             | const
             ;
 
- lvalue:    ID
+lvalue:    ID
             | LOCAL ID
             | DOUBLE_COLON ID
             | member
@@ -144,13 +146,14 @@ callsuffix: normcall
             ;
 
 
-normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS  {printf("Gamw to spiti sou\n");}
             ;
 
 methodcall: DOUBLE_COLON ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
             ;
 
-elist:      expr COMMA expr
+elist:       expr COMMA elist         {printf("Elist found\n");}
+            | expr
             ;
 
 objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET
@@ -158,18 +161,20 @@ objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET
             | LEFT_BRACKET RIGHT_BRACKET
             ;
 
-indexed:    ;
+indexed:    PLUS PLUS PLUS PLUS indexedelem;
 
 indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE
             ;
 
 block:      LEFT_BRACE RIGHT_BRACE
+            | LEFT_BRACE stmts RIGHT_BRACE
             ;
 
 funcdef:    FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
             ;
 
-const:      INTEGER
+const:      INTEGER         {printf("Found INTEGER\n");}
+            | REAL
             | STRING
             | NIL
             | TRUE
@@ -188,8 +193,8 @@ whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
 forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist SEMICOLON RIGHT_PARENTHESIS stmt
             ;
 
-returnstmt: RETURN
-            | RETURN expr
+returnstmt: RETURN SEMICOLON
+            | RETURN expr SEMICOLON
             ;
 
 %%
