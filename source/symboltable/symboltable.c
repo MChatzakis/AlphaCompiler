@@ -44,8 +44,8 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
     index = hash_function(id);
 
     curr = s->hashtable[index];
+    
     prev = NULL;
-
     while (curr)
     {
         prev = curr;
@@ -116,13 +116,13 @@ void SymbolTable_print(SymbolTable *s)
             {
                 printf("\tName: %s\n", (curr->value).varVal->name);
                 printf("\tLine: %u\n", (curr->value).varVal->line);
-                printf("\tScore: %u\n", (curr->value).varVal->scope);
+                printf("\tScope: %u\n", (curr->value).varVal->scope);
             }
             else
             {
                 printf("\tName: %s\n", (curr->value).funcVal->name);
                 printf("\tLine: %u\n", (curr->value).funcVal->line);
-                printf("\tScore: %u\n", (curr->value).funcVal->scope);
+                printf("\tScope: %u\n", (curr->value).funcVal->scope);
             }
             printf("\tType: %s\n", arr[curr->type]);
             printf("\tActive: %d\n", curr->isActive);
@@ -133,4 +133,15 @@ void SymbolTable_print(SymbolTable *s)
             curr = curr->next;
         }
     }
+}
+
+void SymbolTable_add_libfun(SymbolTable *s){
+
+    char *arr[12] = {"print", "input", "objectmemberkeys", "objecttotalmembers", "objectcopy", "totalarguments", "argument", "typeof", "strtonum", "sqrt", "cos", "sin"};
+    int i;
+
+    for(i=0; i<12; i++)
+        SymbolTable_insert(s, arr[i], 0, 0, LIBFUNC_ID);
+    
+    return;
 }

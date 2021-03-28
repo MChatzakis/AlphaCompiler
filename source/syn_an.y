@@ -15,6 +15,9 @@
 
     #include "utils/colors.h"
     #include "yacc_libs/macros.h"
+    #include "yacc_libs/structs.h"
+
+    #include "symboltable/symboltable.h"
 
     int yyerror(char *message);
     int yylex(void);
@@ -22,6 +25,9 @@
     extern int yylineno;
     extern char* yytext;
     extern FILE* yyin;
+
+    unsigned int scope = 0;
+    SymbolTable *symTab;
 
 %}
 
@@ -33,13 +39,7 @@
     char* string_value;
     double real_value;
 
-    struct expr_type_t{
-        enum type_t{INT_T,REAL_T,STRING_T}type;
-        int int_val;
-        double real_val;
-        char *string_val;
-    }expr_type;
-
+    gen_value g_val;
 }
 
 %token <int_value> INTEGER
@@ -63,8 +63,10 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-//%type <expr_type> expr
-
+%type <g_val> expr
+%type <g_val> primary
+%type <g_val> const
+%type <string_value> lvalue
 
 /*Grammar*/
 %%
@@ -73,132 +75,321 @@ program:    stmts
             |
             ;
 
-stmt:       expr SEMICOLON              {printf("Expression Found\n");}
-            | ifstmt                    {printf("IF Found\n");}
-            | whilestmt                 {printf("WHILE Found\n");}
-            | forstmt                   {printf("FOR Found\n");}
-            | returnstmt                {printf("RETURN Found\n");}
-            | BREAK SEMICOLON           {printf("BREAK Found\n");}
-            | CONTINUE SEMICOLON        {printf("CONTINUE Found\n");}
-            | block                     {printf("BLOCK Found\n");}
-            | funcdef                   {printf("FUNCDEF Found\n");}
-            | SEMICOLON                 {printf("COLON Found\n");}
+stmt:       expr SEMICOLON              {
+                                            //printf("STMT: Expression Found\n");
+                                        }
+            | ifstmt                    {
+                                            //printf("STMT: IF Found\n");
+                                        }
+            | whilestmt                 {
+                                            //printf("STMT: WHILE Found\n");
+                                        }
+            | forstmt                   {
+                                            //printf("STMT: FOR Found\n");
+                                        }
+            | returnstmt                {
+                                            //printf("STMT: RETURN Found\n");
+                                        }
+            | BREAK SEMICOLON           {
+                                            //printf("STMT: BREAK Found\n");
+                                        }
+            | CONTINUE SEMICOLON        {
+                                            //printf("STMT: CONTINUE Found\n");
+                                        }
+            | block                     {
+                                            //printf("STMT: BLOCK Found\n");
+                                        }
+            | funcdef                   {
+                                            //printf("STMT: FUNCDEF Found\n");
+                                        }
+            | SEMICOLON                 {
+                                            //printf("STMT: COLON Found\n");
+                                        }
             ;
 
 stmts:      stmts stmt
             | stmt
             ;
             
-expr:       lvalue ASSIGN expr          {printf("ASSIGNMENT Found\n");}
-            | expr OR expr              {printf("OR Expression\n");}
-            | expr AND expr             {printf("AND Expression\n");}
-            | expr NOT_EQUAL expr       {printf("NOT_EQUAL Expression\n");}
-            | expr EQUAL expr           {printf("EQUAL Expression\n");}
-            | expr LESS_EQUAL expr      {printf("LESS_EQUAL Expression\n");}
-            | expr LESS expr            {printf("LESS Expression\n");}
-            | expr GREATER_EQUAL expr   {printf("GREATER_EQUAL Expression\n");}
-            | expr GREATER expr         {printf("GREATER Expression\n");}
-            | expr PLUS expr            {printf("PLUS Expression\n");}
-            | expr MINUS expr           {printf("MINUS Expression\n");}
-            | expr MUL expr             {printf("MUL Expression\n");}
-            | expr DIV expr             {printf("DIV Expression\n");}
-            | expr MODULO expr          {printf("MODULO Expression\n");}
-            | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {printf("PARENTHESIS Expression\n");}
-            | MINUS expr %prec UMINUS   {printf("UMINUS Expression\n");}
-            | NOT expr                  {printf("NOT Expression\n");}
-            | PLUS_PLUS lvalue          {printf("PLUSPLUS Expression\n");}
-            | lvalue PLUS_PLUS          {printf("Expression PLUSPLUS\n");}
-            | MINUS_MINUS lvalue        {printf("MINUSMINUS Expression\n");}
-            | lvalue MINUS_MINUS        {printf("Expression MINUSMINUS\n");}
-            | primary
+expr:       lvalue ASSIGN expr          {
+                                            //printf("EXPR: ASSIGNMENT Found\n");
+                                            //printf("Assigning to %s the value: ", $1);
+                                            //print_gen($3);
+                                        }
+            | expr OR expr              {
+                                            //printf("EXPR: OR Expression\n");
+                                        }
+            | expr AND expr             {
+                                            //printf("EXPR: AND Expression\n");
+                                        }
+            | expr NOT_EQUAL expr       {
+                                            //printf("EXPR: NOT_EQUAL Expression\n");
+                                        }
+            | expr EQUAL expr           {
+                                            //printf("EXPR: EQUAL Expression\n");
+                                        }
+            | expr LESS_EQUAL expr      {
+                                            //printf("EXPR: LESS_EQUAL Expression\n");
+                                        }
+            | expr LESS expr            {
+                                            //printf("EXPR: LESS Expression\n");
+                                        }
+            | expr GREATER_EQUAL expr   {
+                                            //printf("EXPR: GREATER_EQUAL Expression\n");
+                                        }
+            | expr GREATER expr         {
+                                            //printf("EXPR: GREATER Expression\n");
+                                        }
+            | expr PLUS expr            {
+                                            //printf("EXPR: PLUS Expression\n");
+                                            //$$.type = INT_VAL;
+                                            //$$.int_val = $1.int_val + $3.int_val;
+                                        }
+            | expr MINUS expr           {
+                                            //printf("EXPR: MINUS Expression\n");
+                                        }
+            | expr MUL expr             {
+                                            //printf("EXPR: MUL Expression\n");
+                                        }
+            | expr DIV expr             {
+                                            //printf("EXPR: DIV Expression\n");
+                                        }
+            | expr MODULO expr          {
+                                            //printf("EXPR: MODULO Expression\n");
+                                        }
+            | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+                                            //printf("EXPR: PARENTHESIS Expression\n");
+                                        }
+            | MINUS expr %prec UMINUS   {
+                                            //printf("EXPR: UMINUS Expression\n");
+                                        }
+            | NOT expr                  {
+                                            //printf("EXPR: NOT Expression\n");
+                                        }
+            | PLUS_PLUS lvalue          {
+                                            //printf("EXPR: PLUS_PLUS Expression\n");
+                                        }
+            | lvalue PLUS_PLUS          {
+                                            //printf("EXPR: Expression PLUS_PLUS\n");
+                                        }
+            | MINUS_MINUS lvalue        {
+                                            //printf("EXPR: MINUS_MINUS Expression\n");
+                                        }
+            | lvalue MINUS_MINUS        {
+                                            //printf("EXPR: Expression MINUS_MINUS\n");
+                                        }
+            | primary                   {
+                                            //printf("EXPR: Primary:");
+                                            //print_gen($$);
+                                        }
             ;
 
 
-primary:    lvalue
-            | call
-            | objectdef
-            | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-            | const
+primary:    lvalue                      {
+                                            //printf("PRIMARY: Found lvalue\n");
+                                        }
+            | call                      {
+                                            //printf("PRIMARY: Found call\n");
+                                        }
+            | objectdef                 {
+                                            //printf("PRIMARY: Found objectdef\n");
+                                        }
+            | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {
+                                                            //printf("PRIMARY: Found (func def)\n");
+                                                        }
+            | const                     {
+                                            //printf("PRIMARY: Found const\n");
+                                            //print_gen($$);
+                                        }
             ;
 
-lvalue:    ID
-            | LOCAL ID
-            | DOUBLE_COLON ID
-            | member
+lvalue:     ID                          {
+                                            printf("LVALUE: Found ID %s in scope %u\n", $1, scope);
+                                            if(scope == 0){
+                                                SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
+                                            }
+                                            else{
+                                                SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);                                            
+                                            }
+
+                                        }
+            | LOCAL ID                  {
+                                            if(scope == 0){
+                                                SymbolTable_insert(symTab, $2, scope, yylineno, GLOBAL_ID);
+                                            }
+                                            else{
+                                                SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                            }
+                                            
+                                            //printf("LVALUE: Found LOCAL ID\n");
+                                        }
+            | DOUBLE_COLON ID           {
+                                            
+
+                                        }
+            | member                    {
+                                            
+                                        }
             ;
 
 
-member:     lvalue FULLSTOP ID
-            | lvalue LEFT_BRACKET expr RIGHT_BRACKET
-            | call FULLSTOP ID
-            | call LEFT_BRACKET expr RIGHT_BRACKET
+member:     lvalue FULLSTOP ID                          {
+                                                            //printf("MEMBER: Found lvalue . ID\n");
+                                                        }
+            | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {
+                                                            //printf("MEMBER: Found lvalue[expr]\n");
+                                                        }
+            | call FULLSTOP ID                          {
+                                                            //printf("MEMBER: Found call . ID\n");
+                                                        }
+            | call LEFT_BRACKET expr RIGHT_BRACKET      {
+                                                            //printf("MEMBER: Found call[expr]\n");
+                                                        }
             ;
 
 
-call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-            | lvalue callsuffix
-            | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                                           {
+                                                                                                        //printf("CALL: Found call(elist)\n");
+                                                                                                    }
+            | lvalue callsuffix                                                                     {
+                                                                                                        //printf("CALL: Found lvalue callsuffix\n");
+                                                                                                    }
+            | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
+                                                                                                        //printf("CALL: Found (funcdef)(elist)\n");
+                                                                                                    }
             ;
 
 
-callsuffix: normcall
-            | methodcall
+callsuffix: normcall        {
+                                //printf("CALLSUFFIX: Found normcall\n");
+                            }
+            | methodcall    {
+                                //printf("CALLSUFFIX: Found methodcall\n");
+                            }
             ;
 
 
-normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS  {printf("Gamw to spiti sou\n");}
+normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS    {
+                                                            //printf("NORMCALL: (elist)\n");
+                                                        }
             ;
 
-methodcall: DOUBLE_COLON ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS     {
+                                                                                //printf("METHODCALL: ..ID(elist)\n");
+                                                                            }
             ;
 
-elist:      expr                        {printf("Elist single found\n");}
-            | elist COMMA expr          {printf("Elist commas found\n");}
-            |                           {printf("Empty eList\n");}
+elist:      expr                        {
+                                            //printf("SINGLE ELIST: Found FORMAL argument %s in scope %u\n", $1, scope);
+                                        }
+            | elist COMMA expr          {
+                                            //printf("MULTI ELIST: Found FORMAL argument %s in scope %u\n", $3, scope);
+                                        }
+            |                           {
+                                            //printf("ELIST: Empty eList\n");
+                                        }
             ;
 
-objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET
-            | LEFT_BRACKET elist RIGHT_BRACKET
+objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
+                                                    //printf("OBJECTDEF: Defined Object with indexed elems\n");
+                                                }
+            | LEFT_BRACKET elist RIGHT_BRACKET  {
+                                                    //printf("OBJECTDEF: Defined Object with elist elems\n");
+                                                }
             ;
 
-indexed:    indexedelem
-            | indexed COMMA indexedelem
+indexed:    indexedelem                         {
+                                                    //printf("INDEXED: Single indexed elem\n");
+                                                }
+            | indexed COMMA indexedelem         {
+                                                    //printf("INDEXED: Multi indexed elem\n");
+                                                }
             ;
 
-indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE
+indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE      {
+                                                            //printf("INDEXEDELEM: expr : expr found\n");
+                                                        }
             ;
 
-block:      LEFT_BRACE RIGHT_BRACE
-            | LEFT_BRACE stmts RIGHT_BRACE
+block:      LEFT_BRACE {scope++;} RIGHT_BRACE                   {
+                                                                    scope--;
+                                                                    //printf("BLOCK: {}\n");
+                                                                }
+            | LEFT_BRACE {scope++;} stmts RIGHT_BRACE           {
+                                                                    scope--;
+                                                                    //printf("BLOCK: { ... }\n");
+                                                                }
             ;
 
-funcdef:    FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
+funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
+                                                                                                    //printf("FUNCDEF: Function def WITHOUT ID found\n");
+                                                                                                }
+            |FUNCTION ID { SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID); printf("Function name %s in scope %u\n", $2, scope);} LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
+                                                                                                    //printf("FUNCDEF: Function def WITH ID found\n");
+                                                                                                }
             ;
 
-const:      INTEGER         {printf("Found INTEGER\n");}
-            | REAL          
-            | STRING
-            | NIL
-            | TRUE
-            | FALSE
+const:      INTEGER         {
+                                //printf("CONST: Found INTEGER: ");
+                                //$$.type = INT_VAL;
+                                //$$.int_val = $1;
+                                //print_gen($$);
+                            }
+            | REAL          {
+                                //printf("CONST: Found REAL\n");
+                            }
+            | STRING        {
+                                //printf("CONST: Found STRING\n");
+                            }
+            | NIL           {
+                                //printf("CONST: Found NIL\n");
+                            }
+            | TRUE          {
+                                //printf("CONST: Found TRUE\n");
+                            }
+            | FALSE         {
+                                //printf("CONST: Found FALSE\n");
+                            }
             ;
 
-idlist:     ID
-            | idlist COMMA ID
+idlist:     ID                  {
+                                    printf("SINGLE IDLIST: Found FORMAL argument %s in scope %u\n", $1, scope);
+                                    SymbolTable_insert(symTab, $1, scope, yylineno, FORMAL_ID);
+                                }
+            | idlist COMMA ID   {
+                                    //printf("IDLIST: Found ID %s in scope %u\n", $3, scope);
+                                    //printf("MULTI IDLIST: Found FORMAL argument %s in scope %u\n", $3, scope);
+                                    SymbolTable_insert(symTab, $3, scope, yylineno, FORMAL_ID);
+                                }
+            |                   {
+                                    //printf("IDLIST: Empty\n");
+                                }
             ;
 
-ifstmt:     IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt 
-            | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt
+ifstmt:     IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt                 {
+                                                                                //printf("IFSTMT: IF statement\n");
+                                                                            }
+            | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt     {
+                                                                                //printf("IFSTMT: IF ELSE statement\n");
+                                                                            }
             ;
 
-whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt              {
+                                                                                //printf("WHILE: ..\n");
+                                                                            }
             ;
 
-forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist SEMICOLON RIGHT_PARENTHESIS stmt
+forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt    {
+                                                                                                    //printf("FOR: ..\n");
+                                                                                                }
             ;
 
-returnstmt: RETURN SEMICOLON
-            | RETURN expr SEMICOLON
+returnstmt: RETURN SEMICOLON            {
+                                            //printf("RETURN: WITHOUT expr\n");
+                                        }
+            | RETURN expr SEMICOLON     {
+                                            //printf("RETURN: WITH expr\n");
+                                        }
             ;
 
 %%
@@ -216,6 +407,7 @@ int main(int argc, char **argv){
 
     ost = stdout;
     yyin = stdin;
+    
 
     while ((opt = getopt(argc, argv, "i:o:h")) != -1)
     {
@@ -248,7 +440,12 @@ int main(int argc, char **argv){
         }
     }    
 
+    symTab = SymbolTable_init();
+    SymbolTable_add_libfun(symTab);
+
     yyparse();
+
+    SymbolTable_print(symTab);
 
     fclose(ost);
     fclose(yyin);

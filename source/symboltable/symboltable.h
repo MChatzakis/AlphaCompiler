@@ -8,11 +8,11 @@
 
 enum SymbolType
 {
-    GLOBAL,
-    LOCAL,
-    FORMAL,
-    USERFUNC,
-    LIBFUNC
+    GLOBAL_ID,
+    LOCAL_ID,
+    FORMAL_ID,
+    USERFUNC_ID,
+    LIBFUNC_ID
 };
 
 typedef struct Variable
@@ -54,3 +54,4 @@ unsigned int hash_function(const char *pcKey);
 SymbolTable *SymbolTable_init();
 SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned int scope, unsigned int line, enum SymbolType type);
 void SymbolTable_print(SymbolTable *s);
+void SymbolTable_add_libfun(SymbolTable *s);
