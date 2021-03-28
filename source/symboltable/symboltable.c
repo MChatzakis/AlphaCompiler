@@ -44,7 +44,7 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
     index = hash_function(id);
 
     curr = s->hashtable[index];
-    
+
     prev = NULL;
     while (curr)
     {
@@ -135,13 +135,57 @@ void SymbolTable_print(SymbolTable *s)
     }
 }
 
-void SymbolTable_add_libfun(SymbolTable *s){
+SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned int scope)
+{
+    unsigned int index;
+    SymbolTableEntry *curr;
+
+    assert(s && id);
+
+    index = hash_function(id);
+    curr = s->hashtable[index];
+
+    while (curr)
+    {
+        if (curr->type < 3)
+        {
+            if (curr->isActive && !strcmp((curr->value).varVal->name, id) && (curr->value).varVal->scope == scope)
+            {
+                return curr;
+            }
+        }
+        else
+        {
+            if (curr->isActive && !strcmp(id, (curr->value).funcVal->name) && (curr->value).funcVal->scope == scope)
+            {
+                return curr;
+            }
+        }
+
+        curr = curr->next;
+    }
+
+    return curr;
+}
+
+void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope)
+{
+    SymbolTableEntry *curr;
+    curr = SymbolTable_lookup(s, id, scope);
+
+    assert(curr);
+
+    curr->isActive = 0;
+}
+
+void SymbolTable_add_libfun(SymbolTable *s)
+{
 
     char *arr[12] = {"print", "input", "objectmemberkeys", "objecttotalmembers", "objectcopy", "totalarguments", "argument", "typeof", "strtonum", "sqrt", "cos", "sin"};
     int i;
 
-    for(i=0; i<12; i++)
+    for (i = 0; i < 12; i++)
         SymbolTable_insert(s, arr[i], 0, 0, LIBFUNC_ID);
-    
+
     return;
 }

@@ -206,19 +206,27 @@ primary:    lvalue                      {
 lvalue:     ID                          {
                                             printf("LVALUE: Found ID %s in scope %u\n", $1, scope);
                                             if(scope == 0){
-                                                SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
+                                                if(!SymbolTable_lookup(symTab, $1, scope)){
+                                                    SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
+                                                }
                                             }
                                             else{
-                                                SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);                                            
+                                                if(!SymbolTable_lookup(symTab, $1, scope)){
+                                                    SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                                }                                            
                                             }
 
                                         }
             | LOCAL ID                  {
                                             if(scope == 0){
-                                                SymbolTable_insert(symTab, $2, scope, yylineno, GLOBAL_ID);
+                                                if(!SymbolTable_lookup(symTab, $2, scope)){
+                                                    SymbolTable_insert(symTab, $2, scope, yylineno, GLOBAL_ID);
+                                                }
                                             }
                                             else{
-                                                SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                                if(!SymbolTable_lookup(symTab, $1, scope)){
+                                                    SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                                }
                                             }
                                             
                                             //printf("LVALUE: Found LOCAL ID\n");
@@ -320,6 +328,7 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE                   {
                                                                     //printf("BLOCK: { ... }\n");
                                                                 }
             ;
+
 
 funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
                                                                                                     //printf("FUNCDEF: Function def WITHOUT ID found\n");
