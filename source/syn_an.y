@@ -152,16 +152,18 @@ normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS  {printf("Gamw to spiti sou
 methodcall: DOUBLE_COLON ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
             ;
 
-elist:       expr COMMA elist         {printf("Elist found\n");}
-            | expr
+elist:      expr                        {printf("Elist single found\n");}
+            | elist COMMA expr          {printf("Elist commas found\n");}
+            |                           {printf("Empty eList\n");}
             ;
 
 objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET
             | LEFT_BRACKET elist RIGHT_BRACKET
-            | LEFT_BRACKET RIGHT_BRACKET
             ;
 
-indexed:    PLUS PLUS PLUS PLUS indexedelem;
+indexed:    indexedelem
+            | indexed COMMA indexedelem
+            ;
 
 indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE
             ;
@@ -174,14 +176,16 @@ funcdef:    FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
             ;
 
 const:      INTEGER         {printf("Found INTEGER\n");}
-            | REAL
+            | REAL          
             | STRING
             | NIL
             | TRUE
             | FALSE
             ;
 
-idlist:     ;
+idlist:     ID
+            | idlist COMMA ID
+            ;
 
 ifstmt:     IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt 
             | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt
