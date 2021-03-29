@@ -226,10 +226,16 @@ lvalue:     ID                          {
                                             
                                             if(!(entry = SymbolTable_lookup(symTab, $1, scope))){
                                                 if(scope > 0){
-                                                    SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                                    if(checkForLibFunc($1))
+                                                        printf("Error this id is forbidden!\n");
+                                                    else
+                                                        SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
                                                 }
                                                 else{
-                                                    SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
+                                                    if(checkForLibFunc($1))
+                                                        printf("Error this id is forbidden!\n");
+                                                    else
+                                                        SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
                                                 }
                                             }
 
@@ -238,15 +244,60 @@ lvalue:     ID                          {
 
             | LOCAL ID                  {
                                             printf("LOCAL ID: %s\n", $2);
+                                            /*
+                                            if(!(entry = SymbolTable_lookup(symTab, $2, scope))){
+                                                if(scope > 0){
+                                                    if(checkForLibFunc($2))
+                                                        printf("Error this id is forbidden!\n");
+                                                    else
+                                                        SymbolTable_insert(symTab, $2, scope, yylineno, LOCAL_ID);
+                                                }
+                                                else{
+                                                    if(checkForLibFunc($2))
+                                                        printf("Error this id is forbidden!\n");
+                                                    else
+                                                        SymbolTable_insert(symTab, $2, scope, yylineno, GLOBAL_ID);
+                                                }
+                                            }
+                                            */
                                         }
             | DOUBLE_COLON ID           {
-                                            /*printf("GLOBAL ID: %s\n", $2);
-                                            if(!lookup($2, 0)){
-                                                error
-                                            }*/
+                                            printf("GLOBAL ID: %s\n", $2);
+                                            /*
+                                            if(!(entry = SymbolTable_lookup(symTab, $2, scope))){
+                                                if(scope > 0){
+                                                    if(checkForLibFunc($2))
+                                                        printf("Error this id is forbidden!\n");
+                                                    else
+                                                        SymbolTable_insert(symTab, $2, scope, yylineno, LOCAL_ID);
+                                                }
+                                                else{
+                                                    if(checkForLibFunc($2))
+                                                        printf("Error this id is forbidden!\n");
+                                                     else
+                                                        SymbolTable_insert(symTab, $2, scope, yylineno, GLOBAL_ID);
+                                                }
+                                            }
+                                            */
                                         }
             | member                    {
-                                            
+                                            /*
+                                            ?????
+                                            if(!(entry = SymbolTable_lookup(symTab, $1, scope))){
+                                                if(scope > 0){
+                                                    if(checkForLibFunc($1))
+                                                        printf("Error this id is forbidden!\n");
+                                                    else
+                                                        SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                                }
+                                                else{
+                                                    if(checkForLibFunc($1))
+                                                        printf("Error this id is forbidden!\n");
+                                                    else
+                                                        SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
+                                                }
+                                            }
+                                            */
                                         }
             ;
 
@@ -350,7 +401,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope
                                                                                                     //printf("FUNCDEF: Function def WITH ID found\n");
                                                                                                     SymbolTableEntry *entry = NULL;
                                                                                                     entry = SymbolTable_lookup(symTab, $2, scope);
-                                                                                                    if(entry != NULL){
+                                                                                                    if(entry != NULL || checkForLibFunc($2)){
                                                                                                         printf("error found function declaration\n");
 
                                                                                                     }
@@ -385,12 +436,20 @@ const:      INTEGER         {
 
 idlist:     ID                  {
                                     printf("SINGLE IDLIST: Found FORMAL argument %s in scope %u\n", $1, scope);
-                                    SymbolTable_insert(symTab, $1, scope, yylineno, FORMAL_ID);
+
+                                    if(checkForLibFunc($1))
+                                        printf("Error this id is forbidden!\n");
+                                    else
+                                        SymbolTable_insert(symTab, $1, scope, yylineno, FORMAL_ID);
                                 }
             | idlist COMMA ID   {
                                     //printf("IDLIST: Found ID %s in scope %u\n", $3, scope);
                                     //printf("MULTI IDLIST: Found FORMAL argument %s in scope %u\n", $3, scope);
-                                    SymbolTable_insert(symTab, $3, scope, yylineno, FORMAL_ID);
+
+                                    if(checkForLibFunc($3))
+                                        printf("Error this id is forbidden!\n");
+                                    else
+                                        SymbolTable_insert(symTab, $3, scope, yylineno, FORMAL_ID);
                                 }
             |                   {
                                     //printf("IDLIST: Empty\n");
