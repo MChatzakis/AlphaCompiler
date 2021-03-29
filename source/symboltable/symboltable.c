@@ -168,6 +168,26 @@ SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned in
     return curr;
 }
 
+SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, unsigned int scope)
+{
+    unsigned int i;
+    SymbolTableEntry *curr;
+
+    curr = NULL;
+    printf("SS: %u\n", scope);
+    for (i = 0; i<= scope; i++)
+    {
+        curr = SymbolTable_lookup(s, id, scope - i);
+        if (curr != NULL)
+        {
+            break;
+        }
+        //printf("!\n");
+    }
+
+    return curr;
+}
+
 void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope)
 {
     SymbolTableEntry *curr;

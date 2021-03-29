@@ -29,6 +29,8 @@
     unsigned int scope = 0;
     SymbolTable *symTab;
 
+    short idRequired = 0;
+
 %}
 
 /*Declarations*/
@@ -40,6 +42,7 @@
     double real_value;
 
     gen_value g_val;
+    SymbolTableEntry symTabEntry;
 }
 
 %token <int_value> INTEGER
@@ -47,7 +50,7 @@
 %token <string_value> ID
 %token <string_value> STRING
 
-%token <string_value> LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTHESIS RIGHT_PARENTHESIS SEMICOLON COMMA FULLSTOP COLON DOUBLE_FULLSTOP DOUBLE_COLON
+%token LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTHESIS RIGHT_PARENTHESIS SEMICOLON COMMA FULLSTOP COLON DOUBLE_FULLSTOP DOUBLE_COLON
 %token <string_value> IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
 %token <string_value> ASSIGN PLUS MINUS MUL DIV MODULO EQUAL NOT_EQUAL PLUS_PLUS MINUS_MINUS GREATER GREATER_EQUAL LESS LESS_EQUAL
 
@@ -112,9 +115,14 @@ stmts:      stmts stmt
             ;
             
 expr:       lvalue ASSIGN expr          {
-                                            //printf("EXPR: ASSIGNMENT Found\n");
-                                            //printf("Assigning to %s the value: ", $1);
-                                            //print_gen($3);
+                                            //lookup - insert lvalue
+                                            printf("Assign -- LookUp -> Insert\n");
+                                            SymbolTableEntry *entry;
+                                            entry = SymbolTable_lookup_general(symTab, $1, scope);
+                                            if(entry->type >= 3 ){ //|| (entry->value).funcval->scope < scope ||  (entry->value).funcval->scope > 0
+                                                printf("error found function\n");
+                                            }
+
                                         }
             | expr OR expr              {
                                             //printf("EXPR: OR Expression\n");
@@ -179,24 +187,32 @@ expr:       lvalue ASSIGN expr          {
                                             //printf("EXPR: Expression MINUS_MINUS\n");
                                         }
             | primary                   {
-                                            //printf("EXPR: Primary:");
+                                            //printf("EXPR: Primary\n");
                                             //print_gen($$);
                                         }
             ;
 
-
 primary:    lvalue                      {
-                                            //printf("PRIMARY: Found lvalue\n");
+                                            //seeking variable
+                                            printf("PRIMARY RULE: Variable Call -- Required\n");
+                                            SymbolTableEntry *entry;
+                                            entry = SymbolTable_lookup_general(symTab, $1, scope);
+                                            if(entry->type >= 3 ){
+                                                printf("error found function\n");
+                                            }
                                         }
             | call                      {
-                                            //printf("PRIMARY: Found call\n");
+                                            //calling function
+                                            printf("PRIMARY RULE: Function Call -- Required\n");
+
                                         }
             | objectdef                 {
-                                            //printf("PRIMARY: Found objectdef\n");
+                                            printf("PRIMARY: Found objectdef\n");
+
                                         }
-            | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {
-                                                            //printf("PRIMARY: Found (func def)\n");
-                                                        }
+            | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS    {
+                                                                //printf("PRIMARY: Found (func def)\n");
+                                                            }
             | const                     {
                                             //printf("PRIMARY: Found const\n");
                                             //print_gen($$);
@@ -204,36 +220,30 @@ primary:    lvalue                      {
             ;
 
 lvalue:     ID                          {
-                                            printf("LVALUE: Found ID %s in scope %u\n", $1, scope);
-                                            if(scope == 0){
-                                                if(!SymbolTable_lookup(symTab, $1, scope)){
+                                            SymbolTableEntry *entry;
+                                            printf("ID: %s\n", $1);
+                                            
+                                            
+                                            if(!(entry = SymbolTable_lookup(symTab, $1, scope))){
+                                                if(scope > 0){
+                                                    SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                                }
+                                                else{
                                                     SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
                                                 }
                                             }
-                                            else{
-                                                if(!SymbolTable_lookup(symTab, $1, scope)){
-                                                    SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
-                                                }                                            
-                                            }
 
+                                            $$ = strdup($1);
                                         }
+
             | LOCAL ID                  {
-                                            if(scope == 0){
-                                                if(!SymbolTable_lookup(symTab, $2, scope)){
-                                                    SymbolTable_insert(symTab, $2, scope, yylineno, GLOBAL_ID);
-                                                }
-                                            }
-                                            else{
-                                                if(!SymbolTable_lookup(symTab, $1, scope)){
-                                                    SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
-                                                }
-                                            }
-                                            
-                                            //printf("LVALUE: Found LOCAL ID\n");
+                                            printf("LOCAL ID: %s\n", $2);
                                         }
             | DOUBLE_COLON ID           {
-                                            
-
+                                            /*printf("GLOBAL ID: %s\n", $2);
+                                            if(!lookup($2, 0)){
+                                                error
+                                            }*/
                                         }
             | member                    {
                                             
@@ -257,19 +267,19 @@ member:     lvalue FULLSTOP ID                          {
 
 
 call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                                           {
-                                                                                                        //printf("CALL: Found call(elist)\n");
+                                                                                                        printf("CALL: Found call(elist)\n");
                                                                                                     }
             | lvalue callsuffix                                                                     {
-                                                                                                        //printf("CALL: Found lvalue callsuffix\n");
+                                                                                                        printf("CALL: Found lvalue callsuffix\n");
                                                                                                     }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
-                                                                                                        //printf("CALL: Found (funcdef)(elist)\n");
+                                                                                                        printf("CALL: Found (funcdef)(elist)\n");
                                                                                                     }
             ;
 
 
 callsuffix: normcall        {
-                                //printf("CALLSUFFIX: Found normcall\n");
+                                printf("CALLSUFFIX: Found normcall\n");
                             }
             | methodcall    {
                                 //printf("CALLSUFFIX: Found methodcall\n");
@@ -278,7 +288,7 @@ callsuffix: normcall        {
 
 
 normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS    {
-                                                            //printf("NORMCALL: (elist)\n");
+                                                            printf("NORMCALL: (elist)\n");
                                                         }
             ;
 
@@ -288,13 +298,13 @@ methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS     {
             ;
 
 elist:      expr                        {
-                                            //printf("SINGLE ELIST: Found FORMAL argument %s in scope %u\n", $1, scope);
+                                            printf("SINGLE ELIST: Found FORMAL argument in scope\n");
                                         }
             | elist COMMA expr          {
-                                            //printf("MULTI ELIST: Found FORMAL argument %s in scope %u\n", $3, scope);
+                                            printf("MULTI ELIST: Found FORMAL argument\n");
                                         }
             |                           {
-                                            //printf("ELIST: Empty eList\n");
+                                            printf("ELIST: Empty eList\n");
                                         }
             ;
 
@@ -330,11 +340,23 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE                   {
             ;
 
 
+
 funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
+                                                                                                   
                                                                                                     //printf("FUNCDEF: Function def WITHOUT ID found\n");
                                                                                                 }
-            |FUNCTION ID { SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID); printf("Function name %s in scope %u\n", $2, scope);} LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
+            |FUNCTION ID {printf("Function name %s in scope %u\n", $2, scope);} LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
+                                                                                                    //edw to id prepei na min iparxei!
                                                                                                     //printf("FUNCDEF: Function def WITH ID found\n");
+                                                                                                    SymbolTableEntry *entry = NULL;
+                                                                                                    entry = SymbolTable_lookup(symTab, $2, scope);
+                                                                                                    if(entry != NULL){
+                                                                                                        printf("error found function declaration\n");
+
+                                                                                                    }
+                                                                                                    else{
+                                                                                                        SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID);
+                                                                                                    }
                                                                                                 }
             ;
 

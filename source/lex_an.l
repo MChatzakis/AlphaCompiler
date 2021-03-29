@@ -12,6 +12,7 @@
     #include <stdio.h>
 
     #include "yacc_libs/structs.h"
+    #include "symboltable/symboltable.h"
     #include "parser.h"
 
     //#include "lex_libs/token/token.h"

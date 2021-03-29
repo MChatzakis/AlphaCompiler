@@ -57,3 +57,4 @@ SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned in
 void SymbolTable_print(SymbolTable *s);
 void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope);
 void SymbolTable_add_libfun(SymbolTable *s);
+SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, unsigned int scope);
