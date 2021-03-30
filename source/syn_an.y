@@ -8,9 +8,10 @@
     static int isatty(void *i) {return 0;}
     #endif
 
-    #define TRACE_PRINT 1
 
-    #include <stdio.h>
+    #include "yacc_libs/yacc_api.h"
+
+    /*#include <stdio.h>
     #include <stdlib.h>
     #include <unistd.h>
     #include <string.h>
@@ -20,6 +21,7 @@
     #include "yacc_libs/structs.h"
 
     #include "symboltable/symboltable.h"
+
 
     int yyerror(char *message);
     int yylex(void);
@@ -31,7 +33,7 @@
     unsigned int scope = 0;
 
     SymbolTable *symTab;
-    ScopeTable *scopeTab;
+    ScopeTable *scopeTab;*/
 %}
 
 /*Declarations*/
@@ -42,7 +44,7 @@
     char* string_value;
     double real_value;
 
-    SymbolTableEntry symTabEntry;
+    SymbolTableEntry *symTabEntry;
 }
 
 %token <int_value> INTEGER
@@ -66,7 +68,7 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-%type <string_value> lvalue
+%type <symTabEntry> lvalue
 
 /*Grammar*/
 %%
@@ -132,28 +134,13 @@ stmts:      stmts stmt
             ;
             
 expr:       lvalue ASSIGN expr          {
-                                            SymbolTableEntry *entry;
                                             
                                             if(TRACE_PRINT){
                                                 printf("-> Assignment Expression\n");
                                             }
 
-                                            entry = SymbolTable_lookup_general(symTab, $1, scope);
-                                            if(entry != NULL){ 
-                                                if(entry->type == 3){
-                                                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to User defined function \"%s\" at line %u\n", 
-                                                            $1, yylineno);
-                                                }
-                                                else if(entry->type == 4){
-                                                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to Library function \"%s\" at line %u\n", 
-                                                            $1, yylineno);
-                                                }
-                                            }else{
-                                                //kanonika auto to error twra to petaei sto ID
-                                                //?fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol \"%s\" at line %u\n", 
-                                                //            $1, yylineno);
-                                            }
-
+                                            ManageAssignValue($1);
+                                        
                                         }
             | expr OR expr              {
                                             if(TRACE_PRINT){
@@ -241,21 +228,29 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 printf("-> ++val Expression\n");
                                             }
+
+                                            ManageAssignValue($2);
                                         }
             | lvalue PLUS_PLUS          {
                                             if(TRACE_PRINT){
                                                 printf("-> val++ Expression\n");
                                             }
+
+                                            ManageAssignValue($1);
                                         }
             | MINUS_MINUS lvalue        {
                                             if(TRACE_PRINT){
                                                 printf("-> --val Expression\n");
                                             }
+
+                                            ManageAssignValue($2);
                                         }
             | lvalue MINUS_MINUS        {
                                             if(TRACE_PRINT){
                                                 printf("-> val-- Expression\n");
                                             }
+
+                                            ManageAssignValue($1);
                                         }
             | primary                   {
                                             if(TRACE_PRINT){
@@ -264,30 +259,20 @@ expr:       lvalue ASSIGN expr          {
                                         }
             ;
 
-primary:    lvalue                      {
-                                            SymbolTableEntry *entry;
-                                            
+primary:    lvalue                      {                                            
                                             if(TRACE_PRINT){
                                                 printf("-> lvalue \n");
                                             }
-                                            
-                                            entry = SymbolTable_lookup_general(symTab, $1, scope);
-                                            if(entry != NULL ){
-                                                if(entry->type == 3){
-                                                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used User defined function \"%s\" as variable at line %u\n", 
-                                                            $1, yylineno);
-                                                }
-                                                else if(entry->type == 4){
-                                                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used Library function \"%s\" as variable at line %u\n", 
-                                                            $1, yylineno);
-                                                }
-                                                
-                                            }
+                                            //printf("AAA: %d\n", $1->type);
+                                            ManagePrimaryLValue($1);    
+
                                         }
             | call                      {
                                             if(TRACE_PRINT){
                                                 printf("-> Function Call\n");
                                             }
+
+                                            //edw einai to anapodo x();
 
                                         }
             | objectdef                 {
@@ -308,74 +293,27 @@ primary:    lvalue                      {
             ;
 
 lvalue:     ID                          {
-                                            SymbolTableEntry *entry, *insertEntry;
-
-
                                             if(TRACE_PRINT){
                                                 printf("-> Identifier %s\n", $1);
                                             }
                                             
-                                            
-                                            if(!(entry = SymbolTable_lookup(symTab, $1, scope))){
-                                                if(scope > 0){
-                                                    //if(checkForLibFunc($1))
-                                                      //  printf("Error this id is forbidden!\n");
-                                                    //else
-                                                        insertEntry = SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
-                                                        ScopeTable_insert(scopeTab, insertEntry, scope);
-                                                }
-                                                else{
-                                                    //if(checkForLibFunc($1))
-                                                      //  printf("Error this id is forbidden!\n");
-                                                    //else
-                                                        insertEntry = SymbolTable_insert(symTab, 
-                                                                $1, scope, yylineno, GLOBAL_ID);
-                                                        ScopeTable_insert(scopeTab, insertEntry, scope);
-                                                }
-                                            }
-
-                                            $$ = strdup($1);
+                                            $$ = EvaluateLValue($1);
                                         }
 
             | LOCAL ID                  {
-                                            
-                                            SymbolTableEntry *entry, *insertEntry;
-
                                             if(TRACE_PRINT){
                                                 printf("-> Local Identifier %s\n", $2);
                                             }
 
-                                            if((entry = SymbolTable_lookup(symTab, $2, scope))){
-                                                //fprintf_red(stdout, "Could not find global var!\n");
-                                            }
-                                            else{
-                                                if(scope > 0){
-                                                    insertEntry = SymbolTable_insert(symTab, 
-                                                        $2, scope, yylineno, LOCAL_ID);
-                                                    ScopeTable_insert(scopeTab, insertEntry, scope);
-                                                }
-                                                else{
-                                                    insertEntry = SymbolTable_insert(symTab, 
-                                                        $2, scope, yylineno, GLOBAL_ID);
-                                                    ScopeTable_insert(scopeTab, insertEntry, scope);
-                                                }
-                                            }
-
-                                            $$ = strdup($2);
+                                            $$ = EvaluateLocalLValue($2);
                                         }
             | DOUBLE_COLON ID           {
-                                            SymbolTableEntry *entry;
 
                                             if(TRACE_PRINT){
                                                 printf("-> Global Identifier %s\n", $2);
                                             }
 
-                                            if(!(entry = SymbolTable_lookup(symTab, $2, 0))){
-                                                fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Undefined global variable \"%s\" at line %lu\n", 
-                                                    $2, yylineno);
-                                            }
-
-                                            $$ = strdup($2);
+                                            $$ = EvaluateGlobalLValue($2);
                                         }
             | member                    {
                                             if(TRACE_PRINT){
@@ -387,12 +325,12 @@ lvalue:     ID                          {
 
 member:     lvalue FULLSTOP ID                          {
                                                             if(TRACE_PRINT){
-                                                                printf("-> %s.%s\n", $1,$3);
+                                                                printf("-> lvalue . %s\n", $3);
                                                             }
                                                         }
             | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {
                                                             if(TRACE_PRINT){
-                                                                printf("-> %s [ expression ]\n", $1);
+                                                                printf("-> Lvalue [ expression ]\n");
                                                             }
                                                         }
             | call FULLSTOP ID                          {
@@ -416,7 +354,12 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                       
                                                                                                     }
             | lvalue callsuffix                                                                     {
                                                                                                         if(TRACE_PRINT){
-                                                                                                            printf("-> %s callsuffix\n", $1);
+                                                                                                            if($1->type < 3){
+                                                                                                                //logika prepei error message
+                                                                                                                printf("-> %s callsuffix\n", ($1->value).varVal->name);
+                                                                                                            }else{
+                                                                                                                printf("-> %s callsuffix\n",  ($1->value).funcVal->name);
+                                                                                                            }
                                                                                                         }
 
                                                                                                     }
@@ -425,7 +368,6 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                       
                                                                                                             printf("-> Function Definition\n");
                                                                                                         }                                                                                                    }
             ;
-
 
 callsuffix: normcall        {
                                 if(TRACE_PRINT){
@@ -438,7 +380,6 @@ callsuffix: normcall        {
                                 }
                             }
             ;
-
 
 normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS    {
                                                             if(TRACE_PRINT){
@@ -503,12 +444,14 @@ indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE      {
             ;
 
 block:      LEFT_BRACE {scope++;} RIGHT_BRACE                   {
+                                                                    ScopeTable_hide_scope(scopeTab, scope);
                                                                     scope--;
                                                                     if(TRACE_PRINT){
                                                                         printf("-> Empty Block\n");
                                                                     }
                                                                 }
             | LEFT_BRACE {scope++;} stmts RIGHT_BRACE           {
+                                                                    ScopeTable_hide_scope(scopeTab, scope);
                                                                     scope--;
                                                                     if(TRACE_PRINT){
                                                                         printf("-> Statement Block\n");
@@ -523,22 +466,38 @@ funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope
                                                                                                         printf("-> Function Definition without ID\n");
                                                                                                     }
                                                                                                 }
-            |FUNCTION ID {printf("Function name %s in scope %u\n", $2, scope);} LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
-                                                                                                    SymbolTableEntry *entry = NULL;
-                                                                                                    SymbolTableEntry *insertEntry;
+            |FUNCTION ID    {
+                                //printf("Function name %s in scope %u\n", $2, scope);
+                                SymbolTableEntry *entry = NULL;
+                                SymbolTableEntry *insertEntry;
+
+                                
+
+                                entry = SymbolTable_lookup(symTab, $2, scope);
+                                if(entry != NULL){
+                                    if(entry->type < 3)
+                                        fprintf_red(stdout,"[Syntax Analysis] -- ERROR: Variable \"%s\" redeclaration as function at line %lu\n",  (entry->value).varVal->name,yylineno);
+                                    else if(entry->type == 3){
+                                        fprintf_red(stdout,"[Syntax Analysis] -- ERROR: User function \"%s\" redeclaration at line %lu\n", (entry->value).funcVal->name,yylineno);
+
+                                    }
+                                    else if(entry->type == 4){
+                                        fprintf_red(stdout,"[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", (entry->value).funcVal->name,yylineno);
+                                    }
+                                    
+                                }
+                                else{
+                                    insertEntry = SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID);
+                                    ScopeTable_insert(scopeTab, insertEntry, scope);
+                                }
+
+                            } 
+                                    LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
                                                                                                     
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition with ID\n");
                                                                                                     }
-
-                                                                                                    entry = SymbolTable_lookup(symTab, $2, scope);
-                                                                                                    if(entry != NULL || checkForLibFunc($2)){
-                                                                                                        printf("error found function declaration\n");
-                                                                                                    }
-                                                                                                    else{
-                                                                                                        insertEntry = SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID);
-                                                                                                        ScopeTable_insert(scopeTab, insertEntry, scope);
-                                                                                                    }
+                                                                                                    
                                                                                                 }
             ;
 
@@ -575,28 +534,20 @@ const:      INTEGER         {
             ;
 
 idlist:     ID                  {
-                                    SymbolTableEntry *entry;
+                                    
                                     if(TRACE_PRINT){
                                         printf("-> Single ID List %s\n", $1);
                                     }
-                                    if(checkForLibFunc($1))
-                                        printf("Error this id is forbidden!\n");
-                                    else{
-                                        entry = SymbolTable_insert(symTab, $1, scope, yylineno, FORMAL_ID);
-                                        ScopeTable_insert(scopeTab, entry, scope);
-                                    }
+
+                                    CheckAddFormal($1);
+                                    
                                 }
             | idlist COMMA ID   {
-                                    SymbolTableEntry *entry;
                                     if(TRACE_PRINT){
                                         printf("-> , ID List %s\n", $3);
                                     }
-                                    if(checkForLibFunc($3))
-                                        printf("Error this id is forbidden!\n");
-                                    else{
-                                        entry = SymbolTable_insert(symTab, $3, scope, yylineno, FORMAL_ID);
-                                        ScopeTable_insert(scopeTab, entry, scope);
-                                    }
+                                    CheckAddFormal($3);
+                                    
                                 }
             |                   {
                                     if(TRACE_PRINT){
@@ -693,11 +644,11 @@ int main(int argc, char **argv){
     symTab = SymbolTable_init();
     scopeTab = ScopeTable_init();
 
-    SymbolTable_add_libfun(symTab);
+    SymbolTable_add_libfun(symTab, scopeTab);
 
     yyparse();
 
-    SymbolTable_print(symTab);
+    //SymbolTable_print(symTab);
     ScopeTable_print(scopeTab);
 
     fclose(ost);

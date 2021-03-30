@@ -1,0 +1,15 @@
+x = 1;
+{
+    /*x = 5; //ok!
+    function g(x){
+        t = x; //not ok
+        return;
+    }*/
+
+    function g( x
+        ,y
+            ,z,
+            l){}
+
+
+}

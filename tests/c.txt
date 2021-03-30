@@ -1,15 +1,51 @@
 x = 5;
 
-function f(){
-	y = 3;
-}
-
 {
+	p=0;
 
 	{
-		z = 1;
-	}
 
+	}
 }
 
-function(t,y,u){ { r = 5; } }
+
+{
+	p = 0;
+	function h(){
+		{
+
+			p = 1; 
+		}
+		
+	}
+	p = 3;
+	{
+		p = 3;
+		function g(){
+			p = 5;
+			function t(){
+				p = 3;
+				return g();
+			}
+			scope == 3
+
+			return t();
+		}
+	}
+}
+
+local -> lookup : curr_scope! => An den to vrw to orizw
+global -> lookup : scope 0!	=> An den to vrw, error
+variable -> lookup_general : curr_scope    --> scope* -->   0   => an lookup fails to orizw! *0<scope<curr_scope
+								|				 |    		|
+     	ok, its the same			    	     |           ok 
+											1a. Mesolavei Sinartisi kai anaferomai se variable: Den exw prosvasi, error
+											1b. -||-				kai anaferomai se function: Exw prosvasi, ola ok
+											2. Den mesolavei (block): ok
+
+Q1: Πως μπορουμε να βρουμε οτι ειμαστε μεσα σε ενα function definition? funstack!
+
+
+------------------------------------------------
+
+Q: Ti na kanoyme me ta arguments enws function? :/

@@ -97,7 +97,7 @@ SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, uns
 void SymbolTable_print(SymbolTable *s);
 void SymbolTable_scope_print(SymbolTable *s);
 void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope);
-void SymbolTable_add_libfun(SymbolTable *s);
+void SymbolTable_add_libfun(SymbolTable *s, ScopeTable *t);
 
 
 

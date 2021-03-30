@@ -207,14 +207,21 @@ void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope)
     curr->isActive = 0;
 }
 
-void SymbolTable_add_libfun(SymbolTable *s)
-{
+/* -------------------------- Function for library functions insertion ---------------------------- */
 
+void SymbolTable_add_libfun(SymbolTable *s, ScopeTable *t)
+{
+    SymbolTableEntry *entry;
     char *arr[12] = {"print", "input", "objectmemberkeys", "objecttotalmembers", "objectcopy", "totalarguments", "argument", "typeof", "strtonum", "sqrt", "cos", "sin"};
     int i;
 
+    assert(s && t);
+
     for (i = 0; i < 12; i++)
-        SymbolTable_insert(s, arr[i], 0, 0, LIBFUNC_ID);
+    {
+        entry = SymbolTable_insert(s, arr[i], 0, 0, LIBFUNC_ID);
+        ScopeTable_insert(t, entry, 0);
+    }
 
     return;
 }
@@ -295,7 +302,10 @@ ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope)
     while (curr)
     {
         entry = curr->entry;
-        entry->isActive = 0;
+
+        if (entry->isActive == 1)
+            entry->isActive = 0;
+
         curr = curr->next;
     }
 
@@ -317,7 +327,7 @@ void ScopeTable_print(ScopeTable *st)
 
         if (curr != NULL)
         {
-            printf("-------- Scope #%d --------\n", i);
+            printf("---------------- Scope #%d ----------------\n", i);
         }
 
         while (curr)
