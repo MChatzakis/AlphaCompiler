@@ -21,6 +21,7 @@
      !strcmp(id, "cos") ||                \
      !strcmp(id, "sin"))
 
+/* Symbol Types */
 enum SymbolType
 {
     GLOBAL_ID,
@@ -30,6 +31,7 @@ enum SymbolType
     LIBFUNC_ID
 };
 
+/* Symbol Table Structures*/
 typedef struct Variable
 {
     const char *name;
@@ -65,6 +67,8 @@ typedef struct SymbolTable
     SymbolTableEntry *hashtable[BUCKETS];
 } SymbolTable;
 
+
+/* Scope Structures */
 typedef struct ScopeList
 {
     SymbolTableEntry *entry;
@@ -77,8 +81,12 @@ typedef struct ScopeTable
     ScopeList **table;
 } ScopeTable;
 
+
+/* ------------------------------------ Hashing ------------------------------------ */
 unsigned int hash_function(const char *pcKey);
 
+
+/* ------------------------------------ SymbolTable Functions ------------------------------------ */
 SymbolTable *SymbolTable_init();
 SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned int scope, unsigned int line, enum SymbolType type);
 SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned int scope);
@@ -89,7 +97,9 @@ void SymbolTable_scope_print(SymbolTable *s);
 void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope);
 void SymbolTable_add_libfun(SymbolTable *s);
 
-ScopeTable *ScopeTable_init();
-ScopeList *ScopeTable_insert();
 
-void ScopeTable_print();
+/* ------------------------------------ ScopeTable Functions ------------------------------------ */
+ScopeTable *ScopeTable_init();
+ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned int scope);
+ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope);
+void ScopeTable_print(ScopeTable *st);

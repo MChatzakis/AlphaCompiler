@@ -1,5 +1,6 @@
 #include "symboltable.h"
 
+/* ------------------------------------ Hashing ------------------------------------ */
 unsigned int hash_function(const char *pcKey)
 {
     size_t ui;
@@ -14,6 +15,7 @@ unsigned int hash_function(const char *pcKey)
     return uiHash % BUCKETS;
 }
 
+/* ------------------------------------ SymbolTable Functions ------------------------------------ */
 SymbolTable *SymbolTable_init()
 {
     SymbolTable *s;
@@ -217,12 +219,13 @@ void SymbolTable_add_libfun(SymbolTable *s)
     return;
 }
 
+/* ------------------------------------ ScopeTable Functions ------------------------------------ */
 ScopeTable *ScopeTable_init()
 {
     ScopeTable *st;
     unsigned int i = 0;
 
-    st = (ScopeTable *)malloc(sizeof(st));
+    st = (ScopeTable *)malloc(sizeof(ScopeTable));
     if (!st)
     {
         perror("Could not allocate memory for the scope list\n");
@@ -252,7 +255,8 @@ ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned i
     }
 
     curr = st->table[scope];
-    while (curr)
+    prev = NULL;
+    while (curr != NULL)
     {
         prev = curr;
         curr = curr->next;
@@ -280,12 +284,29 @@ ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned i
     return slentry;
 }
 
+ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope)
+{
+    ScopeList *curr;
+    SymbolTableEntry *entry;
+    assert(st);
+
+    curr = st->table[scope];
+    while (curr)
+    {
+        entry = curr->entry;
+        entry->isActive = 0;
+        curr = curr->next;
+    }
+
+    return st->table[scope];
+}
+
 void ScopeTable_print(ScopeTable *st)
 {
     unsigned int i;
     ScopeList *curr;
     SymbolTableEntry *entry;
-    char *arr[5] = {"GLOBAL", "LOCAL", "FORMAL", "USERFUNC", "LIBFUNC"};
+    char *arr[5] = {"global variabe", "local variable", "formal variable", "user function", "library function"};
 
     assert(st);
 
@@ -304,14 +325,16 @@ void ScopeTable_print(ScopeTable *st)
 
             if (entry->type < 3)
             {
-                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->isActive);
+                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->isActive);
             }
             else
             {
-                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
+                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
             }
 
             curr = curr->next;
         }
     }
 }
+
+/* ------------------------------------ Function Argument List Functions ------------------------------------ */

@@ -31,6 +31,7 @@
     unsigned int scope = 0;
 
     SymbolTable *symTab;
+    ScopeTable *scopeTab;
 %}
 
 /*Declarations*/
@@ -139,7 +140,7 @@ expr:       lvalue ASSIGN expr          {
 
                                             entry = SymbolTable_lookup_general(symTab, $1, scope);
                                             if(entry != NULL){ 
-                                               if(entry->type == 3){
+                                                if(entry->type == 3){
                                                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to User defined function \"%s\" at line %u\n", 
                                                             $1, yylineno);
                                                 }
@@ -147,6 +148,10 @@ expr:       lvalue ASSIGN expr          {
                                                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to Library function \"%s\" at line %u\n", 
                                                             $1, yylineno);
                                                 }
+                                            }else{
+                                                //kanonika auto to error twra to petaei sto ID
+                                                //?fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol \"%s\" at line %u\n", 
+                                                //            $1, yylineno);
                                             }
 
                                         }
@@ -280,7 +285,6 @@ primary:    lvalue                      {
                                             }
                                         }
             | call                      {
-                                            //calling function
                                             if(TRACE_PRINT){
                                                 printf("-> Function Call\n");
                                             }
@@ -344,7 +348,7 @@ lvalue:     ID                          {
                                             else{
                                                 if(scope > 0){
                                                     SymbolTable_insert(symTab, 
-                                                                $2, scope, yylineno, LOCAL_ID);
+                                                        $2, scope, yylineno, LOCAL_ID);
                                                 }
                                                 else{
                                                     SymbolTable_insert(symTab, 
@@ -516,9 +520,11 @@ funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope
                                                                                                 }
             |FUNCTION ID {printf("Function name %s in scope %u\n", $2, scope);} LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
                                                                                                     SymbolTableEntry *entry = NULL;
+                                                                                                    
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition with ID\n");
                                                                                                     }
+
                                                                                                     entry = SymbolTable_lookup(symTab, $2, scope);
                                                                                                     if(entry != NULL || checkForLibFunc($2)){
                                                                                                         printf("error found function declaration\n");
@@ -673,6 +679,8 @@ int main(int argc, char **argv){
     }    
 
     symTab = SymbolTable_init();
+    scopeTab = ScopeTable_init();
+
     SymbolTable_add_libfun(symTab);
 
     yyparse();
