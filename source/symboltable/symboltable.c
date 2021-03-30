@@ -251,7 +251,8 @@ ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned i
 
     if (scope >= st->max_scope)
     {
-        //realoc
+        st->max_scope = 2 * (st->max_scope);
+        st->table = realloc(st->table, st->max_scope * sizeof(ScopeList));
     }
 
     curr = st->table[scope];

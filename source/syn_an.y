@@ -308,7 +308,8 @@ primary:    lvalue                      {
             ;
 
 lvalue:     ID                          {
-                                            SymbolTableEntry *entry;
+                                            SymbolTableEntry *entry, *insertEntry;
+
 
                                             if(TRACE_PRINT){
                                                 printf("-> Identifier %s\n", $1);
@@ -320,14 +321,16 @@ lvalue:     ID                          {
                                                     //if(checkForLibFunc($1))
                                                       //  printf("Error this id is forbidden!\n");
                                                     //else
-                                                        SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                                        insertEntry = SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
+                                                        ScopeTable_insert(scopeTab, insertEntry, scope);
                                                 }
                                                 else{
                                                     //if(checkForLibFunc($1))
                                                       //  printf("Error this id is forbidden!\n");
                                                     //else
-                                                        SymbolTable_insert(symTab, 
+                                                        insertEntry = SymbolTable_insert(symTab, 
                                                                 $1, scope, yylineno, GLOBAL_ID);
+                                                        ScopeTable_insert(scopeTab, insertEntry, scope);
                                                 }
                                             }
 
@@ -336,7 +339,7 @@ lvalue:     ID                          {
 
             | LOCAL ID                  {
                                             
-                                            SymbolTableEntry *entry;
+                                            SymbolTableEntry *entry, *insertEntry;
 
                                             if(TRACE_PRINT){
                                                 printf("-> Local Identifier %s\n", $2);
@@ -347,12 +350,14 @@ lvalue:     ID                          {
                                             }
                                             else{
                                                 if(scope > 0){
-                                                    SymbolTable_insert(symTab, 
+                                                    insertEntry = SymbolTable_insert(symTab, 
                                                         $2, scope, yylineno, LOCAL_ID);
+                                                    ScopeTable_insert(scopeTab, insertEntry, scope);
                                                 }
                                                 else{
-                                                    SymbolTable_insert(symTab, 
+                                                    insertEntry = SymbolTable_insert(symTab, 
                                                         $2, scope, yylineno, GLOBAL_ID);
+                                                    ScopeTable_insert(scopeTab, insertEntry, scope);
                                                 }
                                             }
 
@@ -520,6 +525,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope
                                                                                                 }
             |FUNCTION ID {printf("Function name %s in scope %u\n", $2, scope);} LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
                                                                                                     SymbolTableEntry *entry = NULL;
+                                                                                                    SymbolTableEntry *insertEntry;
                                                                                                     
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition with ID\n");
@@ -530,7 +536,8 @@ funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope
                                                                                                         printf("error found function declaration\n");
                                                                                                     }
                                                                                                     else{
-                                                                                                        SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID);
+                                                                                                        insertEntry = SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID);
+                                                                                                        ScopeTable_insert(scopeTab, insertEntry, scope);
                                                                                                     }
                                                                                                 }
             ;
@@ -568,22 +575,28 @@ const:      INTEGER         {
             ;
 
 idlist:     ID                  {
+                                    SymbolTableEntry *entry;
                                     if(TRACE_PRINT){
                                         printf("-> Single ID List %s\n", $1);
                                     }
                                     if(checkForLibFunc($1))
                                         printf("Error this id is forbidden!\n");
-                                    else
-                                        SymbolTable_insert(symTab, $1, scope, yylineno, FORMAL_ID);
+                                    else{
+                                        entry = SymbolTable_insert(symTab, $1, scope, yylineno, FORMAL_ID);
+                                        ScopeTable_insert(scopeTab, entry, scope);
+                                    }
                                 }
             | idlist COMMA ID   {
+                                    SymbolTableEntry *entry;
                                     if(TRACE_PRINT){
                                         printf("-> , ID List %s\n", $3);
                                     }
                                     if(checkForLibFunc($3))
                                         printf("Error this id is forbidden!\n");
-                                    else
-                                        SymbolTable_insert(symTab, $3, scope, yylineno, FORMAL_ID);
+                                    else{
+                                        entry = SymbolTable_insert(symTab, $3, scope, yylineno, FORMAL_ID);
+                                        ScopeTable_insert(scopeTab, entry, scope);
+                                    }
                                 }
             |                   {
                                     if(TRACE_PRINT){
@@ -685,6 +698,7 @@ int main(int argc, char **argv){
     yyparse();
 
     SymbolTable_print(symTab);
+    ScopeTable_print(scopeTab);
 
     fclose(ost);
     fclose(yyin);
