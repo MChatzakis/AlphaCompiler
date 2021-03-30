@@ -8,6 +8,8 @@
     static int isatty(void *i) {return 0;}
     #endif
 
+    #define TRACE_PRINT 1
+
     #include <stdio.h>
     #include <stdlib.h>
     #include <unistd.h>
@@ -27,10 +29,8 @@
     extern FILE* yyin;
 
     unsigned int scope = 0;
+
     SymbolTable *symTab;
-
-    short idRequired = 0;
-
 %}
 
 /*Declarations*/
@@ -41,7 +41,6 @@
     char* string_value;
     double real_value;
 
-    gen_value g_val;
     SymbolTableEntry symTabEntry;
 }
 
@@ -51,8 +50,8 @@
 %token <string_value> STRING
 
 %token LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTHESIS RIGHT_PARENTHESIS SEMICOLON COMMA FULLSTOP COLON DOUBLE_FULLSTOP DOUBLE_COLON
-%token <string_value> IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
-%token <string_value> ASSIGN PLUS MINUS MUL DIV MODULO EQUAL NOT_EQUAL PLUS_PLUS MINUS_MINUS GREATER GREATER_EQUAL LESS LESS_EQUAL
+%token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
+%token ASSIGN PLUS MINUS MUL DIV MODULO EQUAL NOT_EQUAL PLUS_PLUS MINUS_MINUS GREATER GREATER_EQUAL LESS LESS_EQUAL
 
 %right ASSIGN
 %left OR
@@ -66,9 +65,6 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-%type <g_val> expr
-%type <g_val> primary
-%type <g_val> const
 %type <string_value> lvalue
 
 /*Grammar*/
@@ -79,34 +75,54 @@ program:    stmts
             ;
 
 stmt:       expr SEMICOLON              {
-                                            //printf("STMT: Expression Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Expr Statement\n");
+                                            }
                                         }
             | ifstmt                    {
-                                            //printf("STMT: IF Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> If/Ifelse Statement\n");
+                                            }
                                         }
             | whilestmt                 {
-                                            //printf("STMT: WHILE Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> While Statement\n");
+                                            }
                                         }
             | forstmt                   {
-                                            //printf("STMT: FOR Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> For Statement\n");
+                                            }
                                         }
             | returnstmt                {
-                                            //printf("STMT: RETURN Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Return Statement\n");
+                                            }
                                         }
             | BREAK SEMICOLON           {
-                                            //printf("STMT: BREAK Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Break Statement\n");
+                                            }
                                         }
             | CONTINUE SEMICOLON        {
-                                            //printf("STMT: CONTINUE Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Continue Statement\n");
+                                            }
                                         }
             | block                     {
-                                            //printf("STMT: BLOCK Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Block Statement\n");
+                                            }
                                         }
             | funcdef                   {
-                                            //printf("STMT: FUNCDEF Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Func Def Statement\n");
+                                            }
                                         }
             | SEMICOLON                 {
-                                            //printf("STMT: COLON Found\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Semicolon Statement\n");
+                                            }
                                         }
             ;
 
@@ -115,127 +131,199 @@ stmts:      stmts stmt
             ;
             
 expr:       lvalue ASSIGN expr          {
-                                            //lookup - insert lvalue
-                                            printf("Assign -- LookUp -> Insert\n");
                                             SymbolTableEntry *entry;
+                                            
+                                            if(TRACE_PRINT){
+                                                printf("-> Assignment Expression\n");
+                                            }
+
                                             entry = SymbolTable_lookup_general(symTab, $1, scope);
-                                            if(entry->type >= 3 ){ //|| (entry->value).funcval->scope < scope ||  (entry->value).funcval->scope > 0
-                                                printf("error found function\n");
+                                            if(entry != NULL){ 
+                                               if(entry->type == 3){
+                                                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to User defined function \"%s\" at line %u\n", 
+                                                            $1, yylineno);
+                                                }
+                                                else if(entry->type == 4){
+                                                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to Library function \"%s\" at line %u\n", 
+                                                            $1, yylineno);
+                                                }
                                             }
 
                                         }
             | expr OR expr              {
-                                            //printf("EXPR: OR Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> OR Expression\n");
+                                            }
                                         }
             | expr AND expr             {
-                                            //printf("EXPR: AND Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> AND Expression\n");
+                                            }
                                         }
             | expr NOT_EQUAL expr       {
-                                            //printf("EXPR: NOT_EQUAL Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> != Expression\n");
+                                            }
                                         }
             | expr EQUAL expr           {
-                                            //printf("EXPR: EQUAL Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> == Expression\n");
+                                            }
                                         }
             | expr LESS_EQUAL expr      {
-                                            //printf("EXPR: LESS_EQUAL Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> <= Expression\n");
+                                            }
                                         }
             | expr LESS expr            {
-                                            //printf("EXPR: LESS Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> < Expression\n");
+                                            }
                                         }
             | expr GREATER_EQUAL expr   {
-                                            //printf("EXPR: GREATER_EQUAL Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> >= Expression\n");
+                                            }
                                         }
             | expr GREATER expr         {
-                                            //printf("EXPR: GREATER Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> > Expression\n");
+                                            }
                                         }
             | expr PLUS expr            {
-                                            //printf("EXPR: PLUS Expression\n");
-                                            //$$.type = INT_VAL;
-                                            //$$.int_val = $1.int_val + $3.int_val;
+                                            if(TRACE_PRINT){
+                                                printf("-> + Expression\n");
+                                            }
+                                            
+
                                         }
             | expr MINUS expr           {
-                                            //printf("EXPR: MINUS Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> - Expression\n");
+                                            }
                                         }
             | expr MUL expr             {
-                                            //printf("EXPR: MUL Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> * Expression\n");
+                                            }
                                         }
             | expr DIV expr             {
-                                            //printf("EXPR: DIV Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> / Expression\n");
+                                            }
                                         }
             | expr MODULO expr          {
-                                            //printf("EXPR: MODULO Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> MOD Expression\n");
+                                            }
                                         }
             | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-                                            //printf("EXPR: PARENTHESIS Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> ( Expression )\n");
+                                            }
                                         }
             | MINUS expr %prec UMINUS   {
-                                            //printf("EXPR: UMINUS Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> -Expression\n");
+                                            }
                                         }
             | NOT expr                  {
-                                            //printf("EXPR: NOT Expression\n");
+                                           if(TRACE_PRINT){
+                                                printf("-> NOT Expression\n");
+                                            }
                                         }
             | PLUS_PLUS lvalue          {
-                                            //printf("EXPR: PLUS_PLUS Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> ++val Expression\n");
+                                            }
                                         }
             | lvalue PLUS_PLUS          {
-                                            //printf("EXPR: Expression PLUS_PLUS\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> val++ Expression\n");
+                                            }
                                         }
             | MINUS_MINUS lvalue        {
-                                            //printf("EXPR: MINUS_MINUS Expression\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> --val Expression\n");
+                                            }
                                         }
             | lvalue MINUS_MINUS        {
-                                            //printf("EXPR: Expression MINUS_MINUS\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> val-- Expression\n");
+                                            }
                                         }
             | primary                   {
-                                            //printf("EXPR: Primary\n");
-                                            //print_gen($$);
+                                            if(TRACE_PRINT){
+                                                printf("-> Primary Expression\n");
+                                            }
                                         }
             ;
 
 primary:    lvalue                      {
-                                            //seeking variable
-                                            printf("PRIMARY RULE: Variable Call -- Required\n");
                                             SymbolTableEntry *entry;
+                                            
+                                            if(TRACE_PRINT){
+                                                printf("-> lvalue \n");
+                                            }
+                                            
                                             entry = SymbolTable_lookup_general(symTab, $1, scope);
-                                            if(entry->type >= 3 ){
-                                                printf("error found function\n");
+                                            if(entry != NULL ){
+                                                if(entry->type == 3){
+                                                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used User defined function \"%s\" as variable at line %u\n", 
+                                                            $1, yylineno);
+                                                }
+                                                else if(entry->type == 4){
+                                                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used Library function \"%s\" as variable at line %u\n", 
+                                                            $1, yylineno);
+                                                }
+                                                
                                             }
                                         }
             | call                      {
                                             //calling function
-                                            printf("PRIMARY RULE: Function Call -- Required\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Function Call\n");
+                                            }
 
                                         }
             | objectdef                 {
-                                            printf("PRIMARY: Found objectdef\n");
-
+                                            if(TRACE_PRINT){
+                                                printf("-> Object definition\n");
+                                            }
                                         }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS    {
-                                                                //printf("PRIMARY: Found (func def)\n");
+                                                                if(TRACE_PRINT){
+                                                                    printf("-> (func definition)\n");
+                                                                }
                                                             }
             | const                     {
-                                            //printf("PRIMARY: Found const\n");
-                                            //print_gen($$);
+                                            if(TRACE_PRINT){
+                                                printf("-> Const\n");
+                                            }
                                         }
             ;
 
 lvalue:     ID                          {
                                             SymbolTableEntry *entry;
-                                            printf("ID: %s\n", $1);
+
+                                            if(TRACE_PRINT){
+                                                printf("-> Identifier %s\n", $1);
+                                            }
                                             
                                             
                                             if(!(entry = SymbolTable_lookup(symTab, $1, scope))){
                                                 if(scope > 0){
-                                                    if(checkForLibFunc($1))
-                                                        printf("Error this id is forbidden!\n");
-                                                    else
+                                                    //if(checkForLibFunc($1))
+                                                      //  printf("Error this id is forbidden!\n");
+                                                    //else
                                                         SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
                                                 }
                                                 else{
-                                                    if(checkForLibFunc($1))
-                                                        printf("Error this id is forbidden!\n");
-                                                    else
-                                                        SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
+                                                    //if(checkForLibFunc($1))
+                                                      //  printf("Error this id is forbidden!\n");
+                                                    //else
+                                                        SymbolTable_insert(symTab, 
+                                                                $1, scope, yylineno, GLOBAL_ID);
                                                 }
                                             }
 
@@ -243,167 +331,197 @@ lvalue:     ID                          {
                                         }
 
             | LOCAL ID                  {
-                                            printf("LOCAL ID: %s\n", $2);
-                                            /*
-                                            if(!(entry = SymbolTable_lookup(symTab, $2, scope))){
+                                            
+                                            SymbolTableEntry *entry;
+
+                                            if(TRACE_PRINT){
+                                                printf("-> Local Identifier %s\n", $2);
+                                            }
+
+                                            if((entry = SymbolTable_lookup(symTab, $2, scope))){
+                                                //fprintf_red(stdout, "Could not find global var!\n");
+                                            }
+                                            else{
                                                 if(scope > 0){
-                                                    if(checkForLibFunc($2))
-                                                        printf("Error this id is forbidden!\n");
-                                                    else
-                                                        SymbolTable_insert(symTab, $2, scope, yylineno, LOCAL_ID);
+                                                    SymbolTable_insert(symTab, 
+                                                                $2, scope, yylineno, LOCAL_ID);
                                                 }
                                                 else{
-                                                    if(checkForLibFunc($2))
-                                                        printf("Error this id is forbidden!\n");
-                                                    else
-                                                        SymbolTable_insert(symTab, $2, scope, yylineno, GLOBAL_ID);
+                                                    SymbolTable_insert(symTab, 
+                                                        $2, scope, yylineno, GLOBAL_ID);
                                                 }
                                             }
-                                            */
+
+                                            $$ = strdup($2);
                                         }
             | DOUBLE_COLON ID           {
-                                            printf("GLOBAL ID: %s\n", $2);
-                                            /*
-                                            if(!(entry = SymbolTable_lookup(symTab, $2, scope))){
-                                                if(scope > 0){
-                                                    if(checkForLibFunc($2))
-                                                        printf("Error this id is forbidden!\n");
-                                                    else
-                                                        SymbolTable_insert(symTab, $2, scope, yylineno, LOCAL_ID);
-                                                }
-                                                else{
-                                                    if(checkForLibFunc($2))
-                                                        printf("Error this id is forbidden!\n");
-                                                     else
-                                                        SymbolTable_insert(symTab, $2, scope, yylineno, GLOBAL_ID);
-                                                }
+                                            SymbolTableEntry *entry;
+
+                                            if(TRACE_PRINT){
+                                                printf("-> Global Identifier %s\n", $2);
                                             }
-                                            */
+
+                                            if(!(entry = SymbolTable_lookup(symTab, $2, 0))){
+                                                fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Undefined global variable \"%s\" at line %lu\n", 
+                                                    $2, yylineno);
+                                            }
+
+                                            $$ = strdup($2);
                                         }
             | member                    {
-                                            /*
-                                            ?????
-                                            if(!(entry = SymbolTable_lookup(symTab, $1, scope))){
-                                                if(scope > 0){
-                                                    if(checkForLibFunc($1))
-                                                        printf("Error this id is forbidden!\n");
-                                                    else
-                                                        SymbolTable_insert(symTab, $1, scope, yylineno, LOCAL_ID);
-                                                }
-                                                else{
-                                                    if(checkForLibFunc($1))
-                                                        printf("Error this id is forbidden!\n");
-                                                    else
-                                                        SymbolTable_insert(symTab, $1, scope, yylineno, GLOBAL_ID);
-                                                }
+                                            if(TRACE_PRINT){
+                                                printf("-> Member\n");
                                             }
-                                            */
                                         }
             ;
 
 
 member:     lvalue FULLSTOP ID                          {
-                                                            //printf("MEMBER: Found lvalue . ID\n");
+                                                            if(TRACE_PRINT){
+                                                                printf("-> %s.%s\n", $1,$3);
+                                                            }
                                                         }
             | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {
-                                                            //printf("MEMBER: Found lvalue[expr]\n");
+                                                            if(TRACE_PRINT){
+                                                                printf("-> %s [ expression ]\n", $1);
+                                                            }
                                                         }
             | call FULLSTOP ID                          {
-                                                            //printf("MEMBER: Found call . ID\n");
+                                                            if(TRACE_PRINT){
+                                                                printf("-> Call.%s\n", $3);
+                                                            }
                                                         }
             | call LEFT_BRACKET expr RIGHT_BRACKET      {
-                                                            //printf("MEMBER: Found call[expr]\n");
+                                                            if(TRACE_PRINT){
+                                                                printf("-> call [ expr ]\n");
+                                                            }
                                                         }
             ;
 
 
 call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                                           {
-                                                                                                        printf("CALL: Found call(elist)\n");
+                                                                                                        if(TRACE_PRINT){
+                                                                                                            printf("-> Call ( elist )\n");
+                                                                                                        }
+
                                                                                                     }
             | lvalue callsuffix                                                                     {
-                                                                                                        printf("CALL: Found lvalue callsuffix\n");
+                                                                                                        if(TRACE_PRINT){
+                                                                                                            printf("-> %s callsuffix\n", $1);
+                                                                                                        }
+
                                                                                                     }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
-                                                                                                        printf("CALL: Found (funcdef)(elist)\n");
-                                                                                                    }
+                                                                                                        if(TRACE_PRINT){
+                                                                                                            printf("-> Function Definition\n");
+                                                                                                        }                                                                                                    }
             ;
 
 
 callsuffix: normcall        {
-                                printf("CALLSUFFIX: Found normcall\n");
+                                if(TRACE_PRINT){
+                                    printf("-> Normal Call\n");
+                                }
                             }
             | methodcall    {
-                                //printf("CALLSUFFIX: Found methodcall\n");
+                                if(TRACE_PRINT){
+                                    printf("-> Method Call\n");
+                                }
                             }
             ;
 
 
 normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS    {
-                                                            printf("NORMCALL: (elist)\n");
+                                                            if(TRACE_PRINT){
+                                                                printf("-> ( elist )\n");
+                                                            }
                                                         }
             ;
 
 methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS     {
-                                                                                //printf("METHODCALL: ..ID(elist)\n");
+                                                                                if(TRACE_PRINT){
+                                                                                    printf("-> ..%s ( elist )\n", $2);
+                                                                                }
                                                                             }
             ;
 
 elist:      expr                        {
-                                            printf("SINGLE ELIST: Found FORMAL argument in scope\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> expr\n");
+                                            }
                                         }
             | elist COMMA expr          {
-                                            printf("MULTI ELIST: Found FORMAL argument\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> elist , expr\n");
+                                            }
                                         }
             |                           {
-                                            printf("ELIST: Empty eList\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Empty Elist\n");
+                                            }
                                         }
             ;
 
 objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
-                                                    //printf("OBJECTDEF: Defined Object with indexed elems\n");
+                                                    if(TRACE_PRINT){
+                                                        printf("-> [ indexed ]\n");
+                                                    }
                                                 }
             | LEFT_BRACKET elist RIGHT_BRACKET  {
-                                                    //printf("OBJECTDEF: Defined Object with elist elems\n");
+                                                    if(TRACE_PRINT){
+                                                        printf("-> [ elist ]\n");
+                                                    }
                                                 }
             ;
 
 indexed:    indexedelem                         {
-                                                    //printf("INDEXED: Single indexed elem\n");
+                                                    if(TRACE_PRINT){
+                                                        printf("-> Indexed Element\n");
+                                                    }
                                                 }
             | indexed COMMA indexedelem         {
-                                                    //printf("INDEXED: Multi indexed elem\n");
+                                                    if(TRACE_PRINT){
+                                                        printf("-> Indexed , Indexed Element\n");
+                                                    }
                                                 }
             ;
 
 indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE      {
-                                                            //printf("INDEXEDELEM: expr : expr found\n");
+                                                            if(TRACE_PRINT){
+                                                                printf("-> { expr : expr }\n");
+                                                            }
                                                         }
             ;
 
 block:      LEFT_BRACE {scope++;} RIGHT_BRACE                   {
                                                                     scope--;
-                                                                    //printf("BLOCK: {}\n");
+                                                                    if(TRACE_PRINT){
+                                                                        printf("-> Empty Block\n");
+                                                                    }
                                                                 }
             | LEFT_BRACE {scope++;} stmts RIGHT_BRACE           {
                                                                     scope--;
-                                                                    //printf("BLOCK: { ... }\n");
+                                                                    if(TRACE_PRINT){
+                                                                        printf("-> Statement Block\n");
+                                                                    }
                                                                 }
             ;
 
 
 
 funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
-                                                                                                   
-                                                                                                    //printf("FUNCDEF: Function def WITHOUT ID found\n");
+                                                                                                    if(TRACE_PRINT){
+                                                                                                        printf("-> Function Definition without ID\n");
+                                                                                                    }
                                                                                                 }
             |FUNCTION ID {printf("Function name %s in scope %u\n", $2, scope);} LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
-                                                                                                    //edw to id prepei na min iparxei!
-                                                                                                    //printf("FUNCDEF: Function def WITH ID found\n");
                                                                                                     SymbolTableEntry *entry = NULL;
+                                                                                                    if(TRACE_PRINT){
+                                                                                                        printf("-> Function Definition with ID\n");
+                                                                                                    }
                                                                                                     entry = SymbolTable_lookup(symTab, $2, scope);
                                                                                                     if(entry != NULL || checkForLibFunc($2)){
                                                                                                         printf("error found function declaration\n");
-
                                                                                                     }
                                                                                                     else{
                                                                                                         SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID);
@@ -412,80 +530,104 @@ funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope
             ;
 
 const:      INTEGER         {
-                                //printf("CONST: Found INTEGER: ");
-                                //$$.type = INT_VAL;
-                                //$$.int_val = $1;
-                                //print_gen($$);
+                                if(TRACE_PRINT){
+                                    printf("-> Integer %d\n", $1);
+                                }
                             }
             | REAL          {
-                                //printf("CONST: Found REAL\n");
+                                if(TRACE_PRINT){
+                                    printf("-> Real %f\n", $1);
+                                }
                             }
             | STRING        {
-                                //printf("CONST: Found STRING\n");
+                               if(TRACE_PRINT){
+                                    printf("-> String %s\n", $1);
+                                }
                             }
             | NIL           {
-                                //printf("CONST: Found NIL\n");
+                                if(TRACE_PRINT){
+                                    printf("-> NIL\n");
+                                }
                             }
             | TRUE          {
-                                //printf("CONST: Found TRUE\n");
+                                if(TRACE_PRINT){
+                                    printf("-> TRUE\n");
+                                }
                             }
             | FALSE         {
-                                //printf("CONST: Found FALSE\n");
+                                if(TRACE_PRINT){
+                                    printf("-> FALSE");
+                                }
                             }
             ;
 
 idlist:     ID                  {
-                                    printf("SINGLE IDLIST: Found FORMAL argument %s in scope %u\n", $1, scope);
-
+                                    if(TRACE_PRINT){
+                                        printf("-> Single ID List %s\n", $1);
+                                    }
                                     if(checkForLibFunc($1))
                                         printf("Error this id is forbidden!\n");
                                     else
                                         SymbolTable_insert(symTab, $1, scope, yylineno, FORMAL_ID);
                                 }
             | idlist COMMA ID   {
-                                    //printf("IDLIST: Found ID %s in scope %u\n", $3, scope);
-                                    //printf("MULTI IDLIST: Found FORMAL argument %s in scope %u\n", $3, scope);
-
+                                    if(TRACE_PRINT){
+                                        printf("-> , ID List %s\n", $3);
+                                    }
                                     if(checkForLibFunc($3))
                                         printf("Error this id is forbidden!\n");
                                     else
                                         SymbolTable_insert(symTab, $3, scope, yylineno, FORMAL_ID);
                                 }
             |                   {
-                                    //printf("IDLIST: Empty\n");
+                                    if(TRACE_PRINT){
+                                        printf("-> , Empty ID List\n");
+                                    }
                                 }
             ;
 
 ifstmt:     IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt                 {
-                                                                                //printf("IFSTMT: IF statement\n");
+                                                                                if(TRACE_PRINT){
+                                                                                    printf("-> If\n");
+                                                                                }
                                                                             }
             | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt     {
-                                                                                //printf("IFSTMT: IF ELSE statement\n");
+                                                                                if(TRACE_PRINT){
+                                                                                    printf("-> If Else\n");
+                                                                                }
                                                                             }
             ;
 
 whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt              {
-                                                                                //printf("WHILE: ..\n");
+                                                                                if(TRACE_PRINT){
+                                                                                    printf("-> While\n");
+                                                                                }
                                                                             }
             ;
 
 forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt    {
-                                                                                                    //printf("FOR: ..\n");
+                                                                                                    if(TRACE_PRINT){
+                                                                                                        printf("-> For\n");
+                                                                                                    }
                                                                                                 }
             ;
 
 returnstmt: RETURN SEMICOLON            {
-                                            //printf("RETURN: WITHOUT expr\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Simple Return\n");
+                                            }
                                         }
             | RETURN expr SEMICOLON     {
-                                            //printf("RETURN: WITH expr\n");
+                                            if(TRACE_PRINT){
+                                                printf("-> Expr Return\n");
+                                            }
                                         }
             ;
 
 %%
 
 int yyerror(char *message){
-    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: %s: at line %d, before token: %s\n", message, yylineno, yytext);
+    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: %s: at line %d, on token: %s\n", message, yylineno, yytext);
     return 0;
 }
 

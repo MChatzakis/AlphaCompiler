@@ -26,6 +26,8 @@ SymbolTable *SymbolTable_init()
         exit(EXIT_FAILURE);
     }
 
+    s->max_scope = 0;
+
     for (i = 0; i < BUCKETS; i++)
     {
         s->hashtable[i] = NULL;
@@ -90,6 +92,11 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
     else
     {
         prev->next = entry;
+    }
+
+    if (scope > s->max_scope)
+    {
+        s->max_scope = scope;
     }
 
     return entry;
@@ -174,8 +181,8 @@ SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, uns
     SymbolTableEntry *curr;
 
     curr = NULL;
-    printf("SS: %u\n", scope);
-    for (i = 0; i<= scope; i++)
+    //printf("SS: %u\n", scope);
+    for (i = 0; i <= scope; i++)
     {
         curr = SymbolTable_lookup(s, id, scope - i);
         if (curr != NULL)
@@ -208,4 +215,103 @@ void SymbolTable_add_libfun(SymbolTable *s)
         SymbolTable_insert(s, arr[i], 0, 0, LIBFUNC_ID);
 
     return;
+}
+
+ScopeTable *ScopeTable_init()
+{
+    ScopeTable *st;
+    unsigned int i = 0;
+
+    st = (ScopeTable *)malloc(sizeof(st));
+    if (!st)
+    {
+        perror("Could not allocate memory for the scope list\n");
+        exit(EXIT_FAILURE);
+    }
+
+    st->max_scope = INIT_SCOPE_SIZE;
+    st->table = (ScopeList **)malloc(INIT_SCOPE_SIZE * sizeof(ScopeList));
+
+    for (i = 0; i < INIT_SCOPE_SIZE; i++)
+    {
+        st->table[i] = NULL;
+    }
+
+    return st;
+}
+
+ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned int scope)
+{
+    ScopeList *curr, *prev, *slentry;
+
+    assert(st && entry);
+
+    if (scope > st->max_scope)
+    {
+        //realoc
+    }
+
+    curr = st->table[scope];
+    while (curr)
+    {
+        prev = curr;
+        curr = curr->next;
+    }
+
+    slentry = (ScopeList *)malloc(sizeof(ScopeList));
+    if (!slentry)
+    {
+        perror("Could not allocate memory gor sl entry");
+        exit(EXIT_FAILURE);
+    }
+
+    slentry->entry = entry;
+    slentry->next = NULL;
+
+    if (prev == NULL)
+    {
+        st->table[scope] = slentry;
+    }
+    else
+    {
+        prev->next = slentry;
+    }
+
+    return slentry;
+}
+
+void ScopeTable_print(ScopeTable *st)
+{
+    unsigned int i;
+    ScopeList *curr;
+    SymbolTableEntry *entry;
+    char *arr[5] = {"GLOBAL", "LOCAL", "FORMAL", "USERFUNC", "LIBFUNC"};
+
+    assert(st);
+
+    for (i = 0; i < st->max_scope; i++)
+    {
+        curr = st->table[i];
+
+        if (curr != NULL)
+        {
+            printf("-------- Scope #%d --------\n", i);
+        }
+
+        while (curr)
+        {
+            entry = curr->entry;
+
+            if (entry->type < 3)
+            {
+                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->isActive);
+            }
+            else
+            {
+                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
+            }
+
+            curr = curr->next;
+        }
+    }
 }
