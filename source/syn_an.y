@@ -645,7 +645,6 @@ int main(int argc, char **argv){
 
     ost = stdout;
     yyin = stdin;
-    
 
     while ((opt = getopt(argc, argv, "i:o:h")) != -1)
     {

@@ -249,7 +249,7 @@ ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned i
 
     assert(st && entry);
 
-    if (scope > st->max_scope)
+    if (scope >= st->max_scope)
     {
         //realoc
     }

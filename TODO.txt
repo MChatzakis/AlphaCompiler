@@ -1,6 +1,6 @@
-1) Elegxos grammatikis
-2) Katharisma Kwdiko
-3) Lista Arguments tis sinartisis
-4) Elegxos kanwnwn/scopes/lookup
-5) Fix Scope List
-6) ???...????....??????
+1) Elegxos grammatikis - diorthswsi kanonwn px elist klp
+//2) Lista Arguments tis sinartisis
+3) Elegxos kanwnwn/scopes/lookup
+4) Eisagwgi entries sto scope list? + realloc
+5) Prosthiki hide mesw scopeList
+6) Perasma

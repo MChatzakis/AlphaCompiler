@@ -82,8 +82,10 @@ typedef struct ScopeTable
 } ScopeTable;
 
 
+
 /* ------------------------------------ Hashing ------------------------------------ */
 unsigned int hash_function(const char *pcKey);
+
 
 
 /* ------------------------------------ SymbolTable Functions ------------------------------------ */
@@ -96,6 +98,7 @@ void SymbolTable_print(SymbolTable *s);
 void SymbolTable_scope_print(SymbolTable *s);
 void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope);
 void SymbolTable_add_libfun(SymbolTable *s);
+
 
 
 /* ------------------------------------ ScopeTable Functions ------------------------------------ */
