@@ -448,15 +448,29 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE                   {
 
 funcdef:    FUNCTION LEFT_PARENTHESIS { GenerateName(); ManageIDFunctionDefinition(noname_prefix); unamed_functions++; scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
                                                                                                     if(TRACE_PRINT){
-                                                                                                        printf("-> Function Definition without ID\n");
+                                                                                                        printf("-> Function Definition without ID, with idlist\n");
                                                                                                     }
-                                                                                                    $$ = SymbolTable_lookup(symTab, "__F", scope);
+                                                                                                    $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
                                                                                                 }
-            |FUNCTION ID    { ManageIDFunctionDefinition($2); } LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  
+            |FUNCTION   LEFT_PARENTHESIS  RIGHT_PARENTHESIS { GenerateName(); ManageIDFunctionDefinition(noname_prefix); unamed_functions++;} block      {
+                                                                                                    if(TRACE_PRINT){
+                                                                                                        printf("-> Function Definition without ID, without idlist\n");
+                                                                                                    }
+                                                                                                    $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
+                                                                                                }
+            |FUNCTION ID     LEFT_PARENTHESIS { ManageIDFunctionDefinition($2); scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  
                                                                                                 {
                                                                                                     
                                                                                                     if(TRACE_PRINT){
-                                                                                                        printf("-> Function Definition with ID\n");
+                                                                                                        printf("-> Function Definition with ID, with idlist\n");
+                                                                                                    }
+                                                                                                    $$ = SymbolTable_lookup(symTab, $2, scope);
+                                                                                                }
+            |FUNCTION ID    LEFT_PARENTHESIS  RIGHT_PARENTHESIS { ManageIDFunctionDefinition($2); }  block  
+                                                                                                {
+                                                                                                    
+                                                                                                    if(TRACE_PRINT){
+                                                                                                        printf("-> Function Definition with ID, without idlist\n");
                                                                                                     }
                                                                                                     $$ = SymbolTable_lookup(symTab, $2, scope);
                                                                                                 }
@@ -513,11 +527,7 @@ idlist:     ID                  {
                                         ;
                                     
                                 }
-            |                   {
-                                    if(TRACE_PRINT){
-                                        printf("-> , Empty ID List\n");
-                                    }
-                                }
+            
             ;
 
 ifstmt:     IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt                 {
