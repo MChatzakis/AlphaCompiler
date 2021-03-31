@@ -8,32 +8,7 @@
     static int isatty(void *i) {return 0;}
     #endif
 
-
     #include "yacc_libs/yacc_api.h"
-
-    /*#include <stdio.h>
-    #include <stdlib.h>
-    #include <unistd.h>
-    #include <string.h>
-
-    #include "utils/colors.h"
-    #include "yacc_libs/macros.h"
-    #include "yacc_libs/structs.h"
-
-    #include "symboltable/symboltable.h"
-
-
-    int yyerror(char *message);
-    int yylex(void);
-
-    extern int yylineno;
-    extern char* yytext;
-    extern FILE* yyin;
-
-    unsigned int scope = 0;
-
-    SymbolTable *symTab;
-    ScopeTable *scopeTab;*/
 %}
 
 /*Declarations*/
@@ -69,6 +44,8 @@
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
 %type <symTabEntry> lvalue
+%type <symTabEntry> funcdef
+%type <symTabEntry> call
 
 /*Grammar*/
 %%
@@ -461,38 +438,13 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE                   {
 
 
 
-funcdef:    FUNCTION LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
+funcdef:    FUNCTION LEFT_PARENTHESIS { ManageIDFunctionDefinition("__F"); unamed_functions++; scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition without ID\n");
                                                                                                     }
                                                                                                 }
-            |FUNCTION ID    {
-                                //printf("Function name %s in scope %u\n", $2, scope);
-                                SymbolTableEntry *entry = NULL;
-                                SymbolTableEntry *insertEntry;
-
-                                
-
-                                entry = SymbolTable_lookup(symTab, $2, scope);
-                                if(entry != NULL){
-                                    if(entry->type < 3)
-                                        fprintf_red(stdout,"[Syntax Analysis] -- ERROR: Variable \"%s\" redeclaration as function at line %lu\n",  (entry->value).varVal->name,yylineno);
-                                    else if(entry->type == 3){
-                                        fprintf_red(stdout,"[Syntax Analysis] -- ERROR: User function \"%s\" redeclaration at line %lu\n", (entry->value).funcVal->name,yylineno);
-
-                                    }
-                                    else if(entry->type == 4){
-                                        fprintf_red(stdout,"[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", (entry->value).funcVal->name,yylineno);
-                                    }
-                                    
-                                }
-                                else{
-                                    insertEntry = SymbolTable_insert(symTab, $2, scope, yylineno, USERFUNC_ID);
-                                    ScopeTable_insert(scopeTab, insertEntry, scope);
-                                }
-
-                            } 
-                                    LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  {
+            |FUNCTION ID    { ManageIDFunctionDefinition($2); } LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  
+                                                                                                {
                                                                                                     
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition with ID\n");
@@ -539,14 +491,17 @@ idlist:     ID                  {
                                         printf("-> Single ID List %s\n", $1);
                                     }
 
-                                    CheckAddFormal($1);
+                                    if(CheckAddFormal($1) == NULL)
+                                        ;
                                     
                                 }
             | idlist COMMA ID   {
                                     if(TRACE_PRINT){
                                         printf("-> , ID List %s\n", $3);
                                     }
-                                    CheckAddFormal($3);
+
+                                    if(CheckAddFormal($3) == NULL)
+                                        ;
                                     
                                 }
             |                   {

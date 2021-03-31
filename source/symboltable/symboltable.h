@@ -7,20 +7,6 @@
 #define INIT_SCOPE_SIZE 50
 #define HASH_MULTIPLIER 65599
 
-#define checkForLibFunc(id)               \
-    (!strcmp(id, "print") ||              \
-     !strcmp(id, "input") ||              \
-     !strcmp(id, "objectmemberkeys") ||   \
-     !strcmp(id, "objecttotalmembers") || \
-     !strcmp(id, "objectcopy") ||         \
-     !strcmp(id, "totalarguments") ||     \
-     !strcmp(id, "argument") ||           \
-     !strcmp(id, "typeof") ||             \
-     !strcmp(id, "strtonum") ||           \
-     !strcmp(id, "sqrt") ||               \
-     !strcmp(id, "cos") ||                \
-     !strcmp(id, "sin"))
-
 /* Symbol Types */
 enum SymbolType
 {

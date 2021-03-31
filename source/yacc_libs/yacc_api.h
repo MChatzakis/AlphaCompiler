@@ -17,6 +17,7 @@ extern char *yytext;
 extern FILE *yyin;
 
 unsigned int scope = 0;
+unsigned int unamed_functions = 0;
 
 SymbolTable *symTab;
 ScopeTable *scopeTab;
@@ -105,6 +106,7 @@ void ManageAssignValue(SymbolTableEntry *entry)
             else
             {
                 //assign
+                //printf("asdd\n");
             }
         }
         else
@@ -114,7 +116,7 @@ void ManageAssignValue(SymbolTableEntry *entry)
     }
     else
     {
-        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol at line %u\n", yylineno);
+        //fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol at line %u\n", yylineno);
     }
 }
 
@@ -127,7 +129,7 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
 {
     if (entry != NULL)
     {
-        if (entry->type == 3)
+        /*if (entry->type == 3)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used user defined function \"%s\" as variable at line %u\n", (entry->value).funcVal->name, yylineno);
         }
@@ -135,30 +137,24 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used library function \"%s\" as variable at line %u\n", (entry->value).funcVal->name, yylineno);
         }
-        else if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
+        else*/
+        if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
             if (isFunctionBetween(entry, scope))
             {
-                fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used non accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-            }
-            else
-            {
-                //ok
+                fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
             }
         }
-        else
+        /*else
         {
             //ok
-        }
+        }*/
     }
-    else
-    {
-        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol at line %u\n", yylineno);
-    }
+    
 }
 
 /**
- * @brief Code for lvalue <- ID
+ * @brief Code for lvalue -> ID
  * 
  * @param id 
  * @return SymbolTableEntry* 
@@ -196,8 +192,15 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
 {
     SymbolTableEntry *entry, *insertEntry;
 
-    if (!(entry = SymbolTable_lookup(symTab, id, scope)))
+    if ((entry = SymbolTable_lookup(symTab, id, scope)) == NULL)
     {
+
+        if (checkForLibFunc(id))
+        {
+            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Library Function \"%s\" redefined as local variable at line %u\n", id, yylineno);
+            return NULL;
+        }
+
         if (scope > 0)
         {
             insertEntry = SymbolTable_insert(symTab, id, scope, yylineno, LOCAL_ID);
@@ -224,6 +227,10 @@ SymbolTableEntry *EvaluateGlobalLValue(char *id)
 {
     SymbolTableEntry *entry;
     entry = SymbolTable_lookup(symTab, id, 0);
+    if (entry == NULL)
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol \"%s\" at line %u\n", id, yylineno);
+    }
     return entry;
 }
 
@@ -248,13 +255,13 @@ SymbolTableEntry *CheckAddFormal(char *id)
 
         if (entry->type == 4)
         {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows library function \"%s\" at line %lu\n", id,(entry->value).funcVal->name, yylineno);
+            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows library function \"%s\" at line %lu\n", id, (entry->value).funcVal->name, yylineno);
             return NULL;
         }
     }
 
     /* for same name with other formal argument of this function */
-    if ((entry = SymbolTable_lookup(symTab, id, scope)) != NULL )
+    if ((entry = SymbolTable_lookup(symTab, id, scope)) != NULL)
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument already used in function \"%s\" at line %u\n", id, yylineno);
         return NULL;
@@ -262,6 +269,43 @@ SymbolTableEntry *CheckAddFormal(char *id)
 
     entry = SymbolTable_insert(symTab, id, scope, yylineno, FORMAL_ID);
     ScopeTable_insert(scopeTab, entry, scope);
+
+    return entry;
+}
+
+SymbolTableEntry *ManageIDFunctionDefinition(char *id)
+{
+    SymbolTableEntry *entry = NULL;
+    SymbolTableEntry *insertEntry;
+
+    if (checkForLibFunc(id))
+    {
+        fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", id, yylineno);
+        return NULL;
+    }
+
+    entry = SymbolTable_lookup(symTab, id, scope); //edw exei bug! use macro?
+    if (entry != NULL)
+    {
+        if (entry->type < 3)
+            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Variable \"%s\" redeclaration as function at line %lu\n", (entry->value).varVal->name, yylineno);
+        else if (entry->type == 3)
+        {
+            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: User function \"%s\" redeclaration at line %lu\n", (entry->value).funcVal->name, yylineno);
+        }
+        /*else if (entry->type == 4)
+        {
+            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", (entry->value).funcVal->name, yylineno);
+        }*/
+
+        return NULL;
+    }
+    else
+    {
+        insertEntry = SymbolTable_insert(symTab, id, scope, yylineno, USERFUNC_ID);
+        ScopeTable_insert(scopeTab, insertEntry, scope);
+        entry = insertEntry;
+    }
 
     return entry;
 }
