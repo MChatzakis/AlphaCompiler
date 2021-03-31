@@ -38,6 +38,4 @@
      !strcmp(id, "sin"))
 
 #define STRFY(x) #x
-#define CONCAT(x, y) STRFY(x##atoa(y))
-
-#define TF unamed_functions
+#define CONCAT(x, y) STRFY(x##y)

@@ -17,10 +17,12 @@ extern char *yytext;
 extern FILE *yyin;
 
 unsigned int scope = 0;
-unsigned int unamed_functions = 0;
 
 SymbolTable *symTab;
 ScopeTable *scopeTab;
+
+unsigned int unamed_functions = 0;
+char noname_prefix[12];
 
 #define TRACE_PRINT 0
 
@@ -103,20 +105,11 @@ void ManageAssignValue(SymbolTableEntry *entry)
             {
                 fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to non accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
             }
-            else
-            {
-                //assign
-                //printf("asdd\n");
-            }
         }
         else
         {
             //assign
         }
-    }
-    else
-    {
-        //fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol at line %u\n", yylineno);
     }
 }
 
@@ -150,7 +143,6 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
             //ok
         }*/
     }
-    
 }
 
 /**
@@ -211,6 +203,7 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
             insertEntry = SymbolTable_insert(symTab, id, scope, yylineno, GLOBAL_ID);
             ScopeTable_insert(scopeTab, insertEntry, scope);
         }
+
         entry = insertEntry;
     }
 
@@ -308,4 +301,60 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
     }
 
     return entry;
+}
+
+void ManagePrimaryFunction(SymbolTableEntry *entry)
+{
+
+    if (entry != NULL)
+    {
+        if (entry->type < 3)
+        {
+            if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
+            {
+                //printf("Called var as a function!\n");
+                if (isFunctionBetween(entry, scope))
+                {
+                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+                }
+                else
+                {
+                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used variable \"%s\" as function at line %u\n", (entry->value).varVal->name, yylineno);
+                }
+            }
+            else
+            {
+                fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used variable \"%s\" as function at line %u\n", (entry->value).varVal->name, yylineno);
+            }
+        }
+    }
+}
+
+/*unsigned int CountDigits(unsigned int number)
+{
+    unsigned int count = 0; // variable declaration
+
+    while (number != 0)
+    {
+        number = number / 10;
+        count++;
+    }
+
+    return count;
+}*/
+
+void GenerateName()
+{
+    sprintf(noname_prefix + 1, "%u", unamed_functions);
+}
+
+void InitNames()
+{
+    int i;
+
+    noname_prefix[0] = '_';
+    for (i = 1; i < 12; i++)
+    {
+        noname_prefix[i] = '\0';
+    }
 }

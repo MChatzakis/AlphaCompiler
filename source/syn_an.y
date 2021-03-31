@@ -250,6 +250,8 @@ primary:    lvalue                      {
                                             }
 
                                             //edw einai to anapodo x();
+                                            //entry = $1; poia sinartisi einai
+                                            ManagePrimaryFunction($1);
 
                                         }
             | objectdef                 {
@@ -322,11 +324,12 @@ member:     lvalue FULLSTOP ID                          {
                                                         }
             ;
 
-
 call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                                           {
                                                                                                         if(TRACE_PRINT){
                                                                                                             printf("-> Call ( elist )\n");
                                                                                                         }
+                                                                                                        
+                                                                                                        $$ = $1;
 
                                                                                                     }
             | lvalue callsuffix                                                                     {
@@ -339,11 +342,16 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                       
                                                                                                             }
                                                                                                         }
 
+                                                                                                        $$ = $1;
+
                                                                                                     }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
                                                                                                         if(TRACE_PRINT){
                                                                                                             printf("-> Function Definition\n");
-                                                                                                        }                                                                                                    }
+                                                                                                        }
+
+                                                                                                        $$ = $2;    
+                                                                                                    }
             ;
 
 callsuffix: normcall        {
@@ -438,10 +446,11 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE                   {
 
 
 
-funcdef:    FUNCTION LEFT_PARENTHESIS { ManageIDFunctionDefinition("__F"); unamed_functions++; scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
+funcdef:    FUNCTION LEFT_PARENTHESIS { GenerateName(); ManageIDFunctionDefinition(noname_prefix); unamed_functions++; scope++;} idlist RIGHT_PARENTHESIS {scope--;} block      {
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition without ID\n");
                                                                                                     }
+                                                                                                    $$ = SymbolTable_lookup(symTab, "__F", scope);
                                                                                                 }
             |FUNCTION ID    { ManageIDFunctionDefinition($2); } LEFT_PARENTHESIS {scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  
                                                                                                 {
@@ -449,7 +458,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS { ManageIDFunctionDefinition("__F"); uname
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition with ID\n");
                                                                                                     }
-                                                                                                    
+                                                                                                    $$ = SymbolTable_lookup(symTab, $2, scope);
                                                                                                 }
             ;
 
@@ -595,6 +604,8 @@ int main(int argc, char **argv){
             return -1;    
         }
     }    
+
+    InitNames();
 
     symTab = SymbolTable_init();
     scopeTab = ScopeTable_init();
