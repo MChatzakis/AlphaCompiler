@@ -117,31 +117,37 @@ void SymbolTable_print(SymbolTable *s)
         curr = s->hashtable[i];
 
         if (curr != NULL)
-            printf("List %u:\n", i);
+            printf("------------- Bucket %u: -------------\n", i);
 
         while (curr != NULL)
         {
             if (curr->type < 3)
             {
-                printf("\tName: %s\n", (curr->value).varVal->name);
+                /*printf("\tName: %s\n", (curr->value).varVal->name);
                 printf("\tLine: %u\n", (curr->value).varVal->line);
-                printf("\tScope: %u\n", (curr->value).varVal->scope);
+                printf("\tScope: %u\n", (curr->value).varVal->scope);*/
+
+                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).varVal->name, arr[curr->type], (curr->value).varVal->line, (curr->value).varVal->scope, curr->isActive);
             }
             else
             {
-                printf("\tName: %s\n", (curr->value).funcVal->name);
+                /*printf("\tName: %s\n", (curr->value).funcVal->name);
                 printf("\tLine: %u\n", (curr->value).funcVal->line);
-                printf("\tScope: %u\n", (curr->value).funcVal->scope);
+                printf("\tScope: %u\n", (curr->value).funcVal->scope);*/
+
+                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).varVal->name, arr[curr->type], (curr->value).varVal->line, (curr->value).varVal->scope, curr->isActive);
             }
-            printf("\tType: %s\n", arr[curr->type]);
-            printf("\tActive: %d\n", curr->isActive);
-            if (curr->next != NULL)
+            //printf("\tType: %s\n", arr[curr->type]);
+            //printf("\tActive: %d\n", curr->isActive);
+            /*if (curr->next != NULL)
             {
                 printf("\t-----------\n");
-            }
+            }*/
             curr = curr->next;
         }
     }
+
+    printf("--------------------------\n\"name\" [type] (line) (scope) (status)\n");
 }
 
 SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned int scope)
@@ -345,7 +351,14 @@ void ScopeTable_print(ScopeTable *st)
 
             curr = curr->next;
         }
+
+        if (st->table[i] != NULL)
+        {
+            printf("\n");
+        }
     }
+
+    printf("\n--------------------------\n\"name\" [type] (line) (scope) (status)\n");
 }
 
 /* ------------------------------------ Function Argument List Functions ------------------------------------ */

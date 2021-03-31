@@ -317,15 +317,15 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
                 {
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                 }
-                else
+                /*else
                 {
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used variable \"%s\" as function at line %u\n", (entry->value).varVal->name, yylineno);
-                }
+                }*/
             }
-            else
+            /*else
             {
                 fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used variable \"%s\" as function at line %u\n", (entry->value).varVal->name, yylineno);
-            }
+            }*/
         }
     }
 }

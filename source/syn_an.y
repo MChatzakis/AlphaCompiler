@@ -390,11 +390,6 @@ elist:      expr                        {
                                                 printf("-> elist , expr\n");
                                             }
                                         }
-            |                           {
-                                            if(TRACE_PRINT){
-                                                printf("-> Empty Elist\n");
-                                            }
-                                        }
             ;
 
 objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
@@ -405,6 +400,11 @@ objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
             | LEFT_BRACKET elist RIGHT_BRACKET  {
                                                     if(TRACE_PRINT){
                                                         printf("-> [ elist ]\n");
+                                                    }
+                                                }
+            | LEFT_BRACKET  RIGHT_BRACKET       {
+                                                    if(TRACE_PRINT){
+                                                        printf("-> [ empty object ]\n");
                                                     }
                                                 }
             ;
@@ -530,16 +530,17 @@ idlist:     ID                  {
             
             ;
 
-ifstmt:     IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt                 {
-                                                                                if(TRACE_PRINT){
-                                                                                    printf("-> If\n");
-                                                                                }
-                                                                            }
-            | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt     {
+ifstmt:     
+            IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt     {
                                                                                 if(TRACE_PRINT){
                                                                                     printf("-> If Else\n");
                                                                                 }
                                                                             }
+            | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt                 {
+                                                                                if(TRACE_PRINT){
+                                                                                    printf("-> If\n");
+                                                                                }
+                                                                            }                                                                
             ;
 
 whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt              {
@@ -551,7 +552,22 @@ whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt              {
 
 forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt    {
                                                                                                     if(TRACE_PRINT){
-                                                                                                        printf("-> For\n");
+                                                                                                        printf("-> for(Elist; Expr; Elist)\n");
+                                                                                                    }
+                                                                                                }
+            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt    {
+                                                                                                    if(TRACE_PRINT){
+                                                                                                        printf("-> for(; Expr; Elist)\n");
+                                                                                                    }
+                                                                                                }
+            |FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS stmt    {
+                                                                                                    if(TRACE_PRINT){
+                                                                                                        printf("-> for(Elist; Expr;)\n");
+                                                                                                    }
+                                                                                                }
+            |FOR LEFT_PARENTHESIS  SEMICOLON expr SEMICOLON  RIGHT_PARENTHESIS stmt    {
+                                                                                                    if(TRACE_PRINT){
+                                                                                                        printf("-> For(; expr;) \n");
                                                                                                     }
                                                                                                 }
             ;
