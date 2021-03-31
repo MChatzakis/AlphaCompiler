@@ -36,6 +36,3 @@
      !strcmp(id, "sqrt") ||               \
      !strcmp(id, "cos") ||                \
      !strcmp(id, "sin"))
-
-#define STRFY(x) #x
-#define CONCAT(x, y) STRFY(x##y)
