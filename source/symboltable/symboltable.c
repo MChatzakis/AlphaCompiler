@@ -323,7 +323,7 @@ void ScopeTable_print(ScopeTable *st)
     unsigned int i;
     ScopeList *curr;
     SymbolTableEntry *entry;
-    char *arr[5] = {"global variabe", "local variable", "formal variable", "user function", "library function"};
+    char *arr[5] = {"global variabe", "local variable", "formal argument", "user function", "library function"};
 
     assert(st);
 
@@ -358,7 +358,7 @@ void ScopeTable_print(ScopeTable *st)
         }
     }
 
-    printf("\n--------------------------\n\"name\" [type] (line) (scope) (status)\n");
+    printf("--------------------------\n\"name\" [type] (line) (scope) (status)\n");
 }
 
 /* ------------------------------------ Function Argument List Functions ------------------------------------ */

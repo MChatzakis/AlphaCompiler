@@ -46,6 +46,8 @@
 %type <symTabEntry> lvalue
 %type <symTabEntry> funcdef
 %type <symTabEntry> call
+%type <symTabEntry> member
+
 
 /*Grammar*/
 %%
@@ -109,7 +111,7 @@ stmt:       expr SEMICOLON              {
 stmts:      stmts stmt
             | stmt
             ;
-            
+
 expr:       lvalue ASSIGN expr          {
                                             
                                             if(TRACE_PRINT){
@@ -298,14 +300,19 @@ lvalue:     ID                          {
                                             if(TRACE_PRINT){
                                                 printf("-> Member\n");
                                             }
+                                            $$ = NULL; //na to doume ksana!
                                         }
             ;
 
 
 member:     lvalue FULLSTOP ID                          {
                                                             if(TRACE_PRINT){
-                                                                printf("-> lvalue . %s\n", $3);
+                                                                printf("->?? lvalue . %s\n", $3);
                                                             }
+
+                                                            /*
+                                                                Should we check if lvalue is function to throw error?
+                                                            */
                                                         }
             | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {
                                                             if(TRACE_PRINT){
@@ -316,6 +323,7 @@ member:     lvalue FULLSTOP ID                          {
                                                             if(TRACE_PRINT){
                                                                 printf("-> Call.%s\n", $3);
                                                             }
+
                                                         }
             | call LEFT_BRACKET expr RIGHT_BRACKET      {
                                                             if(TRACE_PRINT){
@@ -332,14 +340,24 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                       
                                                                                                         $$ = $1;
 
                                                                                                     }
+
+
+            | call LEFT_PARENTHESIS RIGHT_PARENTHESIS                                                 {
+                                                                                                        if(TRACE_PRINT){
+                                                                                                            printf("-> Call ( empty )\n");
+                                                                                                        }
+                                                                                                        
+                                                                                                        $$ = $1;
+
+                                                                                                    }
             | lvalue callsuffix                                                                     {
                                                                                                         if(TRACE_PRINT){
-                                                                                                            if($1->type < 3){
+                                                                                                            /*if($1->type < 3){
                                                                                                                 //logika prepei error message
                                                                                                                 printf("-> %s callsuffix\n", ($1->value).varVal->name);
                                                                                                             }else{
                                                                                                                 printf("-> %s callsuffix\n",  ($1->value).funcVal->name);
-                                                                                                            }
+                                                                                                            }*/
                                                                                                         }
 
                                                                                                         $$ = $1;
@@ -347,11 +365,19 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS                       
                                                                                                     }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
                                                                                                         if(TRACE_PRINT){
-                                                                                                            printf("-> Function Definition\n");
+                                                                                                            printf("-> (Function Definition)(elist)\n");
                                                                                                         }
 
                                                                                                         $$ = $2;    
                                                                                                     }
+
+            | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS   {
+                                                                                                        if(TRACE_PRINT){
+                                                                                                            printf("-> (Function Definition)(empty)\n");
+                                                                                                        }
+
+                                                                                                        $$ = $2;    
+                                                                                                    }                                                                                        
             ;
 
 callsuffix: normcall        {
@@ -371,6 +397,11 @@ normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS    {
                                                                 printf("-> ( elist )\n");
                                                             }
                                                         }
+            | LEFT_PARENTHESIS RIGHT_PARENTHESIS   {
+                                                            if(TRACE_PRINT){
+                                                                printf("-> ( empty )\n");
+                                                            }
+                                                        }                                            
             ;
 
 methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS     {
@@ -378,6 +409,11 @@ methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS     {
                                                                                     printf("-> ..%s ( elist )\n", $2);
                                                                                 }
                                                                             }
+            | DOUBLE_FULLSTOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS         {
+                                                                                if(TRACE_PRINT){
+                                                                                    printf("-> ..%s ( empty )\n", $2);
+                                                                                }
+                                                                            }                                                                
             ;
 
 elist:      expr                        {
@@ -452,7 +488,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS { GenerateName(); ManageIDFunctionDefiniti
                                                                                                     }
                                                                                                     $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
                                                                                                 }
-            |FUNCTION   LEFT_PARENTHESIS  RIGHT_PARENTHESIS { GenerateName(); ManageIDFunctionDefinition(noname_prefix); unamed_functions++;} block      {
+            |FUNCTION   LEFT_PARENTHESIS  RIGHT_PARENTHESIS { GenerateName(); ManageIDFunctionDefinition(noname_prefix); unamed_functions++; funcdef_stack++;} block      {
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition without ID, without idlist\n");
                                                                                                     }
@@ -460,15 +496,13 @@ funcdef:    FUNCTION LEFT_PARENTHESIS { GenerateName(); ManageIDFunctionDefiniti
                                                                                                 }
             |FUNCTION ID     LEFT_PARENTHESIS { ManageIDFunctionDefinition($2); scope++;} idlist RIGHT_PARENTHESIS {scope--;} block  
                                                                                                 {
-                                                                                                    
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition with ID, with idlist\n");
                                                                                                     }
                                                                                                     $$ = SymbolTable_lookup(symTab, $2, scope);
                                                                                                 }
-            |FUNCTION ID    LEFT_PARENTHESIS  RIGHT_PARENTHESIS { ManageIDFunctionDefinition($2); }  block  
+            |FUNCTION ID    LEFT_PARENTHESIS  RIGHT_PARENTHESIS { ManageIDFunctionDefinition($2); funcdef_stack++;}  block  
                                                                                                 {
-                                                                                                    
                                                                                                     if(TRACE_PRINT){
                                                                                                         printf("-> Function Definition with ID, without idlist\n");
                                                                                                     }

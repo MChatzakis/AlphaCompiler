@@ -24,5 +24,9 @@ x = [ { "hello" : people } ];
 
 x = [ { "hello" : all  } , { x : 1} , { z : 1.5 } ];
 
+t = [{x:a},{y:b}] ; 
+t["x"]=a;
+t["y"]=b; 
+
 
 

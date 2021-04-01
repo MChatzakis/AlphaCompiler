@@ -76,6 +76,7 @@ object = [{"a":2}, {"b":2}, {"c":3}];
 
 
 object..f();
+
 object[0] = 2;
 object["test"] = 2;
 object.test = 2;
@@ -109,3 +110,7 @@ print().a = 2;
 
 print(a1.a2.a3.a4, "\n");
 
+/*
+x.y;
+x..y();
+*/

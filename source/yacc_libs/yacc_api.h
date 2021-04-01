@@ -22,6 +22,8 @@ SymbolTable *symTab;
 ScopeTable *scopeTab;
 
 unsigned int unamed_functions = 0;
+unsigned int funcdef_stack = 0;
+
 char noname_prefix[12];
 
 #define TRACE_PRINT 0
@@ -104,12 +106,19 @@ void ManageAssignValue(SymbolTableEntry *entry)
             if (isFunctionBetween(entry, scope))
             {
                 fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to non accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-            }
+            }/*
+            if (funcdef_stack > 0)
+            {
+                fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to non accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+            }*/
         }
         else
         {
             //assign
         }
+    }
+    else{
+        //printf("NULLLLLLLL\n");
     }
 }
 
