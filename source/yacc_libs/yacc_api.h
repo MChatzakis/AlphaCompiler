@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "../utils/colors.h"
+#include "../utils/stack/number_stack.h"
 #include "../symboltable/symboltable.h"
 
 #include "macros.h"
@@ -21,68 +22,17 @@ unsigned int scope = 0;
 SymbolTable *symTab;
 ScopeTable *scopeTab;
 
+number_stack_t *funcdefStack;
+
 unsigned int unamed_functions = 0;
-unsigned int funcdef_stack = 0;
 
 char noname_prefix[12];
 
 FILE *ost;
 
-#define TRACE_PRINT 1
+#define TRACE_PRINT 0
 
-/* Helpful functions */
-
-/**
- * @brief Checks if there is a function in this scope
- * 
- * @param scope 
- * @return int 
- */
-int isFunctionInScope(unsigned int scope)
-{
-    ScopeList *curr;
-    SymbolTableEntry *entry;
-
-    curr = scopeTab->table[scope];
-    while (curr)
-    {
-        entry = curr->entry;
-        if (entry->type >= 3 && entry->isActive)
-        {
-            return 1;
-        }
-        curr = curr->next;
-    }
-
-    return 0;
-}
-
-/**
- * @brief Checks if there is a function between 2 variables that are the same (for invalid access)
- * 
- * @param entry 
- * @param curr_scope 
- * @return int 
- */
-int isFunctionBetween(SymbolTableEntry *entry, unsigned int curr_scope)
-{
-    unsigned int scope, i;
-
-    assert(entry->type < 3);
-
-    scope = (entry->value).varVal->scope;
-    for (i = scope; i < curr_scope; i++)
-    {
-        if (isFunctionInScope(i))
-        {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-/* Yaccs code */
+/* Yacc code */
 
 /**
  * @brief Code for lvalue assign expr
@@ -105,14 +55,14 @@ void ManageAssignValue(SymbolTableEntry *entry)
         else if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
             /* an vrei variable kai anamesa se ayth kai th dhlwsh ths yparxei synarthsh tote error */
-            if (funcdef_stack >0 && isFunctionBetween(entry, scope))
+
+            if (!number_stack_is_empty(funcdefStack))
             {
-                fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to non accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-            } /*
-            if (funcdef_stack > 0)
-            {
-                fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to non accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-            }*/
+                if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
+                {
+                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+                }
+            }
         }
         else
         {
@@ -145,9 +95,17 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
         else*/
         if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
-            if (isFunctionBetween(entry, scope))
+            /*if (isFunctionBetween(entry, scope))
             {
                 fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+            }*/
+
+            if (!number_stack_is_empty(funcdefStack))
+            {
+                if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
+                {
+                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+                }
             }
         }
         /*else
@@ -325,14 +283,21 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
             if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
             {
                 //printf("Called var as a function!\n");
-                if (isFunctionBetween(entry, scope))
+                /*if (isFunctionBetween(entry, scope))
                 {
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                 }
-                /*else
+                else
                 {
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used variable \"%s\" as function at line %u\n", (entry->value).varVal->name, yylineno);
                 }*/
+                if (!number_stack_is_empty(funcdefStack))
+                {
+                    if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
+                    {
+                        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+                    }
+                }
             }
             /*else
             {
