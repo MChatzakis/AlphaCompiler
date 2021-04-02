@@ -62,15 +62,16 @@ void ManageAssignValue(SymbolTableEntry *entry)
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                 }
             }
-            else{
+            else
+            {
                 //assign
             }
         }
-        else{
+        else
+        {
             //assgin val
         }
     }
-
 }
 
 /**
@@ -81,7 +82,7 @@ void ManageAssignValue(SymbolTableEntry *entry)
 void ManagePrimaryLValue(SymbolTableEntry *entry)
 {
     if (entry != NULL)
-    {    
+    {
         if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
             if (!number_stack_is_empty(funcdefStack))
