@@ -97,7 +97,7 @@ void number_stack_print(number_stack_t *st)
   curr = st->top;
   while (curr)
   {
-    printf("Starting line: %u.\n", curr->scope);
+    printf("Scope: %u.\n", curr->scope);
     curr = curr->next;
   }
 }

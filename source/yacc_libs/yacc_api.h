@@ -54,8 +54,7 @@ void ManageAssignValue(SymbolTableEntry *entry)
         }
         else if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
-            /* an vrei variable kai anamesa se ayth kai th dhlwsh ths yparxei synarthsh tote error */
-
+            /* elegxoume an exoume prosvasi (an eimaste mesa se synarthsh) */
             if (!number_stack_is_empty(funcdefStack))
             {
                 if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
@@ -63,16 +62,15 @@ void ManageAssignValue(SymbolTableEntry *entry)
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                 }
             }
+            else{
+                //assign
+            }
         }
-        else
-        {
-            //assign
+        else{
+            //assgin val
         }
     }
-    else
-    {
-        //printf("NULLLLLLLL\n");
-    }
+
 }
 
 /**
@@ -83,23 +81,9 @@ void ManageAssignValue(SymbolTableEntry *entry)
 void ManagePrimaryLValue(SymbolTableEntry *entry)
 {
     if (entry != NULL)
-    {
-        /*if (entry->type == 3)
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used user defined function \"%s\" as variable at line %u\n", (entry->value).funcVal->name, yylineno);
-        }
-        else if (entry->type == 4)
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used library function \"%s\" as variable at line %u\n", (entry->value).funcVal->name, yylineno);
-        }
-        else*/
+    {    
         if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
-            /*if (isFunctionBetween(entry, scope))
-            {
-                fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-            }*/
-
             if (!number_stack_is_empty(funcdefStack))
             {
                 if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
@@ -108,10 +92,10 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
                 }
             }
         }
-        /*else
+        else
         {
-            //ok
-        }*/
+            //assign value to expression
+        }
     }
 }
 
@@ -207,8 +191,7 @@ SymbolTableEntry *CheckAddFormal(char *id)
 {
     SymbolTableEntry *entry;
 
-    /* for same name with function */
-    if ((entry = SymbolTable_lookup_general(symTab, id, scope)) != NULL)
+    /*if ((entry = SymbolTable_lookup_general(symTab, id, scope)) != NULL)
     {
         if (entry->type == 3)
         {
@@ -221,9 +204,14 @@ SymbolTableEntry *CheckAddFormal(char *id)
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows library function \"%s\" at line %lu\n", id, (entry->value).funcVal->name, yylineno);
             return NULL;
         }
+    }*/
+
+    if (checkForLibFunc(id))
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows library function at line %lu\n", id, yylineno);
+        return NULL;
     }
 
-    /* for same name with other formal argument of this function */
     if ((entry = SymbolTable_lookup(symTab, id, scope)) != NULL)
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument already used in function \"%s\" at line %u\n", id, yylineno);
@@ -247,7 +235,7 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
         return NULL;
     }
 
-    entry = SymbolTable_lookup(symTab, id, scope); //edw exei bug! use macro?
+    entry = SymbolTable_lookup(symTab, id, scope);
     if (entry != NULL)
     {
         if (entry->type < 3)
@@ -256,10 +244,6 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
         {
             fprintf_red(stdout, "[Syntax Analysis] -- ERROR: User function \"%s\" redeclaration at line %lu\n", (entry->value).funcVal->name, yylineno);
         }
-        /*else if (entry->type == 4)
-        {
-            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", (entry->value).funcVal->name, yylineno);
-        }*/
 
         return NULL;
     }
@@ -275,22 +259,12 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
 
 void ManagePrimaryFunction(SymbolTableEntry *entry)
 {
-
     if (entry != NULL)
     {
         if (entry->type < 3)
         {
             if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
             {
-                //printf("Called var as a function!\n");
-                /*if (isFunctionBetween(entry, scope))
-                {
-                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-                }
-                else
-                {
-                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used variable \"%s\" as function at line %u\n", (entry->value).varVal->name, yylineno);
-                }*/
                 if (!number_stack_is_empty(funcdefStack))
                 {
                     if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
@@ -299,26 +273,9 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
                     }
                 }
             }
-            /*else
-            {
-                fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used variable \"%s\" as function at line %u\n", (entry->value).varVal->name, yylineno);
-            }*/
         }
     }
 }
-
-/*unsigned int CountDigits(unsigned int number)
-{
-    unsigned int count = 0; // variable declaration
-
-    while (number != 0)
-    {
-        number = number / 10;
-        count++;
-    }
-
-    return count;
-}*/
 
 void GenerateName()
 {

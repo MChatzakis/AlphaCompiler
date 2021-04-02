@@ -247,7 +247,7 @@ primary:    lvalue                      {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>CALL\n");
                                             }
-                                            ManagePrimaryFunction($1); y; return
+                                            ManagePrimaryFunction($1);
                                         }
             | objectdef                 {
                                             if(TRACE_PRINT){
@@ -464,7 +464,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                                                                             fprintf(ost, "=>FUNCDEF without ID, with IDLIST\n");
                                                                                         } 
                                                                                         $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
-                                                                                        number_stack_print(funcdefStack);
+                                                                                        //number_stack_print(funcdefStack);
                                                                                         number_stack_pop(funcdefStack);                                  
                                                                                     }
             |FUNCTION LEFT_PARENTHESIS RIGHT_PARENTHESIS    { 
@@ -477,13 +477,13 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                                                             fprintf(ost, "=>FUNCDEF without ID, without IDLIST\n");
                                                                         }
                                                                         $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
-                                                                        number_stack_print(funcdefStack);
+                                                                        //number_stack_print(funcdefStack);
                                                                         number_stack_pop(funcdefStack);
                                                                     }
             |FUNCTION ID LEFT_PARENTHESIS   {
                                                 ManageIDFunctionDefinition($2);
-                                                scope++;
                                                 number_stack_push(funcdefStack, scope);
+                                                scope++;
                                             } 
                                             idlist RIGHT_PARENTHESIS {scope--;} block  
                                                                                     {
@@ -491,7 +491,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                                                                             printf("=>FUNCDEF with ID, with IDLIST\n");
                                                                                         }
                                                                                         $$ = SymbolTable_lookup(symTab, $2, scope);
-                                                                                        number_stack_print(funcdefStack);
+                                                                                        //number_stack_print(funcdefStack);
                                                                                         number_stack_pop(funcdefStack);
                                                                                     }
             |FUNCTION ID LEFT_PARENTHESIS RIGHT_PARENTHESIS { 
@@ -503,7 +503,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                                                                             printf("=>FUNCDEF with ID, without IDLIST\n");
                                                                                         }
                                                                                         $$ = SymbolTable_lookup(symTab, $2, scope);
-                                                                                        number_stack_print(funcdefStack);
+                                                                                        //number_stack_print(funcdefStack);
                                                                                         number_stack_pop(funcdefStack);
                                                                                     }
             ;
