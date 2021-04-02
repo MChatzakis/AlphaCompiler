@@ -30,7 +30,7 @@ char noname_prefix[12];
 
 FILE *ost;
 
-#define TRACE_PRINT 0
+#define TRACE_PRINT 1
 
 /* Yacc code */
 
