@@ -53,7 +53,6 @@ typedef struct SymbolTable
     SymbolTableEntry *hashtable[BUCKETS];
 } SymbolTable;
 
-
 /* Scope Structures */
 typedef struct ScopeList
 {
@@ -67,28 +66,21 @@ typedef struct ScopeTable
     ScopeList **table;
 } ScopeTable;
 
-
-
 /* ------------------------------------ Hashing ------------------------------------ */
 unsigned int hash_function(const char *pcKey);
-
-
 
 /* ------------------------------------ SymbolTable Functions ------------------------------------ */
 SymbolTable *SymbolTable_init();
 SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned int scope, unsigned int line, enum SymbolType type);
 SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned int scope);
 SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, unsigned int scope);
-
-void SymbolTable_print(SymbolTable *s);
+void SymbolTable_print(SymbolTable *s, FILE *stream);
 void SymbolTable_scope_print(SymbolTable *s);
 void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope);
 void SymbolTable_add_libfun(SymbolTable *s, ScopeTable *t);
-
-
 
 /* ------------------------------------ ScopeTable Functions ------------------------------------ */
 ScopeTable *ScopeTable_init();
 ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned int scope);
 ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope);
-void ScopeTable_print(ScopeTable *st);
+void ScopeTable_print(ScopeTable *st, FILE *stream);

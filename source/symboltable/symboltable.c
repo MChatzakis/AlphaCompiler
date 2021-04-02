@@ -104,7 +104,7 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
     return entry;
 }
 
-void SymbolTable_print(SymbolTable *s)
+void SymbolTable_print(SymbolTable *s, FILE *stream)
 {
     unsigned int i;
     char *arr[5] = {"GLOBAL", "LOCAL", "FORMAL", "USERFUNC", "LIBFUNC"};
@@ -117,7 +117,7 @@ void SymbolTable_print(SymbolTable *s)
         curr = s->hashtable[i];
 
         if (curr != NULL)
-            printf("------------- Bucket %u: -------------\n", i);
+            fprintf(stream, "------------- Bucket %u: -------------\n", i);
 
         while (curr != NULL)
         {
@@ -127,7 +127,7 @@ void SymbolTable_print(SymbolTable *s)
                 printf("\tLine: %u\n", (curr->value).varVal->line);
                 printf("\tScope: %u\n", (curr->value).varVal->scope);*/
 
-                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).varVal->name, arr[curr->type], (curr->value).varVal->line, (curr->value).varVal->scope, curr->isActive);
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).varVal->name, arr[curr->type], (curr->value).varVal->line, (curr->value).varVal->scope, curr->isActive);
             }
             else
             {
@@ -135,7 +135,7 @@ void SymbolTable_print(SymbolTable *s)
                 printf("\tLine: %u\n", (curr->value).funcVal->line);
                 printf("\tScope: %u\n", (curr->value).funcVal->scope);*/
 
-                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).varVal->name, arr[curr->type], (curr->value).varVal->line, (curr->value).varVal->scope, curr->isActive);
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).varVal->name, arr[curr->type], (curr->value).varVal->line, (curr->value).varVal->scope, curr->isActive);
             }
             //printf("\tType: %s\n", arr[curr->type]);
             //printf("\tActive: %d\n", curr->isActive);
@@ -147,7 +147,7 @@ void SymbolTable_print(SymbolTable *s)
         }
     }
 
-    printf("--------------------------\n\"name\" [type] (line) (scope) (status)\n");
+    fprintf(stream, "--------------------------\n\"name\" [type] (line) (scope) (status)\n");
 }
 
 SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned int scope)
@@ -279,7 +279,7 @@ ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned i
     slentry = (ScopeList *)malloc(sizeof(ScopeList));
     if (!slentry)
     {
-        perror("Could not allocate memory gor sl entry");
+        perror("Could not allocate memory for sl entry");
         exit(EXIT_FAILURE);
     }
 
@@ -318,7 +318,7 @@ ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope)
     return st->table[scope];
 }
 
-void ScopeTable_print(ScopeTable *st)
+void ScopeTable_print(ScopeTable *st, FILE *stream)
 {
     unsigned int i;
     ScopeList *curr;
@@ -333,7 +333,7 @@ void ScopeTable_print(ScopeTable *st)
 
         if (curr != NULL)
         {
-            printf("---------------- Scope #%d ----------------\n", i);
+            fprintf(stream, "---------------- Scope #%d ----------------\n", i);
         }
 
         while (curr)
@@ -342,11 +342,11 @@ void ScopeTable_print(ScopeTable *st)
 
             if (entry->type < 3)
             {
-                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->isActive);
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->isActive);
             }
             else
             {
-                printf("\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
             }
 
             curr = curr->next;
@@ -354,11 +354,11 @@ void ScopeTable_print(ScopeTable *st)
 
         if (st->table[i] != NULL)
         {
-            printf("\n");
+            fprintf(stream, "\n");
         }
     }
 
-    printf("--------------------------\n\"name\" [type] (line) (scope) (status)\n");
+    fprintf(stream, "--------------------------\n\"name\" [type] (line) (scope) (status)\n");
 }
 
 /* ------------------------------------ Function Argument List Functions ------------------------------------ */

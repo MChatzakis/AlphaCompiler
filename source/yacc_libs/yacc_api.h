@@ -26,7 +26,9 @@ unsigned int funcdef_stack = 0;
 
 char noname_prefix[12];
 
-#define TRACE_PRINT 0
+FILE *ost;
+
+#define TRACE_PRINT 1
 
 /* Helpful functions */
 
@@ -103,10 +105,10 @@ void ManageAssignValue(SymbolTableEntry *entry)
         else if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
             /* an vrei variable kai anamesa se ayth kai th dhlwsh ths yparxei synarthsh tote error */
-            if (isFunctionBetween(entry, scope))
+            if (funcdef_stack >0 && isFunctionBetween(entry, scope))
             {
                 fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to non accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-            }/*
+            } /*
             if (funcdef_stack > 0)
             {
                 fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to non accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
@@ -117,7 +119,8 @@ void ManageAssignValue(SymbolTableEntry *entry)
             //assign
         }
     }
-    else{
+    else
+    {
         //printf("NULLLLLLLL\n");
     }
 }
