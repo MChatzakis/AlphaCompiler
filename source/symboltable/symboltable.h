@@ -17,7 +17,7 @@ enum SymbolType
     LIBFUNC_ID
 };
 
-/* Symbol Table Structures*/
+/* ------------------------------------ SymbolTable Structures ------------------------------------ */
 typedef struct Variable
 {
     const char *name;
@@ -60,7 +60,7 @@ typedef struct SymbolTable
     SymbolTableEntry *hashtable[BUCKETS];
 } SymbolTable;
 
-/* Scope Structures */
+/* ------------------------------------ ScopeList Structures ------------------------------------ */
 typedef struct ScopeList
 {
     SymbolTableEntry *entry;
@@ -94,4 +94,6 @@ void ScopeTable_print(ScopeTable *st, FILE *stream);
 
 /* ------------------------------------ FuncArg Functions ------------------------------------ */
 FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg);
-void FuncArg_print(SymbolTableEntry *function);
+void FuncArg_print(SymbolTableEntry *function, FILE *stream);
+
+/* ------------------------------------ Function Stack ------------------------------------ */

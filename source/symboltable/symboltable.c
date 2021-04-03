@@ -398,7 +398,7 @@ FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg)
     return funcarg;
 }
 
-void FuncArg_print(SymbolTableEntry *function)
+void FuncArg_print(SymbolTableEntry *function, FILE *stream)
 {
     FuncArg *curr;
     SymbolTableEntry *entry;
@@ -406,12 +406,12 @@ void FuncArg_print(SymbolTableEntry *function)
     assert(function && function->type == 2);
 
     curr = (function->value).funcVal->args;
-    printf("Args: [ ");
+    fprintf(stream, "Args: [ ");
     while (curr)
     {
         entry = curr->arg;
-        printf("%s ", (entry->value).varVal->name);
+        fprintf(stream, "%s ", (entry->value).varVal->name);
         curr = curr->next;
     }
-    printf("]\n");
+    fprintf(stream, "]\n");
 }
