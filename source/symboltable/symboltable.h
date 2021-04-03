@@ -25,10 +25,11 @@ typedef struct Variable
     unsigned int line;
 } Variable;
 
+struct FuncArg;
 typedef struct Function
 {
     const char *name;
-    //list
+    struct FuncArg *args;
     unsigned int scope;
     unsigned int line;
 } Function;
@@ -46,6 +47,12 @@ typedef struct SymbolTableEntry
     struct SymbolTableEntry *next;
 
 } SymbolTableEntry;
+
+typedef struct FuncArg
+{
+    SymbolTableEntry *arg;
+    struct FuncArg *next;
+} FuncArg;
 
 typedef struct SymbolTable
 {
@@ -84,3 +91,7 @@ ScopeTable *ScopeTable_init();
 ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned int scope);
 ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope);
 void ScopeTable_print(ScopeTable *st, FILE *stream);
+
+/* ------------------------------------ FuncArg Functions ------------------------------------ */
+FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg);
+void FuncArg_print(SymbolTableEntry *function);

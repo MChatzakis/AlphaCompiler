@@ -361,4 +361,57 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
     fprintf(stream, "--------------------------\n\"name\" [type] (line) (scope) (status)\n");
 }
 
-/* ------------------------------------ Function Argument List Functions ------------------------------------ */
+/* ------------------------------------ FuncArg Functions ------------------------------------ */
+FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg)
+{
+    FuncArg *curr, *prev, *funcarg;
+
+    assert(function && function->type == 3 && arg && arg->type == 2);
+
+    curr = (function->value).funcVal->args;
+    prev = NULL;
+    while (curr)
+    {
+        prev = curr;
+        curr = curr->next;
+    }
+
+    funcarg = (FuncArg *)malloc(sizeof(FuncArg));
+    if (!funcarg)
+    {
+        perror("Could not allocate memory for arguments");
+        exit(EXIT_FAILURE);
+    }
+
+    funcarg->arg = arg;
+    funcarg->next = NULL;
+
+    if (prev == NULL)
+    {
+        (function->value).funcVal->args = funcarg;
+    }
+    else
+    {
+        prev->next = funcarg;
+    }
+
+    return funcarg;
+}
+
+void FuncArg_print(SymbolTableEntry *function)
+{
+    FuncArg *curr;
+    SymbolTableEntry *entry;
+
+    assert(function && function->type == 2);
+
+    curr = (function->value).funcVal->args;
+    printf("Args: [ ");
+    while (curr)
+    {
+        entry = curr->arg;
+        printf("%s ", (entry->value).varVal->name);
+        curr = curr->next;
+    }
+    printf("]\n");
+}

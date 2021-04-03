@@ -3,12 +3,9 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "../utils/colors.h"
+#include "../utils/utils.h"
 #include "../utils/stack/number_stack.h"
 #include "../symboltable/symboltable.h"
-
-#include "macros.h"
-#include "structs.h"
 
 int yyerror(char *message);
 int yylex(void);
@@ -18,22 +15,33 @@ extern char *yytext;
 extern FILE *yyin;
 
 unsigned int scope = 0;
+unsigned int unamed_functions = 0;
 
 SymbolTable *symTab;
 ScopeTable *scopeTab;
 
 number_stack_t *funcdefStack;
 
-unsigned int unamed_functions = 0;
-
 char noname_prefix[12];
 
 FILE *ost;
-
 #define TRACE_PRINT 1
 
-/* Yacc code */
+#define checkForLibFunc(id)               \
+    (!strcmp(id, "print") ||              \
+     !strcmp(id, "input") ||              \
+     !strcmp(id, "objectmemberkeys") ||   \
+     !strcmp(id, "objecttotalmembers") || \
+     !strcmp(id, "objectcopy") ||         \
+     !strcmp(id, "totalarguments") ||     \
+     !strcmp(id, "argument") ||           \
+     !strcmp(id, "typeof") ||             \
+     !strcmp(id, "strtonum") ||           \
+     !strcmp(id, "sqrt") ||               \
+     !strcmp(id, "cos") ||                \
+     !strcmp(id, "sin"))
 
+/* Yacc code */
 /**
  * @brief Code for lvalue assign expr
  * 
@@ -62,15 +70,16 @@ void ManageAssignValue(SymbolTableEntry *entry)
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                 }
             }
-            else{
+            else
+            {
                 //assign
             }
         }
-        else{
+        else
+        {
             //assgin val
         }
     }
-
 }
 
 /**
@@ -81,7 +90,7 @@ void ManageAssignValue(SymbolTableEntry *entry)
 void ManagePrimaryLValue(SymbolTableEntry *entry)
 {
     if (entry != NULL)
-    {    
+    {
         if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
             if (!number_stack_is_empty(funcdefStack))

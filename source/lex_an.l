@@ -11,13 +11,12 @@
     #include <stdlib.h>
     #include <stdio.h>
 
-    #include "yacc_libs/structs.h"
     #include "symboltable/symboltable.h"
     #include "parser.h"
 
     //#include "lex_libs/token/token.h"
     #include "lex_libs/comment_stack/comment_stack.h"
-    #include "utils/colors.h"
+    #include "utils/utils.h"
 
     //#define YY_DECL int yylex(void* ylval)
     
@@ -30,8 +29,6 @@
     
     //The default string size
     #define DEFAULT_STR_SIZE 128
-
-    
 %}
 
 %option outfile = "scanner.c"
