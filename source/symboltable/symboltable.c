@@ -135,7 +135,10 @@ void SymbolTable_print(SymbolTable *s, FILE *stream)
                 printf("\tLine: %u\n", (curr->value).funcVal->line);
                 printf("\tScope: %u\n", (curr->value).funcVal->scope);*/
 
-                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).varVal->name, arr[curr->type], (curr->value).varVal->line, (curr->value).varVal->scope, curr->isActive);
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).funcVal->name, arr[curr->type], (curr->value).funcVal->line, (curr->value).funcVal->scope, curr->isActive);
+                if(curr->type == 3){
+                    FuncArg_print(curr, stream);
+                }
             }
             //printf("\tType: %s\n", arr[curr->type]);
             //printf("\tActive: %d\n", curr->isActive);
@@ -346,7 +349,13 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
             }
             else
             {
-                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d) ", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
+                if(entry->type == 3){
+                    FuncArg_print(entry, stream);
+                }
+                else{
+                    printf("\n");
+                }
             }
 
             curr = curr->next;
@@ -403,7 +412,7 @@ void FuncArg_print(SymbolTableEntry *function, FILE *stream)
     FuncArg *curr;
     SymbolTableEntry *entry;
 
-    assert(function && function->type == 2);
+    assert(function && function->type == 3);
 
     curr = (function->value).funcVal->args;
     fprintf(stream, "Args: [ ");
@@ -414,4 +423,105 @@ void FuncArg_print(SymbolTableEntry *function, FILE *stream)
         curr = curr->next;
     }
     fprintf(stream, "]\n");
+}
+
+/* ------------------------------------ Function Stack ------------------------------------ */
+FuncStack *FuncStack_init()
+{
+    FuncStack *fs;
+    fs = (FuncStack *)malloc(sizeof(FuncStack));
+    if (!fs)
+    {
+        perror("Could not allocate memory for Function Stack");
+        exit(EXIT_FAILURE);
+    }
+    fs->size = 0;
+    fs->top = NULL;
+
+    return fs;
+}
+
+int FuncStack_isEmpty(FuncStack *fs)
+{
+    assert(fs);
+    return (fs->size == 0);
+}
+
+FuncStackNode *FuncStack_push(FuncStack *fs, SymbolTableEntry *entry, unsigned int scope)
+{
+    FuncStackNode *node;
+
+    assert(fs);
+
+    node = (FuncStackNode *)malloc(sizeof(FuncStackNode));
+    if (!node)
+    {
+        perror("Could not allocate memory for function stack node");
+        exit(EXIT_FAILURE);
+    }
+
+    node->next = fs->top;
+    node->scope = scope;
+    node->entry = entry;
+
+    fs->top = node;
+    fs->size++;
+
+    return node;
+}
+
+FuncStackNode *FuncStack_top(FuncStack *fs)
+{
+    assert(fs && fs->top);
+    return fs->top;
+}
+
+unsigned int FuncStack_topScope(FuncStack *fs)
+{
+    assert(fs && fs->top);
+    return fs->top->scope;
+}
+
+SymbolTableEntry *FuncStack_topEntry(FuncStack *fs)
+{
+    assert(fs && fs->top);
+    return fs->top->entry;
+}
+
+unsigned int FuncStack_pop(FuncStack *fs)
+{
+    //FuncStackNode *del;
+    unsigned int tmp;
+
+    assert(fs && fs->top);
+
+    tmp = fs->top->scope;
+    //del = fs->top;
+
+    fs->top = fs->top->next;
+    fs->size--;
+
+    //del->next = NULL;
+    //free(del);
+
+    return tmp;
+}
+
+void FuncStack_print(FuncStack *fs)
+{
+    FuncStackNode *curr;
+    assert(fs);
+
+    if (FuncStack_isEmpty(fs))
+    {
+        return;
+    }
+
+    printf("FuncStack:\n");
+    curr = fs->top;
+    while (curr)
+    {
+        printf("Func Scope: %u\n", curr->scope);
+        curr = curr->next;
+    }
 }

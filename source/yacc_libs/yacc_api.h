@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "../utils/utils.h"
-#include "../utils/stack/number_stack.h"
+//#include "../utils/stack/number_stack.h"
 #include "../symboltable/symboltable.h"
 
 int yyerror(char *message);
@@ -20,12 +20,13 @@ unsigned int unamed_functions = 0;
 SymbolTable *symTab;
 ScopeTable *scopeTab;
 
-number_stack_t *funcdefStack;
+//number_stack_t *funcdefStack;
+FuncStack *functionStack;
 
 char noname_prefix[12];
 
 FILE *ost;
-#define TRACE_PRINT 1
+#define TRACE_PRINT 0
 
 #define checkForLibFunc(id)               \
     (!strcmp(id, "print") ||              \
@@ -63,9 +64,9 @@ void ManageAssignValue(SymbolTableEntry *entry)
         else if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
             /* elegxoume an exoume prosvasi (an eimaste mesa se synarthsh) */
-            if (!number_stack_is_empty(funcdefStack))
+            if (!FuncStack_isEmpty(functionStack))
             {
-                if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
+                if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
                 {
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                 }
@@ -93,9 +94,9 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
     {
         if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
-            if (!number_stack_is_empty(funcdefStack))
+            if (!FuncStack_isEmpty(functionStack))
             {
-                if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
+                if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
                 {
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                 }
@@ -198,7 +199,7 @@ SymbolTableEntry *EvaluateGlobalLValue(char *id)
  */
 SymbolTableEntry *CheckAddFormal(char *id)
 {
-    SymbolTableEntry *entry;
+    SymbolTableEntry *entry, *corrFunc;
 
     /*if ((entry = SymbolTable_lookup_general(symTab, id, scope)) != NULL)
     {
@@ -229,6 +230,11 @@ SymbolTableEntry *CheckAddFormal(char *id)
 
     entry = SymbolTable_insert(symTab, id, scope, yylineno, FORMAL_ID);
     ScopeTable_insert(scopeTab, entry, scope);
+    //insert format to funcstack top
+    if (!FuncStack_isEmpty(functionStack) && (corrFunc = FuncStack_topEntry(functionStack)) != NULL)
+    {
+        FuncArg_insert(corrFunc, entry);
+    }
 
     return entry;
 }
@@ -241,6 +247,8 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
     if (checkForLibFunc(id))
     {
         fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", id, yylineno);
+
+        FuncStack_push(functionStack, NULL, scope);
         return NULL;
     }
 
@@ -254,6 +262,7 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
             fprintf_red(stdout, "[Syntax Analysis] -- ERROR: User function \"%s\" redeclaration at line %lu\n", (entry->value).funcVal->name, yylineno);
         }
 
+        FuncStack_push(functionStack, NULL, scope);
         return NULL;
     }
     else
@@ -261,6 +270,7 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
         insertEntry = SymbolTable_insert(symTab, id, scope, yylineno, USERFUNC_ID);
         ScopeTable_insert(scopeTab, insertEntry, scope);
         entry = insertEntry;
+        FuncStack_push(functionStack, entry, scope);
     }
 
     return entry;
@@ -274,9 +284,9 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
         {
             if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
             {
-                if (!number_stack_is_empty(funcdefStack))
+                if (!FuncStack_isEmpty(functionStack))
                 {
-                    if (number_stack_top(funcdefStack) >= (entry->value).varVal->scope)
+                    if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
                     {
                         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                     }

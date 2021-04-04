@@ -1,0 +1,4 @@
+1) Do all code tests again (locally && csd)
+2) Access Check (change ?)
+3) Grammar tests
+4) Code improvements && cleanup

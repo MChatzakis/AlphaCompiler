@@ -74,18 +74,18 @@ typedef struct ScopeTable
 } ScopeTable;
 
 /* ------------------------------------ Function Stack Structures ------------------------------------ */
-typedef struct FunctionStackNode
+typedef struct FuncStackNode
 {
     unsigned int scope;
     SymbolTableEntry *entry; /*If this is null, it means that the function insertion was not valid*/
-    struct FunctionStackNode *next;
-} FunctionStackNode;
+    struct FuncStackNode *next;
+} FuncStackNode;
 
-typedef struct FunctionStack
+typedef struct FuncStack
 {
     unsigned int size;
-    FunctionStackNode *top;
-} FunctionStack;
+    struct FuncStackNode *top;
+} FuncStack;
 
 /* ------------------------------------ Hashing ------------------------------------ */
 unsigned int hash_function(const char *pcKey);
@@ -111,3 +111,11 @@ FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg);
 void FuncArg_print(SymbolTableEntry *function, FILE *stream);
 
 /* ------------------------------------ Function Stack ------------------------------------ */
+FuncStack *FuncStack_init();
+int FuncStack_isEmpty(FuncStack *fs);
+FuncStackNode *FuncStack_push(FuncStack *fs, SymbolTableEntry *entry, unsigned int scope);
+FuncStackNode *FuncStack_top(FuncStack *fs);
+SymbolTableEntry *FuncStack_topEntry(FuncStack *fs);
+unsigned int FuncStack_topScope(FuncStack *fs);
+unsigned int FuncStack_pop(FuncStack *fs);
+void FuncStack_print(FuncStack *fs);
