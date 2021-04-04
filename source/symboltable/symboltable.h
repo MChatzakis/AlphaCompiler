@@ -73,6 +73,20 @@ typedef struct ScopeTable
     ScopeList **table;
 } ScopeTable;
 
+/* ------------------------------------ Function Stack Structures ------------------------------------ */
+typedef struct FunctionStackNode
+{
+    unsigned int scope;
+    SymbolTableEntry *entry; /*If this is null, it means that the function insertion was not valid*/
+    struct FunctionStackNode *next;
+} FunctionStackNode;
+
+typedef struct FunctionStack
+{
+    unsigned int size;
+    FunctionStackNode *top;
+} FunctionStack;
+
 /* ------------------------------------ Hashing ------------------------------------ */
 unsigned int hash_function(const char *pcKey);
 
