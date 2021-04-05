@@ -85,6 +85,7 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
         (entry->value).funcVal->name = strdup(id);
         (entry->value).funcVal->line = line;
         (entry->value).funcVal->scope = scope;
+        (entry->value).funcVal->args = NULL;
     }
 
     if (prev == NULL)
@@ -376,15 +377,15 @@ FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg)
     FuncArg *curr, *prev, *funcarg;
 
     assert(function && function->type == 3 && arg && arg->type == 2);
-
     curr = (function->value).funcVal->args;
     prev = NULL;
-    while (curr)
+    //printf("GAMW TO SPITI\n");
+    while (curr != NULL)
     {
         prev = curr;
         curr = curr->next;
     }
-
+    //printf("EFTASE STO TELOS TIS LISTAS\n");
     funcarg = (FuncArg *)malloc(sizeof(FuncArg));
     if (!funcarg)
     {
@@ -490,19 +491,19 @@ SymbolTableEntry *FuncStack_topEntry(FuncStack *fs)
 
 unsigned int FuncStack_pop(FuncStack *fs)
 {
-    //FuncStackNode *del;
+    FuncStackNode *del;
     unsigned int tmp;
 
     assert(fs && fs->top);
 
     tmp = fs->top->scope;
-    //del = fs->top;
+    del = fs->top;
 
     fs->top = fs->top->next;
     fs->size--;
 
-    //del->next = NULL;
-    //free(del);
+    del->next = NULL;
+    free(del);
 
     return tmp;
 }

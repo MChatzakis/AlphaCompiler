@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "../utils/utils.h"
-//#include "../utils/stack/number_stack.h"
 #include "../symboltable/symboltable.h"
 
 int yyerror(char *message);
@@ -26,7 +25,7 @@ FuncStack *functionStack;
 char noname_prefix[12];
 
 FILE *ost;
-#define TRACE_PRINT 0
+#define TRACE_PRINT 1
 
 #define checkForLibFunc(id)               \
     (!strcmp(id, "print") ||              \
@@ -43,6 +42,25 @@ FILE *ost;
      !strcmp(id, "sin"))
 
 /* Yacc code */
+
+int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
+{
+    assert(entry);
+
+    if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
+    {
+        if (!FuncStack_isEmpty(functionStack))
+        {
+            if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
+            {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
 /**
  * @brief Code for lvalue assign expr
  * 
@@ -61,9 +79,9 @@ void ManageAssignValue(SymbolTableEntry *entry)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to Library function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
         }
-        else if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
+        /*else if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
-            /* elegxoume an exoume prosvasi (an eimaste mesa se synarthsh) */
+             elegxoume an exoume prosvasi (an eimaste mesa se synarthsh) 
             if (!FuncStack_isEmpty(functionStack))
             {
                 if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
@@ -73,8 +91,12 @@ void ManageAssignValue(SymbolTableEntry *entry)
             }
             else
             {
-                //assign
+                //assign x = 5;
             }
+        }*/
+        else if (!CheckForAccess(entry, scope))
+        {
+            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
         }
         else
         {
@@ -92,7 +114,7 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
 {
     if (entry != NULL)
     {
-        if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
+        /*(if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
         {
             if (!FuncStack_isEmpty(functionStack))
             {
@@ -101,6 +123,10 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
                     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
                 }
             }
+        }*/
+        if (!CheckForAccess(entry, scope))
+        {
+            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
         }
         else
         {
@@ -201,7 +227,7 @@ SymbolTableEntry *CheckAddFormal(char *id)
 {
     SymbolTableEntry *entry, *corrFunc;
 
-    /*if ((entry = SymbolTable_lookup_general(symTab, id, scope)) != NULL)
+    if ((entry = SymbolTable_lookup_general(symTab, id, scope)) != NULL)
     {
         if (entry->type == 3)
         {
@@ -214,7 +240,7 @@ SymbolTableEntry *CheckAddFormal(char *id)
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows library function \"%s\" at line %lu\n", id, (entry->value).funcVal->name, yylineno);
             return NULL;
         }
-    }*/
+    }
 
     if (checkForLibFunc(id))
     {
@@ -231,9 +257,13 @@ SymbolTableEntry *CheckAddFormal(char *id)
     entry = SymbolTable_insert(symTab, id, scope, yylineno, FORMAL_ID);
     ScopeTable_insert(scopeTab, entry, scope);
     //insert format to funcstack top
-    if (!FuncStack_isEmpty(functionStack) && (corrFunc = FuncStack_topEntry(functionStack)) != NULL)
+    if (!FuncStack_isEmpty(functionStack))
     {
-        FuncArg_insert(corrFunc, entry);
+        if (FuncStack_topEntry(functionStack) != NULL)
+        {
+            corrFunc = FuncStack_topEntry(functionStack);
+            FuncArg_insert(corrFunc, entry);
+        }
     }
 
     return entry;
@@ -280,7 +310,7 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
 {
     if (entry != NULL)
     {
-        if (entry->type < 3)
+        /*if (entry->type < 3)
         {
             if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
             {
@@ -292,6 +322,10 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
                     }
                 }
             }
+        }*/
+        if (!CheckForAccess(entry, scope))
+        {
+            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
         }
     }
 }

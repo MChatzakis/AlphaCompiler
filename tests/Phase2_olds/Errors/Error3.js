@@ -15,7 +15,7 @@ function a(){
                a();
                b();
                local a = 1;
-               a();             // can't use variable as func
+               a();           
        }
 
 }
