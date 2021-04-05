@@ -19,13 +19,13 @@ unsigned int unamed_functions = 0;
 SymbolTable *symTab;
 ScopeTable *scopeTab;
 
-//number_stack_t *funcdefStack;
 FuncStack *functionStack;
 
 char noname_prefix[12];
 
 FILE *ost;
-#define TRACE_PRINT 1
+
+#define TRACE_PRINT 0
 
 #define checkForLibFunc(id)               \
     (!strcmp(id, "print") ||              \
@@ -79,21 +79,6 @@ void ManageAssignValue(SymbolTableEntry *entry)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to Library function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
         }
-        /*else if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
-        {
-             elegxoume an exoume prosvasi (an eimaste mesa se synarthsh) 
-            if (!FuncStack_isEmpty(functionStack))
-            {
-                if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
-                {
-                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-                }
-            }
-            else
-            {
-                //assign x = 5;
-            }
-        }*/
         else if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
@@ -114,16 +99,6 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
 {
     if (entry != NULL)
     {
-        /*(if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
-        {
-            if (!FuncStack_isEmpty(functionStack))
-            {
-                if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
-                {
-                    fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-                }
-            }
-        }*/
         if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
@@ -201,7 +176,7 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
 }
 
 /**
- * @brief Code for lvalue <- global
+ * @brief Code for lvalue -> global ID
  * 
  * @param id 
  * @return SymbolTableEntry* 
@@ -209,11 +184,13 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
 SymbolTableEntry *EvaluateGlobalLValue(char *id)
 {
     SymbolTableEntry *entry;
+
     entry = SymbolTable_lookup(symTab, id, 0);
     if (entry == NULL)
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol \"%s\" at line %u\n", id, yylineno);
     }
+
     return entry;
 }
 
@@ -226,21 +203,6 @@ SymbolTableEntry *EvaluateGlobalLValue(char *id)
 SymbolTableEntry *CheckAddFormal(char *id)
 {
     SymbolTableEntry *entry, *corrFunc;
-
-    if ((entry = SymbolTable_lookup_general(symTab, id, scope)) != NULL)
-    {
-        if (entry->type == 3)
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows user defined function \"%s\" at line %lu\n", id, (entry->value).funcVal->name, yylineno);
-            return NULL;
-        }
-
-        if (entry->type == 4)
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows library function \"%s\" at line %lu\n", id, (entry->value).funcVal->name, yylineno);
-            return NULL;
-        }
-    }
 
     if (checkForLibFunc(id))
     {
@@ -257,7 +219,7 @@ SymbolTableEntry *CheckAddFormal(char *id)
     entry = SymbolTable_insert(symTab, id, scope, yylineno, FORMAL_ID);
     ScopeTable_insert(scopeTab, entry, scope);
     //insert format to funcstack top
-    if (!FuncStack_isEmpty(functionStack))
+    if (!FuncStack_isEmpty(functionStack)) /* kanonika, pote den prepei to funcstack na einai adeio se auto to simeio */
     {
         if (FuncStack_topEntry(functionStack) != NULL)
         {
@@ -277,7 +239,6 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
     if (checkForLibFunc(id))
     {
         fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", id, yylineno);
-
         FuncStack_push(functionStack, NULL, scope);
         return NULL;
     }
@@ -286,10 +247,10 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
     if (entry != NULL)
     {
         if (entry->type < 3)
-            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Variable \"%s\" redeclaration as function at line %lu\n", (entry->value).varVal->name, yylineno);
+            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Redeclaration of Variable \"%s\" as function at line %lu\n", (entry->value).varVal->name, yylineno);
         else if (entry->type == 3)
         {
-            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: User function \"%s\" redeclaration at line %lu\n", (entry->value).funcVal->name, yylineno);
+            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Redefinition of User function \"%s\" at line %lu\n", (entry->value).funcVal->name, yylineno);
         }
 
         FuncStack_push(functionStack, NULL, scope);
@@ -310,19 +271,6 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
 {
     if (entry != NULL)
     {
-        /*if (entry->type < 3)
-        {
-            if ((entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
-            {
-                if (!FuncStack_isEmpty(functionStack))
-                {
-                    if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
-                    {
-                        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-                    }
-                }
-            }
-        }*/
         if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);

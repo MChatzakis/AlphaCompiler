@@ -28,7 +28,7 @@ SymbolTable *SymbolTable_init()
         exit(EXIT_FAILURE);
     }
 
-    s->max_scope = 0;
+    s->max_scope = 0; //check to remove
 
     for (i = 0; i < BUCKETS; i++)
     {
@@ -48,7 +48,6 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
     index = hash_function(id);
 
     curr = s->hashtable[index];
-
     prev = NULL;
     while (curr)
     {
@@ -57,6 +56,11 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
     }
 
     entry = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
+    if (!entry)
+    {
+        perror("Could not allocate memory for symtab entry");
+        exit(EXIT_FAILURE);
+    }
     entry->isActive = 1;
     entry->next = NULL;
     entry->type = type;
@@ -99,7 +103,7 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
 
     if (scope > s->max_scope)
     {
-        s->max_scope = scope;
+        s->max_scope = scope; //chck
     }
 
     return entry;
@@ -124,29 +128,16 @@ void SymbolTable_print(SymbolTable *s, FILE *stream)
         {
             if (curr->type < 3)
             {
-                /*printf("\tName: %s\n", (curr->value).varVal->name);
-                printf("\tLine: %u\n", (curr->value).varVal->line);
-                printf("\tScope: %u\n", (curr->value).varVal->scope);*/
-
                 fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).varVal->name, arr[curr->type], (curr->value).varVal->line, (curr->value).varVal->scope, curr->isActive);
             }
             else
             {
-                /*printf("\tName: %s\n", (curr->value).funcVal->name);
-                printf("\tLine: %u\n", (curr->value).funcVal->line);
-                printf("\tScope: %u\n", (curr->value).funcVal->scope);*/
-
                 fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (curr->value).funcVal->name, arr[curr->type], (curr->value).funcVal->line, (curr->value).funcVal->scope, curr->isActive);
-                if(curr->type == 3){
+                if (curr->type == 3)
+                {
                     FuncArg_print(curr, stream);
                 }
             }
-            //printf("\tType: %s\n", arr[curr->type]);
-            //printf("\tActive: %d\n", curr->isActive);
-            /*if (curr->next != NULL)
-            {
-                printf("\t-----------\n");
-            }*/
             curr = curr->next;
         }
     }
@@ -193,7 +184,6 @@ SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, uns
     SymbolTableEntry *curr;
 
     curr = NULL;
-    //printf("SS: %u\n", scope);
     for (i = 0; i <= scope; i++)
     {
         curr = SymbolTable_lookup(s, id, scope - i);
@@ -201,7 +191,6 @@ SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, uns
         {
             break;
         }
-        //printf("!\n");
     }
 
     return curr;
@@ -306,6 +295,7 @@ ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope)
 {
     ScopeList *curr;
     SymbolTableEntry *entry;
+
     assert(st);
 
     curr = st->table[scope];
@@ -351,10 +341,12 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
             else
             {
                 fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d) ", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
-                if(entry->type == 3){
+                if (entry->type == 3)
+                {
                     FuncArg_print(entry, stream);
                 }
-                else{
+                else
+                {
                     printf("\n");
                 }
             }
@@ -377,15 +369,15 @@ FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg)
     FuncArg *curr, *prev, *funcarg;
 
     assert(function && function->type == 3 && arg && arg->type == 2);
+
     curr = (function->value).funcVal->args;
     prev = NULL;
-    //printf("GAMW TO SPITI\n");
     while (curr != NULL)
     {
         prev = curr;
         curr = curr->next;
     }
-    //printf("EFTASE STO TELOS TIS LISTAS\n");
+
     funcarg = (FuncArg *)malloc(sizeof(FuncArg));
     if (!funcarg)
     {
