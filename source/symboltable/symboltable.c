@@ -16,6 +16,11 @@ unsigned int hash_function(const char *pcKey)
 }
 
 /* ------------------------------------ SymbolTable Functions ------------------------------------ */
+/**
+ * @brief Initializes the symbol table
+ * 
+ * @return SymbolTable* Returns the symbol table
+ */
 SymbolTable *SymbolTable_init()
 {
     SymbolTable *s;
@@ -38,6 +43,16 @@ SymbolTable *SymbolTable_init()
     return s;
 }
 
+/**
+ * @brief Inserts an entry in symbol table
+ * 
+ * @param s Symbol table
+ * @param id Name of entry
+ * @param scope Scope of entry
+ * @param line Line of entry
+ * @param type Type of entry
+ * @return SymbolTableEntry* Returns the inserted symbol table entry
+ */
 SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned int scope, unsigned int line, enum SymbolType type)
 {
     unsigned int index;
@@ -109,6 +124,12 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
     return entry;
 }
 
+/**
+ * @brief Prints the symbol table at the file stream
+ * 
+ * @param s SymbolTable
+ * @param stream Output file stream
+ */
 void SymbolTable_print(SymbolTable *s, FILE *stream)
 {
     unsigned int i;
@@ -145,6 +166,14 @@ void SymbolTable_print(SymbolTable *s, FILE *stream)
     fprintf(stream, "--------------------------\n\"name\" [type] (line) (scope) (status)\n");
 }
 
+/**
+ * @brief Look up an entry with name id at this single scope
+ * 
+ * @param s SymbolTable
+ * @param id Name of entry
+ * @param scope Scope of entry
+ * @return SymbolTableEntry* If found returns the entry, else returns NULL
+ */
 SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned int scope)
 {
     unsigned int index;
@@ -178,6 +207,14 @@ SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned in
     return curr;
 }
 
+/**
+ * @brief Look up an entry with name id from this scope since scope 0.
+ * 
+ * @param s SymbolTable
+ * @param id Name of entry
+ * @param scope Scope of entry 
+ * @return SymbolTableEntry* If found returns the entry, else returns NULL
+ */
 SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, unsigned int scope)
 {
     unsigned int i;
@@ -196,6 +233,13 @@ SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, uns
     return curr;
 }
 
+/**
+ * @brief Inactivate the entry with this name and scope
+ * 
+ * @param s SymbolTable
+ * @param id Name of entry
+ * @param scope Scope of entry 
+ */
 void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope)
 {
     SymbolTableEntry *curr;
@@ -207,7 +251,12 @@ void SymbolTable_hide(SymbolTable *s, const char *id, unsigned int scope)
 }
 
 /* -------------------------- Function for library functions insertion ---------------------------- */
-
+/**
+ * @brief Initializes symbol table with the library functions
+ * 
+ * @param s SymbolTable
+ * @param t ScopeTable
+ */
 void SymbolTable_add_libfun(SymbolTable *s, ScopeTable *t)
 {
     SymbolTableEntry *entry;
@@ -226,6 +275,11 @@ void SymbolTable_add_libfun(SymbolTable *s, ScopeTable *t)
 }
 
 /* ------------------------------------ ScopeTable Functions ------------------------------------ */
+/**
+ * @brief Initializes the scope table
+ * 
+ * @return ScopeTable* ScopeTable
+ */
 ScopeTable *ScopeTable_init()
 {
     ScopeTable *st;
@@ -249,6 +303,14 @@ ScopeTable *ScopeTable_init()
     return st;
 }
 
+/**
+ * @brief Inserts an entry in scope list
+ * 
+ * @param st ScopeTable
+ * @param entry Symbol table entry
+ * @param scope Scope of entry
+ * @return ScopeList* Scopelist
+ */
 ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned int scope)
 {
     ScopeList *curr, *prev, *slentry;
@@ -291,6 +353,13 @@ ScopeList *ScopeTable_insert(ScopeTable *st, SymbolTableEntry *entry, unsigned i
     return slentry;
 }
 
+/**
+ * @brief Hide all the entries of scope list with this scope
+ * 
+ * @param st ScopeTable
+ * @param scope Scope of scopelist
+ * @return ScopeList* ScopeList
+ */
 ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope)
 {
     ScopeList *curr;
@@ -312,6 +381,12 @@ ScopeList *ScopeTable_hide_scope(ScopeTable *st, unsigned int scope)
     return st->table[scope];
 }
 
+/**
+ * @brief Prints the scope table
+ * 
+ * @param st ScopeTable
+ * @param stream Output file stream
+ */
 void ScopeTable_print(ScopeTable *st, FILE *stream)
 {
     unsigned int i;
@@ -364,6 +439,13 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
 }
 
 /* ------------------------------------ FuncArg Functions ------------------------------------ */
+/**
+ * @brief Insert an argument in a function argument list
+ * 
+ * @param function The function
+ * @param arg The argument of the function
+ * @return FuncArg* The node of the argument in argument list of this function
+ */
 FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg)
 {
     FuncArg *curr, *prev, *funcarg;
@@ -400,6 +482,12 @@ FuncArg *FuncArg_insert(SymbolTableEntry *function, SymbolTableEntry *arg)
     return funcarg;
 }
 
+/**
+ * @brief Prints the arguments of the function at stream
+ * 
+ * @param function The function
+ * @param stream Output file stream
+ */
 void FuncArg_print(SymbolTableEntry *function, FILE *stream)
 {
     FuncArg *curr;
@@ -419,6 +507,12 @@ void FuncArg_print(SymbolTableEntry *function, FILE *stream)
 }
 
 /* ------------------------------------ Function Stack ------------------------------------ */
+
+/**
+ * @brief Initializes a new Function stack 
+ * 
+ * @return FuncStack * The pointer to the memory allocated for the stack
+ */
 FuncStack *FuncStack_init()
 {
     FuncStack *fs;
@@ -434,12 +528,26 @@ FuncStack *FuncStack_init()
     return fs;
 }
 
+/**
+ * @brief Checks whether or not the function stack is empty
+ * 
+ * @param fs The stack pointer
+ * @return int 0 if the stack is not empty, 1 if it is empty
+ */
 int FuncStack_isEmpty(FuncStack *fs)
 {
     assert(fs);
     return (fs->size == 0);
 }
 
+/**
+ * @brief Pushes an item to the function stack 
+ * 
+ * @param fs The stack pointer
+ * @param entry The entry of the item, that can also be NULL
+ * @param scope The scope of the item
+ * @return FuncStackNode * The pointer to the newly added element
+ */
 FuncStackNode *FuncStack_push(FuncStack *fs, SymbolTableEntry *entry, unsigned int scope)
 {
     FuncStackNode *node;
@@ -463,24 +571,48 @@ FuncStackNode *FuncStack_push(FuncStack *fs, SymbolTableEntry *entry, unsigned i
     return node;
 }
 
+/**
+ * @brief Gets the top item 
+ * 
+ * @param fs The stack pointer
+ * @return FuncStackNode * The top element
+ */
 FuncStackNode *FuncStack_top(FuncStack *fs)
 {
     assert(fs && fs->top);
     return fs->top;
 }
 
+/**
+ * @brief Gets the top item scope value
+ * 
+ * @param fs The stack pointer
+ * @return unsigned int The scope of the top element
+ */
 unsigned int FuncStack_topScope(FuncStack *fs)
 {
     assert(fs && fs->top);
     return fs->top->scope;
 }
 
+/**
+ * @brief Gets the top item entry value
+ * 
+ * @param fs The stack pointer
+ * @return SymbolTableEntry * The entry of the top element
+ */
 SymbolTableEntry *FuncStack_topEntry(FuncStack *fs)
 {
     assert(fs && fs->top);
     return fs->top->entry;
 }
 
+/**
+ * @brief Pop the last entry the funcstack
+ * 
+ * @param fs The stack pointer
+ * @return The scope of the popped entry
+ */
 unsigned int FuncStack_pop(FuncStack *fs)
 {
     FuncStackNode *del;
@@ -500,6 +632,11 @@ unsigned int FuncStack_pop(FuncStack *fs)
     return tmp;
 }
 
+/**
+ * @brief Prints the function stack
+ * 
+ * @param fs The stack pointer
+ */
 void FuncStack_print(FuncStack *fs)
 {
     FuncStackNode *curr;

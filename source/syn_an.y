@@ -9,7 +9,6 @@
     #endif
 
     #include "yacc_libs/yacc_api.h"
-
 %}
 
 /*Declarations*/

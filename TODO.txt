@@ -1,3 +1,0 @@
-1) Read again FAQ and Instructions
-2) Do tests, find bugs, corner cases etc... 
-3) Do return break and continue :P

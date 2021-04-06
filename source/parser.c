@@ -78,8 +78,7 @@
 
     #include "yacc_libs/yacc_api.h"
 
-
-#line 83 "parser.c"
+#line 82 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -227,7 +226,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 18 "syn_an.y"
+#line 17 "syn_an.y"
 
     int int_value;
     char* string_value;
@@ -235,7 +234,7 @@ union YYSTYPE
 
     SymbolTableEntry *symTabEntry;
 
-#line 239 "parser.c"
+#line 238 "parser.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -615,17 +614,17 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    56,    56,    57,    60,    65,    70,    75,    80,    85,
-      91,    97,   102,   107,   114,   115,   118,   124,   129,   134,
-     139,   144,   149,   154,   159,   164,   169,   174,   179,   184,
-     189,   195,   200,   205,   211,   217,   223,   229,   236,   242,
-     248,   253,   259,   266,   273,   279,   285,   293,   298,   303,
-     308,   315,   321,   327,   333,   340,   349,   354,   361,   366,
-     373,   378,   385,   390,   397,   402,   407,   414,   419,   426,
-     433,   433,   440,   440,   451,   457,   451,   465,   465,   478,
-     482,   478,   491,   491,   504,   509,   514,   519,   524,   529,
-     536,   542,   551,   556,   563,   563,   571,   571,   576,   576,
-     582,   582,   588,   588,   596,   602
+       0,    55,    55,    56,    59,    64,    69,    74,    79,    84,
+      90,    96,   101,   106,   113,   114,   117,   123,   128,   133,
+     138,   143,   148,   153,   158,   163,   168,   173,   178,   183,
+     188,   194,   199,   204,   210,   216,   222,   228,   235,   241,
+     247,   252,   258,   265,   272,   278,   284,   292,   297,   302,
+     307,   314,   320,   326,   332,   339,   348,   353,   360,   365,
+     372,   377,   384,   389,   396,   401,   406,   413,   418,   425,
+     432,   432,   439,   439,   450,   456,   450,   464,   464,   477,
+     481,   477,   490,   490,   503,   508,   513,   518,   523,   528,
+     535,   541,   550,   555,   562,   562,   570,   570,   575,   575,
+     581,   581,   587,   587,   595,   601
 };
 #endif
 
@@ -1670,671 +1669,671 @@ yyreduce:
   switch (yyn)
     {
   case 4:
-#line 60 "syn_an.y"
+#line 59 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Expr Statement\n");
                                             }
                                         }
-#line 1680 "parser.c"
+#line 1679 "parser.c"
     break;
 
   case 5:
-#line 65 "syn_an.y"
+#line 64 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>If/Ifelse Statement\n");
                                             }
                                         }
-#line 1690 "parser.c"
+#line 1689 "parser.c"
     break;
 
   case 6:
-#line 70 "syn_an.y"
+#line 69 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>While Statement\n");
                                             }
                                         }
-#line 1700 "parser.c"
+#line 1699 "parser.c"
     break;
 
   case 7:
-#line 75 "syn_an.y"
+#line 74 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>For Statement\n");
                                             }
                                         }
-#line 1710 "parser.c"
+#line 1709 "parser.c"
     break;
 
   case 8:
-#line 80 "syn_an.y"
+#line 79 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Return Statement\n");
                                             }
                                         }
-#line 1720 "parser.c"
+#line 1719 "parser.c"
     break;
 
   case 9:
-#line 85 "syn_an.y"
+#line 84 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Break Statement\n");
                                             }
                                             ManageLoopKeywords("break");
                                         }
-#line 1731 "parser.c"
+#line 1730 "parser.c"
     break;
 
   case 10:
-#line 91 "syn_an.y"
+#line 90 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Continue Statement\n");
                                             }
                                             ManageLoopKeywords("continue");
                                         }
-#line 1742 "parser.c"
+#line 1741 "parser.c"
     break;
 
   case 11:
-#line 97 "syn_an.y"
+#line 96 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Block Statement\n");
                                             }
                                         }
-#line 1752 "parser.c"
+#line 1751 "parser.c"
     break;
 
   case 12:
-#line 102 "syn_an.y"
+#line 101 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Func Def Statement\n");
                                             }
                                         }
-#line 1762 "parser.c"
+#line 1761 "parser.c"
     break;
 
   case 13:
-#line 107 "syn_an.y"
+#line 106 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Semicolon Statement\n");
                                             }
                                         }
-#line 1772 "parser.c"
+#line 1771 "parser.c"
     break;
 
   case 16:
-#line 118 "syn_an.y"
+#line 117 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Assignment\n");
                                             }
                                             ManageAssignValue((yyvsp[-2].symTabEntry));
                                         }
-#line 1783 "parser.c"
+#line 1782 "parser.c"
     break;
 
   case 17:
-#line 124 "syn_an.y"
+#line 123 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>OR\n");
                                             }
                                         }
-#line 1793 "parser.c"
+#line 1792 "parser.c"
     break;
 
   case 18:
-#line 129 "syn_an.y"
+#line 128 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>AND\n");
                                             }
                                         }
-#line 1803 "parser.c"
+#line 1802 "parser.c"
     break;
 
   case 19:
-#line 134 "syn_an.y"
+#line 133 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>NOT EQUAL\n");
                                             }
                                         }
-#line 1813 "parser.c"
+#line 1812 "parser.c"
     break;
 
   case 20:
-#line 139 "syn_an.y"
+#line 138 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>EQUAL\n");
                                             }
                                         }
-#line 1823 "parser.c"
+#line 1822 "parser.c"
     break;
 
   case 21:
-#line 144 "syn_an.y"
+#line 143 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>LESS EQUAL\n");
                                             }
                                         }
-#line 1833 "parser.c"
+#line 1832 "parser.c"
     break;
 
   case 22:
-#line 149 "syn_an.y"
+#line 148 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>LESS\n");
                                             }
                                         }
-#line 1843 "parser.c"
+#line 1842 "parser.c"
     break;
 
   case 23:
-#line 154 "syn_an.y"
+#line 153 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>GREATER EQUAL\n");
                                             }
                                         }
-#line 1853 "parser.c"
+#line 1852 "parser.c"
     break;
 
   case 24:
-#line 159 "syn_an.y"
+#line 158 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>GREATER\n");
                                             }
                                         }
-#line 1863 "parser.c"
+#line 1862 "parser.c"
     break;
 
   case 25:
-#line 164 "syn_an.y"
+#line 163 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PLUS\n");
                                             }
                                         }
-#line 1873 "parser.c"
+#line 1872 "parser.c"
     break;
 
   case 26:
-#line 169 "syn_an.y"
+#line 168 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MINUS\n");
                                             }
                                         }
-#line 1883 "parser.c"
+#line 1882 "parser.c"
     break;
 
   case 27:
-#line 174 "syn_an.y"
+#line 173 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MUL\n");
                                             }
                                         }
-#line 1893 "parser.c"
+#line 1892 "parser.c"
     break;
 
   case 28:
-#line 179 "syn_an.y"
+#line 178 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>DIV\n");
                                             }
                                         }
-#line 1903 "parser.c"
+#line 1902 "parser.c"
     break;
 
   case 29:
-#line 184 "syn_an.y"
+#line 183 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MODULO\n");
                                             }
                                         }
-#line 1913 "parser.c"
+#line 1912 "parser.c"
     break;
 
   case 30:
-#line 190 "syn_an.y"
+#line 189 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PARENTHESIS EXPR\n");
                                             }
                                         }
-#line 1923 "parser.c"
+#line 1922 "parser.c"
     break;
 
   case 31:
-#line 195 "syn_an.y"
+#line 194 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>-EXPR\n");
                                             }
                                         }
-#line 1933 "parser.c"
+#line 1932 "parser.c"
     break;
 
   case 32:
-#line 200 "syn_an.y"
+#line 199 "syn_an.y"
                                         {
                                            if(TRACE_PRINT){
                                                 fprintf(ost, "=>NOT\n");
                                             }
                                         }
-#line 1943 "parser.c"
+#line 1942 "parser.c"
     break;
 
   case 33:
-#line 205 "syn_an.y"
+#line 204 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PLUS PLUS lvalue\n");
                                             }
                                             ManageAssignValue((yyvsp[0].symTabEntry));
                                         }
-#line 1954 "parser.c"
+#line 1953 "parser.c"
     break;
 
   case 34:
-#line 211 "syn_an.y"
+#line 210 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue PLUS PLUS\n");
                                             }
                                             ManageAssignValue((yyvsp[-1].symTabEntry));
                                         }
-#line 1965 "parser.c"
+#line 1964 "parser.c"
     break;
 
   case 35:
-#line 217 "syn_an.y"
+#line 216 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MINUS MINUS lvalue\n");
                                             }
                                             ManageAssignValue((yyvsp[0].symTabEntry));
                                         }
-#line 1976 "parser.c"
+#line 1975 "parser.c"
     break;
 
   case 36:
-#line 223 "syn_an.y"
+#line 222 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue MINUS MINUS\n");
                                             }
                                             ManageAssignValue((yyvsp[-1].symTabEntry));
                                         }
-#line 1987 "parser.c"
+#line 1986 "parser.c"
     break;
 
   case 37:
-#line 229 "syn_an.y"
+#line 228 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PRIMARY\n");
                                             }
                                         }
-#line 1997 "parser.c"
+#line 1996 "parser.c"
     break;
 
   case 38:
-#line 236 "syn_an.y"
+#line 235 "syn_an.y"
                                         {                                 
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue \n");
                                             }
                                             ManagePrimaryLValue((yyvsp[0].symTabEntry));    
                                         }
-#line 2008 "parser.c"
+#line 2007 "parser.c"
     break;
 
   case 39:
-#line 242 "syn_an.y"
+#line 241 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>CALL\n");
                                             }
                                             ManagePrimaryFunction((yyvsp[0].symTabEntry));
                                         }
-#line 2019 "parser.c"
+#line 2018 "parser.c"
     break;
 
   case 40:
-#line 248 "syn_an.y"
+#line 247 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>OBJECT DEF\n");
                                             }
                                         }
-#line 2029 "parser.c"
+#line 2028 "parser.c"
     break;
 
   case 41:
-#line 254 "syn_an.y"
+#line 253 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>(funcdef)\n");
                                             }
                                         }
-#line 2039 "parser.c"
+#line 2038 "parser.c"
     break;
 
   case 42:
-#line 259 "syn_an.y"
+#line 258 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>CONST\n");
                                             }
                                         }
-#line 2049 "parser.c"
+#line 2048 "parser.c"
     break;
 
   case 43:
-#line 266 "syn_an.y"
+#line 265 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>ID %s\n", (yyvsp[0].string_value));
                                             }
                                             (yyval.symTabEntry) = EvaluateLValue((yyvsp[0].string_value));
                                         }
-#line 2060 "parser.c"
+#line 2059 "parser.c"
     break;
 
   case 44:
-#line 273 "syn_an.y"
+#line 272 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=> local ID %s\n", (yyvsp[0].string_value));
                                             }
                                             (yyval.symTabEntry) = EvaluateLocalLValue((yyvsp[0].string_value));
                                         }
-#line 2071 "parser.c"
+#line 2070 "parser.c"
     break;
 
   case 45:
-#line 279 "syn_an.y"
+#line 278 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>global ID %s\n", (yyvsp[0].string_value));
                                             }
                                             (yyval.symTabEntry) = EvaluateGlobalLValue((yyvsp[0].string_value));
                                         }
-#line 2082 "parser.c"
+#line 2081 "parser.c"
     break;
 
   case 46:
-#line 285 "syn_an.y"
+#line 284 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MEMBER\n");
                                             }
                                             (yyval.symTabEntry) = NULL;
                                         }
-#line 2093 "parser.c"
+#line 2092 "parser.c"
     break;
 
   case 47:
-#line 293 "syn_an.y"
+#line 292 "syn_an.y"
                                                         {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>lvalue . ID %s\n", (yyvsp[0].string_value));
                                                             }
                                                         }
-#line 2103 "parser.c"
+#line 2102 "parser.c"
     break;
 
   case 48:
-#line 298 "syn_an.y"
+#line 297 "syn_an.y"
                                                         {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>lvalue [ EXPR ]\n");
                                                             }
                                                         }
-#line 2113 "parser.c"
+#line 2112 "parser.c"
     break;
 
   case 49:
-#line 303 "syn_an.y"
+#line 302 "syn_an.y"
                                                         {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>Call.ID %s\n", (yyvsp[0].string_value));
                                                             }
                                                         }
-#line 2123 "parser.c"
+#line 2122 "parser.c"
     break;
 
   case 50:
-#line 308 "syn_an.y"
+#line 307 "syn_an.y"
                                                         {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>CALL [ EXPR ]\n");
                                                             }
                                                         }
-#line 2133 "parser.c"
+#line 2132 "parser.c"
     break;
 
   case 51:
-#line 315 "syn_an.y"
+#line 314 "syn_an.y"
                                                             {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>CALL ( ELIST )\n");
                                                                 }                                    
                                                                 (yyval.symTabEntry) = (yyvsp[-3].symTabEntry);
                                                             }
-#line 2144 "parser.c"
+#line 2143 "parser.c"
     break;
 
   case 52:
-#line 321 "syn_an.y"
+#line 320 "syn_an.y"
                                                             {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>CALL ( empty )\n");
                                                                 }                                       
                                                                 (yyval.symTabEntry) = (yyvsp[-2].symTabEntry);
                                                             }
-#line 2155 "parser.c"
+#line 2154 "parser.c"
     break;
 
   case 53:
-#line 327 "syn_an.y"
+#line 326 "syn_an.y"
                                                             {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>lvalue ( CALL SUFFIX )\n");                                       
                                                                 }
                                                                 (yyval.symTabEntry) = (yyvsp[-1].symTabEntry);
                                                             }
-#line 2166 "parser.c"
+#line 2165 "parser.c"
     break;
 
   case 54:
-#line 334 "syn_an.y"
+#line 333 "syn_an.y"
                                                             {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>(FUNCDEF)(ELIST)\n");
                                                                 }
                                                                 (yyval.symTabEntry) = (yyvsp[-4].symTabEntry);    
                                                             }
-#line 2177 "parser.c"
+#line 2176 "parser.c"
     break;
 
   case 55:
-#line 341 "syn_an.y"
+#line 340 "syn_an.y"
                                                             {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>(FUNCDEF)(empty)\n");
                                                                 }
                                                                 (yyval.symTabEntry) = (yyvsp[-3].symTabEntry);    
                                                             }
-#line 2188 "parser.c"
+#line 2187 "parser.c"
     break;
 
   case 56:
-#line 349 "syn_an.y"
+#line 348 "syn_an.y"
                             {
                                 if(TRACE_PRINT){
                                     fprintf(ost, "=>NORMAL CALL\n");
                                 }
                             }
-#line 2198 "parser.c"
+#line 2197 "parser.c"
     break;
 
   case 57:
-#line 354 "syn_an.y"
+#line 353 "syn_an.y"
                             {
                                 if(TRACE_PRINT){
                                     fprintf(ost, "=>METHOD CALL\n");
                                 }
                             }
-#line 2208 "parser.c"
+#line 2207 "parser.c"
     break;
 
   case 58:
-#line 361 "syn_an.y"
+#line 360 "syn_an.y"
                                                         {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>(ELIST)\n");
                                                             }
                                                         }
-#line 2218 "parser.c"
+#line 2217 "parser.c"
     break;
 
   case 59:
-#line 366 "syn_an.y"
+#line 365 "syn_an.y"
                                                         {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>(empty)\n");
                                                             }
                                                         }
-#line 2228 "parser.c"
+#line 2227 "parser.c"
     break;
 
   case 60:
-#line 373 "syn_an.y"
+#line 372 "syn_an.y"
                                                                             {
                                                                                 if(TRACE_PRINT){
                                                                                     fprintf(ost, "=> ..%s (ELIST)\n", (yyvsp[-3].string_value));
                                                                                 }
                                                                             }
-#line 2238 "parser.c"
+#line 2237 "parser.c"
     break;
 
   case 61:
-#line 378 "syn_an.y"
+#line 377 "syn_an.y"
                                                                             {
                                                                                 if(TRACE_PRINT){
                                                                                     fprintf(ost, "=> ..%s (empty)\n", (yyvsp[-2].string_value));
                                                                                 }
                                                                             }
-#line 2248 "parser.c"
+#line 2247 "parser.c"
     break;
 
   case 62:
-#line 385 "syn_an.y"
+#line 384 "syn_an.y"
                                 {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>EXPR\n");
                                     }
                                 }
-#line 2258 "parser.c"
+#line 2257 "parser.c"
     break;
 
   case 63:
-#line 390 "syn_an.y"
+#line 389 "syn_an.y"
                                 {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>ELIST , EXPR\n");
                                     }
                                 }
-#line 2268 "parser.c"
+#line 2267 "parser.c"
     break;
 
   case 64:
-#line 397 "syn_an.y"
+#line 396 "syn_an.y"
                                                 {
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[INDEXED]\n");
                                                     }
                                                 }
-#line 2278 "parser.c"
+#line 2277 "parser.c"
     break;
 
   case 65:
-#line 402 "syn_an.y"
+#line 401 "syn_an.y"
                                                 {
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[ELIST]\n");
                                                     }
                                                 }
-#line 2288 "parser.c"
+#line 2287 "parser.c"
     break;
 
   case 66:
-#line 407 "syn_an.y"
+#line 406 "syn_an.y"
                                                 {
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[empty]\n");
                                                     }
                                                 }
-#line 2298 "parser.c"
+#line 2297 "parser.c"
     break;
 
   case 67:
-#line 414 "syn_an.y"
+#line 413 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>INDEXED_ELEM\n");
                                             }
                                         }
-#line 2308 "parser.c"
+#line 2307 "parser.c"
     break;
 
   case 68:
-#line 419 "syn_an.y"
+#line 418 "syn_an.y"
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=> INDEXED , INDEXED_ELEM\n");
                                             }
                                         }
-#line 2318 "parser.c"
+#line 2317 "parser.c"
     break;
 
   case 69:
-#line 426 "syn_an.y"
+#line 425 "syn_an.y"
                                                     {
                                                         if(TRACE_PRINT){
                                                             fprintf(ost, "=>{EXPR : EXPR}\n");
                                                         }
                                                     }
-#line 2328 "parser.c"
+#line 2327 "parser.c"
     break;
 
   case 70:
-#line 433 "syn_an.y"
+#line 432 "syn_an.y"
                        {scope++;}
-#line 2334 "parser.c"
+#line 2333 "parser.c"
     break;
 
   case 71:
-#line 433 "syn_an.y"
+#line 432 "syn_an.y"
                                                         {
                                                             ScopeTable_hide_scope(scopeTab, scope);
                                                             scope--;
@@ -2342,17 +2341,17 @@ yyreduce:
                                                                 fprintf(ost, "=>{Empty}\n");
                                                             }
                                                         }
-#line 2346 "parser.c"
+#line 2345 "parser.c"
     break;
 
   case 72:
-#line 440 "syn_an.y"
+#line 439 "syn_an.y"
                          {scope++;}
-#line 2352 "parser.c"
+#line 2351 "parser.c"
     break;
 
   case 73:
-#line 440 "syn_an.y"
+#line 439 "syn_an.y"
                                                         {
                                                             ScopeTable_hide_scope(scopeTab, scope);
                                                             scope--;
@@ -2360,28 +2359,28 @@ yyreduce:
                                                                 fprintf(ost, "=>{STMTS}\n");
                                                             }
                                                         }
-#line 2364 "parser.c"
+#line 2363 "parser.c"
     break;
 
   case 74:
-#line 451 "syn_an.y"
+#line 450 "syn_an.y"
                                         { 
                                             GenerateName(); 
                                             ManageIDFunctionDefinition(noname_prefix);
                                             unamed_functions++;
                                             scope++;
                                         }
-#line 2375 "parser.c"
+#line 2374 "parser.c"
     break;
 
   case 75:
-#line 457 "syn_an.y"
+#line 456 "syn_an.y"
                                                                  {scope--;}
-#line 2381 "parser.c"
+#line 2380 "parser.c"
     break;
 
   case 76:
-#line 457 "syn_an.y"
+#line 456 "syn_an.y"
                                                                                     {
                                                                                         if(TRACE_PRINT){
                                                                                             fprintf(ost, "=>FUNCDEF without ID, with IDLIST\n");
@@ -2390,21 +2389,21 @@ yyreduce:
                                                                                         //FuncStack_print(functionStack);
                                                                                         FuncStack_pop(functionStack);                                  
                                                                                     }
-#line 2394 "parser.c"
+#line 2393 "parser.c"
     break;
 
   case 77:
-#line 465 "syn_an.y"
+#line 464 "syn_an.y"
                                                             { 
                                                                 GenerateName();
                                                                 ManageIDFunctionDefinition(noname_prefix);
                                                                 unamed_functions++;
                                                             }
-#line 2404 "parser.c"
+#line 2403 "parser.c"
     break;
 
   case 78:
-#line 470 "syn_an.y"
+#line 469 "syn_an.y"
                                                                     {
                                                                         if(TRACE_PRINT){
                                                                             fprintf(ost, "=>FUNCDEF without ID, without IDLIST\n");
@@ -2413,26 +2412,26 @@ yyreduce:
                                                                         //FuncStack_print(functionStack);
                                                                         FuncStack_pop(functionStack); 
                                                                     }
-#line 2417 "parser.c"
+#line 2416 "parser.c"
     break;
 
   case 79:
-#line 478 "syn_an.y"
+#line 477 "syn_an.y"
                                             {
                                                 ManageIDFunctionDefinition((yyvsp[-1].string_value));
                                                 scope++;
                                             }
-#line 2426 "parser.c"
+#line 2425 "parser.c"
     break;
 
   case 80:
-#line 482 "syn_an.y"
+#line 481 "syn_an.y"
                                                                      {scope--;}
-#line 2432 "parser.c"
+#line 2431 "parser.c"
     break;
 
   case 81:
-#line 483 "syn_an.y"
+#line 482 "syn_an.y"
                                                                                     {
                                                                                         if(TRACE_PRINT){
                                                                                             printf("=>FUNCDEF with ID, with IDLIST\n");
@@ -2441,19 +2440,19 @@ yyreduce:
                                                                                         //FuncStack_print(functionStack);
                                                                                         FuncStack_pop(functionStack); 
                                                                                     }
-#line 2445 "parser.c"
+#line 2444 "parser.c"
     break;
 
   case 82:
-#line 491 "syn_an.y"
+#line 490 "syn_an.y"
                                                             { 
                                                                 ManageIDFunctionDefinition((yyvsp[-2].string_value));
                                                             }
-#line 2453 "parser.c"
+#line 2452 "parser.c"
     break;
 
   case 83:
-#line 494 "syn_an.y"
+#line 493 "syn_an.y"
                                                                                     {
                                                                                         if(TRACE_PRINT){
                                                                                             printf("=>FUNCDEF with ID, without IDLIST\n");
@@ -2462,219 +2461,219 @@ yyreduce:
                                                                                         //FuncStack_print(functionStack);
                                                                                         FuncStack_pop(functionStack);
                                                                                     }
-#line 2466 "parser.c"
+#line 2465 "parser.c"
     break;
 
   case 84:
-#line 504 "syn_an.y"
+#line 503 "syn_an.y"
                         {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>INTEGER %d\n", (yyvsp[0].int_value));
                             }
                         }
-#line 2476 "parser.c"
+#line 2475 "parser.c"
     break;
 
   case 85:
-#line 509 "syn_an.y"
+#line 508 "syn_an.y"
                         {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>Real %f\n", (yyvsp[0].real_value));
                             }
                         }
-#line 2486 "parser.c"
+#line 2485 "parser.c"
     break;
 
   case 86:
-#line 514 "syn_an.y"
+#line 513 "syn_an.y"
                         {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>String %s\n", (yyvsp[0].string_value));
                             }
                         }
-#line 2496 "parser.c"
+#line 2495 "parser.c"
     break;
 
   case 87:
-#line 519 "syn_an.y"
+#line 518 "syn_an.y"
                         {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>NIL\n");
                             }
                         }
-#line 2506 "parser.c"
+#line 2505 "parser.c"
     break;
 
   case 88:
-#line 524 "syn_an.y"
+#line 523 "syn_an.y"
                         {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>TRUE\n");
                             }
                         }
-#line 2516 "parser.c"
+#line 2515 "parser.c"
     break;
 
   case 89:
-#line 529 "syn_an.y"
+#line 528 "syn_an.y"
                         {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>FALSE");
                             }
                         }
-#line 2526 "parser.c"
+#line 2525 "parser.c"
     break;
 
   case 90:
-#line 536 "syn_an.y"
+#line 535 "syn_an.y"
                                 {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>ID %s\n", (yyvsp[0].string_value));
                                     }
                                     CheckAddFormal((yyvsp[0].string_value));
                                 }
-#line 2537 "parser.c"
+#line 2536 "parser.c"
     break;
 
   case 91:
-#line 542 "syn_an.y"
+#line 541 "syn_an.y"
                                 {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>IDLIST , ID %s\n", (yyvsp[0].string_value));
                                     }
                                     CheckAddFormal((yyvsp[0].string_value));
                                 }
-#line 2548 "parser.c"
+#line 2547 "parser.c"
     break;
 
   case 92:
-#line 551 "syn_an.y"
+#line 550 "syn_an.y"
                                                                         {
                                                                             if(TRACE_PRINT){
                                                                                 fprintf(ost, "=>IF(EXPR)STMT ELSE STMT\n");
                                                                             }
                                                                         }
-#line 2558 "parser.c"
+#line 2557 "parser.c"
     break;
 
   case 93:
-#line 556 "syn_an.y"
+#line 555 "syn_an.y"
                                                                         {
                                                                             if(TRACE_PRINT){
                                                                                 fprintf(ost, "=>IF(EXPR) STMT\n");
                                                                             }
                                                                         }
-#line 2568 "parser.c"
+#line 2567 "parser.c"
     break;
 
   case 94:
-#line 563 "syn_an.y"
+#line 562 "syn_an.y"
                                                           {loop_stack++;}
-#line 2574 "parser.c"
+#line 2573 "parser.c"
     break;
 
   case 95:
-#line 563 "syn_an.y"
+#line 562 "syn_an.y"
                                                                                 {
                                                                     if(TRACE_PRINT){
                                                                         fprintf(ost, "=>while(EXPR)\n");
                                                                     }
                                                                     loop_stack--;
                                                                 }
-#line 2585 "parser.c"
+#line 2584 "parser.c"
     break;
 
   case 96:
-#line 571 "syn_an.y"
+#line 570 "syn_an.y"
                                                                                         {loop_stack++;}
-#line 2591 "parser.c"
+#line 2590 "parser.c"
     break;
 
   case 97:
-#line 571 "syn_an.y"
+#line 570 "syn_an.y"
                                                                                                                 {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "=>for(ELIST; EXPR; ELIST)\n");
                                                                                                     }
                                                                                                 }
-#line 2601 "parser.c"
+#line 2600 "parser.c"
     break;
 
   case 98:
-#line 576 "syn_an.y"
+#line 575 "syn_an.y"
                                                                                    {loop_stack++;}
-#line 2607 "parser.c"
+#line 2606 "parser.c"
     break;
 
   case 99:
-#line 576 "syn_an.y"
+#line 575 "syn_an.y"
                                                                                                                 {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "->for(; EXPR; ELIST)\n");
                                                                                                     }
                                                                                                     loop_stack--;
                                                                                                 }
-#line 2618 "parser.c"
+#line 2617 "parser.c"
     break;
 
   case 100:
-#line 582 "syn_an.y"
+#line 581 "syn_an.y"
                                                                                    {loop_stack++;}
-#line 2624 "parser.c"
+#line 2623 "parser.c"
     break;
 
   case 101:
-#line 582 "syn_an.y"
+#line 581 "syn_an.y"
                                                                                                                 {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "->for(ELIST; EXPR;)\n");
                                                                                                     }
                                                                                                     loop_stack--;
                                                                                                 }
-#line 2635 "parser.c"
+#line 2634 "parser.c"
     break;
 
   case 102:
-#line 588 "syn_an.y"
+#line 587 "syn_an.y"
                                                                              {loop_stack++;}
-#line 2641 "parser.c"
+#line 2640 "parser.c"
     break;
 
   case 103:
-#line 588 "syn_an.y"
+#line 587 "syn_an.y"
                                                                                                                 {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "->for(; EXPR;)\n");
                                                                                                     }
                                                                                                     loop_stack--;
                                                                                                 }
-#line 2652 "parser.c"
+#line 2651 "parser.c"
     break;
 
   case 104:
-#line 596 "syn_an.y"
+#line 595 "syn_an.y"
                                     {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret;\n");
                                         }
                                         ManageReturnStatement();
                                     }
-#line 2663 "parser.c"
+#line 2662 "parser.c"
     break;
 
   case 105:
-#line 602 "syn_an.y"
+#line 601 "syn_an.y"
                                     {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret EXPR;\n");
                                         }
                                         ManageReturnStatement();
                                     }
-#line 2674 "parser.c"
+#line 2673 "parser.c"
     break;
 
 
-#line 2678 "parser.c"
+#line 2677 "parser.c"
 
       default: break;
     }
@@ -2906,7 +2905,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 610 "syn_an.y"
+#line 609 "syn_an.y"
 
 
 int yyerror(char *message){

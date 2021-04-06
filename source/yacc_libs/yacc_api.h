@@ -17,17 +17,20 @@ unsigned int scope = 0;
 unsigned int unamed_functions = 0;
 unsigned int loop_stack = 0;
 
-SymbolTable *symTab;
-ScopeTable *scopeTab;
-
-FuncStack *functionStack;
-
 char noname_prefix[12];
 
-FILE *ost;
+SymbolTable *symTab;
+ScopeTable *scopeTab;
+FuncStack *functionStack;
 
-#define TRACE_PRINT 0
+FILE *ost; /*Output stream*/
 
+#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
+
+/**
+ * @brief Checks if id refers to some library function name.
+ * 
+ */
 #define checkForLibFunc(id)               \
     (!strcmp(id, "print") ||              \
      !strcmp(id, "input") ||              \
@@ -42,8 +45,12 @@ FILE *ost;
      !strcmp(id, "cos") ||                \
      !strcmp(id, "sin"))
 
-/* Yacc code */
-
+/**
+ * @brief Checks if the entry is accesible.
+ * 
+ * @param entry The symbol table entry to be checked
+ * @param scope The current scope
+ */
 int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
 {
     assert(entry);
@@ -63,9 +70,10 @@ int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
 }
 
 /**
- * @brief Code for lvalue assign expr
+ * @brief Manages the actions to be done at an assignment expression.
+ * It corresponds to rule expr: lvalue ASSIGN expr.
  * 
- * @param entry 
+ * @param entry The symboltable entry of the identifier
  */
 void ManageAssignValue(SymbolTableEntry *entry)
 {
@@ -94,9 +102,11 @@ void ManageAssignValue(SymbolTableEntry *entry)
 }
 
 /**
- * @brief Code for Primary <- lvalue
+ * @brief Manages the actions to be done when the value of a symbol table entry is asked.
+ * It corresponds to rule primary:   lvalue
+ *                                  |call
  * 
- * @param entry 
+ * @param entry The symboltable entry of the identifier
  */
 void ManagePrimaryLValue(SymbolTableEntry *entry)
 {
@@ -115,10 +125,11 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
 }
 
 /**
- * @brief Code for lvalue -> ID
+ * @brief Checks if an identifier exists in symboltable and if not, it inserts it in every case.
+ * Corresponds to rule expr: lvalue: ID
  * 
- * @param id 
- * @return SymbolTableEntry* 
+ * @param id The name of the variable
+ * @return SymbolTableEntry * The entry of the identifier
  */
 SymbolTableEntry *EvaluateLValue(char *id)
 {
@@ -144,10 +155,11 @@ SymbolTableEntry *EvaluateLValue(char *id)
 }
 
 /**
- * @brief Code for lvalue <- local
+ * @brief Checks if the local variable exists. If not, it is inserted in the symbol table.
+ * It corresponds to yacc rule lvalue: local id
  * 
- * @param id 
- * @return SymbolTableEntry* 
+ * @param id The name of the local variable 
+ * @return SymbolTableEntry* The entry of the variable if no error occurs, otherwise NULL
  */
 SymbolTableEntry *EvaluateLocalLValue(char *id)
 {
@@ -180,10 +192,11 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
 }
 
 /**
- * @brief Code for lvalue -> global ID
+ * @brief Checks if the global variable exists. If not, prints error.
+ * It corresponds to yacc rule lvalue: global id
  * 
- * @param id 
- * @return SymbolTableEntry* 
+ * @param id The name of the global variable 
+ * @return SymbolTableEntry* The entry of the variable if no error occurs, otherwise NULL 
  */
 SymbolTableEntry *EvaluateGlobalLValue(char *id)
 {
@@ -199,10 +212,12 @@ SymbolTableEntry *EvaluateGlobalLValue(char *id)
 }
 
 /**
- * @brief Checks if the id of the formal argument is valid
+ * @brief Checks if the id of the formal argument is valid and adds it to the symboltable.
+ * It corresponds to yacc rule idlist:    ID
+ *                                      | idlist,ID
  * 
- * @param id 
- * @return SymbolTableEntry* 
+ * @param id The name of the formal argument
+ * @return SymbolTableEntry* The entry of the argument if no error occurs, otherwise NULL
  */
 SymbolTableEntry *CheckAddFormal(char *id)
 {
@@ -235,6 +250,15 @@ SymbolTableEntry *CheckAddFormal(char *id)
     return entry;
 }
 
+/**
+ * @brief Manages the actions to be done when a function is defined (rule funcdef: *)
+ * It checks if the name is valid by comparing it to the default library names, and then checks the current scope
+ * to find if another ID has already the same name. In that case it throws an error message.
+ * Otherwise, it adds the entry to the symboltable.
+ * 
+ * @param id The name of the function to be defined
+ * @return NULL if an error occurs, otherwise returns the entry instance of the function
+ */
 SymbolTableEntry *ManageIDFunctionDefinition(char *id)
 {
     SymbolTableEntry *entry = NULL;
@@ -274,6 +298,12 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
     return entry;
 }
 
+/**
+ * @brief Manages the actions to be done when a function is called (rule primary: call)
+ * If the id called is a variable it checks the accessibility and throws an error message.
+ * 
+ * @param entry The ID's entry on symboltable
+ */
 void ManagePrimaryFunction(SymbolTableEntry *entry)
 {
     if (entry != NULL)
@@ -281,10 +311,15 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
         if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
         }
     }
 }
 
+/**
+ * @brief Check is the use of return statement is valid
+ * 
+ */
 void ManageReturnStatement()
 {
     if (FuncStack_isEmpty(functionStack))
@@ -293,6 +328,11 @@ void ManageReturnStatement()
     }
 }
 
+/**
+ * @brief Check is the use of break and continue keyword is valid
+ * 
+ * @param keyword "Break" or "Else"
+ */
 void ManageLoopKeywords(char *keyword)
 {
     if (loop_stack == 0)
@@ -301,11 +341,19 @@ void ManageLoopKeywords(char *keyword)
     }
 }
 
+/**
+ * @brief Generates names for every anonymous function
+ * 
+ */
 void GenerateName()
 {
     sprintf(noname_prefix + 1, "%u", unamed_functions);
 }
 
+/**
+ * @brief Initializes the name array
+ * 
+ */
 void InitNames()
 {
     int i;

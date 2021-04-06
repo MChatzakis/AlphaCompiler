@@ -86,7 +86,7 @@ for(; x<3; x++,y++){
 for(; x<3; ){
     break;
     continue;
-    return;
+    //return;
 }
 
 {

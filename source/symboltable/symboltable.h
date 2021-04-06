@@ -3,11 +3,11 @@
 #include <string.h>
 #include <assert.h>
 
-#define BUCKETS 20
+#define BUCKETS 255
 #define INIT_SCOPE_SIZE 50
 #define HASH_MULTIPLIER 65599
 
-/* Symbol Types */
+/* ---- Symbol Types ---- */
 enum SymbolType
 {
     GLOBAL_ID,
