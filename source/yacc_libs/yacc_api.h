@@ -15,6 +15,7 @@ extern FILE *yyin;
 
 unsigned int scope = 0;
 unsigned int unamed_functions = 0;
+unsigned int loop_stack = 0;
 
 SymbolTable *symTab;
 ScopeTable *scopeTab;
@@ -74,6 +75,7 @@ void ManageAssignValue(SymbolTableEntry *entry)
         if (entry->type == 3)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to User defined function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
+            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Function \"%s\" defined at line %lu\n", (entry->value).funcVal->name, (entry->value).funcVal->line);
         }
         else if (entry->type == 4)
         {
@@ -82,10 +84,11 @@ void ManageAssignValue(SymbolTableEntry *entry)
         else if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" is declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
         }
         else
         {
-            //assgin val
+            //assign val
         }
     }
 }
@@ -102,6 +105,7 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
         if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
+            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" is declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
         }
         else
         {
@@ -188,7 +192,7 @@ SymbolTableEntry *EvaluateGlobalLValue(char *id)
     entry = SymbolTable_lookup(symTab, id, 0);
     if (entry == NULL)
     {
-        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined symbol \"%s\" at line %u\n", id, yylineno);
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined global symbol \"%s\" at line %u\n", id, yylineno);
     }
 
     return entry;
@@ -218,7 +222,7 @@ SymbolTableEntry *CheckAddFormal(char *id)
 
     entry = SymbolTable_insert(symTab, id, scope, yylineno, FORMAL_ID);
     ScopeTable_insert(scopeTab, entry, scope);
-    //insert format to funcstack top
+
     if (!FuncStack_isEmpty(functionStack)) /* kanonika, pote den prepei to funcstack na einai adeio se auto to simeio */
     {
         if (FuncStack_topEntry(functionStack) != NULL)
@@ -247,12 +251,15 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
     if (entry != NULL)
     {
         if (entry->type < 3)
-            fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Redeclaration of Variable \"%s\" as function at line %lu\n", (entry->value).varVal->name, yylineno);
+        {
+            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Redefinition of Variable \"%s\" as a function at line %lu\n", (entry->value).varVal->name, yylineno);
+            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
+        }
         else if (entry->type == 3)
         {
             fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Redefinition of User function \"%s\" at line %lu\n", (entry->value).funcVal->name, yylineno);
+            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Function \"%s\" defined at line %lu\n", (entry->value).funcVal->name, (entry->value).funcVal->line);
         }
-
         FuncStack_push(functionStack, NULL, scope);
         return NULL;
     }
@@ -275,6 +282,22 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
         }
+    }
+}
+
+void ManageReturnStatement()
+{
+    if (FuncStack_isEmpty(functionStack))
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"return\" statement outside of function at line %lu\n", yylineno);
+    }
+}
+
+void ManageLoopKeywords(char *keyword)
+{
+    if (loop_stack == 0)
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"%s\" statement outside of loop at line %lu\n", keyword, yylineno);
     }
 }
 

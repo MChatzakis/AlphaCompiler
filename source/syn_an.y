@@ -86,11 +86,13 @@ stmt:       expr SEMICOLON              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Break Statement\n");
                                             }
+                                            ManageLoopKeywords("break");
                                         }
             | CONTINUE SEMICOLON        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Continue Statement\n");
                                             }
+                                            ManageLoopKeywords("continue");
                                         }
             | block                     {
                                             if(TRACE_PRINT){
@@ -558,32 +560,36 @@ ifstmt:
                                                                         }                                                                
             ;
 
-whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt  {
+whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_stack++;} stmt  {
                                                                     if(TRACE_PRINT){
                                                                         fprintf(ost, "=>while(EXPR)\n");
                                                                     }
+                                                                    loop_stack--;
                                                                 }
             ;
 
-forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt    {
+forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++;} stmt    {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "=>for(ELIST; EXPR; ELIST)\n");
                                                                                                     }
                                                                                                 }
-            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt         {
+            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++;}  stmt        {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "->for(; EXPR; ELIST)\n");
                                                                                                     }
+                                                                                                    loop_stack--;
                                                                                                 }
-            |FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS stmt         {
+            |FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++;} stmt         {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "->for(ELIST; EXPR;)\n");
                                                                                                     }
+                                                                                                    loop_stack--;
                                                                                                 }
-            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS stmt               {
+            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++;} stmt               {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "->for(; EXPR;)\n");
                                                                                                     }
+                                                                                                    loop_stack--;
                                                                                                 }
             ;
 
@@ -591,11 +597,13 @@ returnstmt: RETURN SEMICOLON        {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret;\n");
                                         }
+                                        ManageReturnStatement();
                                     }
             | RETURN expr SEMICOLON {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret EXPR;\n");
                                         }
+                                        ManageReturnStatement();
                                     }
             ;
 

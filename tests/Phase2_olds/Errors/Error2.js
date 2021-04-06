@@ -18,3 +18,16 @@ continue;	//Use of 'continue' while not in a loop
 		}
 	}
 }
+
+function g(){
+	break;
+}
+
+while(1){
+	break;
+
+}
+
+for(; x<10; x++){
+	continue;
+}
