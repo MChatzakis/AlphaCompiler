@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_GREEN "\x1b[32m"
@@ -16,4 +18,24 @@ void fprintf_yellow(FILE *stream, const char *str, ...);
 void fprintf_blue(FILE *stream, const char *str, ...);
 void fprintf_magenta(FILE *stream, const char *str, ...);
 void fprintf_cyan(FILE *stream, const char *str, ...);
+
+/* -------------------- Number Stack -------------------- */
+typedef struct NumberStackNode
+{
+    unsigned int val;
+    struct NumberStackNode *next;
+} NumberStackNode;
+
+typedef struct NumberStack
+{
+    unsigned int size;
+    struct NumberStackNode *top;
+} NumberStack;
+
+NumberStack *NumberStack_init();
+int NumberStack_isEmpty(NumberStack *ns);
+NumberStackNode *NumberStack_push(NumberStack *ns, unsigned int val);
+unsigned int NumberStack_top(NumberStack *ns);
+unsigned int NumberStack_pop(NumberStack *ns);
+void NumberStack_print(NumberStack *ns);
 

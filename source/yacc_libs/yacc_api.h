@@ -28,6 +28,7 @@ char noname_prefix[12];
 SymbolTable *symTab;
 ScopeTable *scopeTab;
 FuncStack *functionStack;
+NumberStack *loopStack;
 
 FILE *ost; /*Output stream*/
 
@@ -386,9 +387,16 @@ void ManageReturnStatement()
  */
 void ManageLoopKeywords(char *keyword)
 {
-    if (loop_stack == 0)
+    if (NumberStack_isEmpty(loopStack))
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"%s\" statement outside of loop at line %lu\n", keyword, yylineno);
+    }
+    else if (!FuncStack_isEmpty(functionStack))
+    {
+        if (FuncStack_topScope(functionStack) >= NumberStack_top(loopStack))
+        {
+            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"%s\" statement outside of loop at line %lu\n", keyword, yylineno);
+        }
     }
 }
 

@@ -559,36 +559,43 @@ ifstmt:
                                                                         }                                                                
             ;
 
-whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_stack++;} stmt  {
+whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope);} stmt  {
                                                                     if(TRACE_PRINT){
                                                                         fprintf(ost, "=>while(EXPR) (whilestmt -> while(expr) stmt)\n");
                                                                     }
                                                                     loop_stack--;
+                                                                    NumberStack_print(loopStack);
+                                                                    NumberStack_pop(loopStack);
                                                                 }
             ;
 
-forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++;} stmt    {
+forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope);} stmt    {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
                                                                                                     }
+                                                                                                    loop_stack--;
+                                                                                                    NumberStack_pop(loopStack);
                                                                                                 }
-            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++;}  stmt        {
+            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope);}  stmt        {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "=>FOR (forstmt -> for(; expr; elist))\n");
                                                                                                     }
                                                                                                     loop_stack--;
+                                                                                                    NumberStack_pop(loopStack);
                                                                                                 }
-            |FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++;} stmt         {
+            |FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope); } stmt         {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "=>FOR (forstmt -> for(elist; expr; ))\n");
                                                                                                     }
                                                                                                     loop_stack--;
+                                                                                                    NumberStack_pop(loopStack);
                                                                                                 }
-            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++;} stmt               {
+            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope);} stmt               {
                                                                                                     if(TRACE_PRINT){
                                                                                                         fprintf(ost, "=>FOR (forstmt -> for( ; expr; ))\n");
                                                                                                     }
                                                                                                     loop_stack--;
+                                                                                                    NumberStack_pop(loopStack);
                                                                                                 }
             ;
 
@@ -656,8 +663,8 @@ int main(int argc, char **argv){
 
     symTab = SymbolTable_init();
     scopeTab = ScopeTable_init();
-
     functionStack = FuncStack_init();
+    loopStack = NumberStack_init();
 
     SymbolTable_add_libfun(symTab, scopeTab);
 
