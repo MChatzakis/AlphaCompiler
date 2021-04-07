@@ -564,7 +564,7 @@ whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_stack++; NumberS
                                                                         fprintf(ost, "=>while(EXPR) (whilestmt -> while(expr) stmt)\n");
                                                                     }
                                                                     loop_stack--;
-                                                                    NumberStack_print(loopStack);
+                                                                    //NumberStack_print(loopStack);
                                                                     NumberStack_pop(loopStack);
                                                                 }
             ;
