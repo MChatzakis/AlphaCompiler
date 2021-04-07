@@ -427,7 +427,7 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
                 }
                 else
                 {
-                    printf("\n");
+                    fprintf(stream, "\n");
                 }
             }
 
