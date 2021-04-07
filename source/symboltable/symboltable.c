@@ -184,8 +184,10 @@ SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned in
     index = hash_function(id);
     curr = s->hashtable[index];
 
+    /*Searching identifier ID in the given scope*/
     while (curr)
     {
+        /*Variable Case*/
         if (curr->type < 3)
         {
             if (curr->isActive && !strcmp((curr->value).varVal->name, id) && (curr->value).varVal->scope == scope)
@@ -193,6 +195,7 @@ SymbolTableEntry *SymbolTable_lookup(SymbolTable *s, const char *id, unsigned in
                 return curr;
             }
         }
+        /*Function Case*/
         else
         {
             if (curr->isActive && !strcmp(id, (curr->value).funcVal->name) && (curr->value).funcVal->scope == scope)
@@ -221,11 +224,13 @@ SymbolTableEntry *SymbolTable_lookup_general(SymbolTable *s, const char *id, uns
     SymbolTableEntry *curr;
 
     curr = NULL;
+    /*Searching the identifier id from scope to 0*/
     for (i = 0; i <= scope; i++)
     {
-        curr = SymbolTable_lookup(s, id, scope - i);
+        curr = SymbolTable_lookup(s, id, scope - i); /*Scope -> Scope-1 -> ... -> 0*/
         if (curr != NULL)
         {
+            /*If something is found, the search ends and the entry is returned*/
             break;
         }
     }

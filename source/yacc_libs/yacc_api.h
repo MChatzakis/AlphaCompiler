@@ -1,3 +1,9 @@
+/**
+ * @file yacc_api.h
+ * @author Manos Chatzakis (4238) Nikos Fanourakis (4237)
+ * @brief Functions to be used for yacc
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -25,7 +31,7 @@ FuncStack *functionStack;
 
 FILE *ost; /*Output stream*/
 
-#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -55,18 +61,34 @@ int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
 {
     assert(entry);
 
+    /*
+        If the refferred entry is a variable with scope between 0 and 
+        current scope the accessibility might not be allowed.
+        If entry is a function, access is allowed no matter the scopes etc.
+    */
     if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
     {
+        /*If there is a function definition currently*/
         if (!FuncStack_isEmpty(functionStack))
         {
+            /*
+                If the function is between the entry first appearance 
+                and the current scope, access is not allowed, eg:
+                {
+                    x = 5; //scope 1
+                    function t(){ //scope 1, funcstack.size = 1
+                        x = 3;  //scope 2
+                    }
+                }    
+            */
             if (FuncStack_topScope(functionStack) >= (entry->value).varVal->scope)
             {
-                return 0;
+                return 0; /*Error*/
             }
         }
     }
 
-    return 1;
+    return 1; /*Access Allowed*/
 }
 
 /**
@@ -79,7 +101,7 @@ void ManageAssignValue(SymbolTableEntry *entry)
 {
     if (entry != NULL)
     {
-        /* an vrei function error */
+        /*If the lvalue refers to a function (eg. print = 5;) an error is thrown*/
         if (entry->type == 3)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to User defined function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
@@ -89,6 +111,7 @@ void ManageAssignValue(SymbolTableEntry *entry)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to Library function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
         }
+        /*If the lvalue is not a function, we only need to check for the accessibility.*/
         else if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
@@ -96,14 +119,14 @@ void ManageAssignValue(SymbolTableEntry *entry)
         }
         else
         {
-            //assign val
+            /*Getting here means that the assignment is valid*/
         }
     }
 }
 
 /**
  * @brief Manages the actions to be done when the value of a symbol table entry is asked.
- * It corresponds to rule primary:   lvalue
+ * It corresponds to rule primary:   lvalue x
  *                                  |call
  * 
  * @param entry The symboltable entry of the identifier
@@ -112,6 +135,7 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
 {
     if (entry != NULL)
     {
+        /*As calling a function as a variable (etc x = print;) is allowed on alpha, we only need to check for access*/
         if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
@@ -119,7 +143,7 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
         }
         else
         {
-            //assign value to expression
+            /*Getting here means that the expression is valid*/
         }
     }
 }
@@ -135,8 +159,10 @@ SymbolTableEntry *EvaluateLValue(char *id)
 {
     SymbolTableEntry *entry, *insertEntry;
 
+    /*Lookup, starting from current scope and goind backwards till global scope*/
     if (!(entry = SymbolTable_lookup_general(symTab, id, scope)))
     {
+        /*If we get here, it means lookup failed so the identifier ID is inserted to the symtab*/
         if (scope > 0)
         {
             insertEntry = SymbolTable_insert(symTab, id, scope, yylineno, LOCAL_ID);
@@ -150,6 +176,7 @@ SymbolTableEntry *EvaluateLValue(char *id)
 
         entry = insertEntry;
     }
+    /*Else the id found somewhere in the symtab and its returned right after the lookup*/
 
     return entry;
 }
@@ -165,15 +192,20 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
 {
     SymbolTableEntry *entry, *insertEntry;
 
+    /*Look up on current scope*/
     if ((entry = SymbolTable_lookup(symTab, id, scope)) == NULL)
     {
 
+        /*We get here only if nothing was found in the current scope*/
+
+        /*Using lib name is forbidden when scope > 0*/
         if (checkForLibFunc(id))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Library Function \"%s\" redefined as local variable at line %u\n", id, yylineno);
             return NULL;
         }
 
+        /*At this point, insertion is valid*/
         if (scope > 0)
         {
             insertEntry = SymbolTable_insert(symTab, id, scope, yylineno, LOCAL_ID);
@@ -187,6 +219,7 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
 
         entry = insertEntry;
     }
+    //else it means that the lookup to the current scope found the corresponding symbol, so no actions needed here.
 
     return entry;
 }
@@ -202,9 +235,11 @@ SymbolTableEntry *EvaluateGlobalLValue(char *id)
 {
     SymbolTableEntry *entry;
 
+    /*Lookup in the global scope*/
     entry = SymbolTable_lookup(symTab, id, 0);
     if (entry == NULL)
     {
+        /*If nothing is found, error is thrown and NULL is returned*/
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined global symbol \"%s\" at line %u\n", id, yylineno);
     }
 
@@ -223,25 +258,33 @@ SymbolTableEntry *CheckAddFormal(char *id)
 {
     SymbolTableEntry *entry, *corrFunc;
 
+    /*Arguments with lib func names are not allowed*/
     if (checkForLibFunc(id))
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows library function at line %lu\n", id, yylineno);
         return NULL;
     }
 
+    /*Look up on the current scope*/
     if ((entry = SymbolTable_lookup(symTab, id, scope)) != NULL)
     {
+        /*Getting hear means that the current id refers to an already added formal argument*/
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument already used in function \"%s\" at line %u\n", id, yylineno);
         return NULL;
     }
 
+    /*Getting hear means that the argument name is valid, thus it is added to the scope list and symboltable*/
     entry = SymbolTable_insert(symTab, id, scope, yylineno, FORMAL_ID);
     ScopeTable_insert(scopeTab, entry, scope);
 
-    if (!FuncStack_isEmpty(functionStack)) /* kanonika, pote den prepei to funcstack na einai adeio se auto to simeio */
+    if (!FuncStack_isEmpty(functionStack)) /*At this point funcStack is never empty: Extra Safety*/
     {
         if (FuncStack_topEntry(functionStack) != NULL)
         {
+            /*
+                In case that the current function name is valid, the argument is matched with its
+                corresponding function using the FuncArg list.
+            */
             corrFunc = FuncStack_topEntry(functionStack);
             FuncArg_insert(corrFunc, entry);
         }
@@ -264,6 +307,7 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
     SymbolTableEntry *entry = NULL;
     SymbolTableEntry *insertEntry;
 
+    /*Shadowing of library functions is not allowed*/
     if (checkForLibFunc(id))
     {
         fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", id, yylineno);
@@ -271,9 +315,12 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
         return NULL;
     }
 
+    /*Looking up on the current scope*/
     entry = SymbolTable_lookup(symTab, id, scope);
     if (entry != NULL)
     {
+        /*If something is found, definition is wrong*/
+
         if (entry->type < 3)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Redefinition of Variable \"%s\" as a function at line %lu\n", (entry->value).varVal->name, yylineno);
@@ -284,13 +331,16 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
             fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Redefinition of User function \"%s\" at line %lu\n", (entry->value).funcVal->name, yylineno);
             fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Function \"%s\" defined at line %lu\n", (entry->value).funcVal->name, (entry->value).funcVal->line);
         }
+
         FuncStack_push(functionStack, NULL, scope);
         return NULL;
     }
     else
     {
+        /*If nothing is found, the function definition is okay so the function id is added to the structures*/
         insertEntry = SymbolTable_insert(symTab, id, scope, yylineno, USERFUNC_ID);
         ScopeTable_insert(scopeTab, insertEntry, scope);
+
         entry = insertEntry;
         FuncStack_push(functionStack, entry, scope);
     }
@@ -308,6 +358,7 @@ void ManagePrimaryFunction(SymbolTableEntry *entry)
 {
     if (entry != NULL)
     {
+        /*As calling a variable is allowed on alpha, we only need to check if we have access to the entry returned to this rule*/
         if (!CheckForAccess(entry, scope))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);

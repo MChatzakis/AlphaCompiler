@@ -58,54 +58,54 @@ program:    stmts
 
 stmt:       expr SEMICOLON              {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>Expr Statement\n");
+                                                fprintf(ost, "=>Expr Statement (stmt -> expr;)\n");
                                             }
                                         }
             | ifstmt                    {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>If/Ifelse Statement\n");
+                                                fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
                                         }
             | whilestmt                 {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>While Statement\n");
+                                                fprintf(ost, "=>While Statement (stmt -> whilestmt)\n");
                                             }
                                         }
             | forstmt                   {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>For Statement\n");
+                                                fprintf(ost, "=>For Statement (stmt -> forstmt)\n");
                                             }
                                         }
             | returnstmt                {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>Return Statement\n");
+                                                fprintf(ost, "=>Return Statement (stmt -> return)\n");
                                             }
                                         }
             | BREAK SEMICOLON           {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>Break Statement\n");
+                                                fprintf(ost, "=>Break Statement (stmt -> break)\n");
                                             }
                                             ManageLoopKeywords("break");
                                         }
             | CONTINUE SEMICOLON        {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>Continue Statement\n");
+                                                fprintf(ost, "=>Continue Statement (stmt -> continue;)\n");
                                             }
                                             ManageLoopKeywords("continue");
                                         }
             | block                     {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>Block Statement\n");
+                                                fprintf(ost, "=>Block Statement (stmt -> block)\n");
                                             }
                                         }
             | funcdef                   {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>Func Def Statement\n");
+                                                fprintf(ost, "=>Func Def Statement (stmt -> funcdef)\n");
                                             }
                                         }
             | SEMICOLON                 {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>Semicolon Statement\n");
+                                                fprintf(ost, "=>Semicolon Statement (stmt -> ;)\n");
                                             }
                                         }
             ;
@@ -116,174 +116,174 @@ stmts:      stmts stmt
 
 expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>Assignment\n");
+                                                fprintf(ost, "=>Assignment Expression (expr -> lvalue = expr)\n");
                                             }
                                             ManageAssignValue($1);
                                         }
             | expr OR expr              {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>OR\n");
+                                                fprintf(ost, "=>OR Expression (expr -> expr or expr)\n");
                                             }
                                         }
             | expr AND expr             {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>AND\n");
+                                                fprintf(ost, "=>AND Expression (expr -> expr and expr)\n");
                                             }
                                         }
             | expr NOT_EQUAL expr       {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>NOT EQUAL\n");
+                                                fprintf(ost, "=>NOT EQUAL Expression (expr -> expr != expr)\n");
                                             }
                                         }
             | expr EQUAL expr           {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>EQUAL\n");
+                                                fprintf(ost, "=>EQUAL Expression (expr -> expr == expr)\n");
                                             }
                                         }
             | expr LESS_EQUAL expr      {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>LESS EQUAL\n");
+                                                fprintf(ost, "=>LESS EQUAL Expression (expr -> expr <= expr)\n");
                                             }
                                         }
             | expr LESS expr            {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>LESS\n");
+                                                fprintf(ost, "=>LESS Expression (expr -> expr < expr)\n");
                                             }
                                         }
             | expr GREATER_EQUAL expr   {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>GREATER EQUAL\n");
+                                                fprintf(ost, "=>GREATER EQUAL Expression (expr -> expr >= expr)\n");
                                             }
                                         }
             | expr GREATER expr         {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>GREATER\n");
+                                                fprintf(ost, "=>GREATER Expression (expr -> expr > expr)\n");
                                             }
                                         }
             | expr PLUS expr            {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>PLUS\n");
+                                                fprintf(ost, "=>PLUS Expression (expr -> expr + expr)\n");
                                             }
                                         }
             | expr MINUS expr           {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>MINUS\n");
+                                                fprintf(ost, "=>MINUS Expression (expr -> expr - expr)\n");
                                             }
                                         }
             | expr MUL expr             {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>MUL\n");
+                                                fprintf(ost, "=>MUL Expression (expr -> expr * expr) \n");
                                             }
                                         }
             | expr DIV expr             {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>DIV\n");
+                                                fprintf(ost, "=>DIV Expression (expr -> expr / expr) \n");
                                             }
                                         }
             | expr MODULO expr          {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>MODULO\n");
+                                                fprintf(ost, "=>MODULO Expression (expr -> expr MOD expr)\n");
                                             }
                                         }
             | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS 
                                         {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>PARENTHESIS EXPR\n");
+                                                fprintf(ost, "=>PARENTHESIS EXPR Expression (expr -> (expr) )\n");
                                             }
                                         }
             | MINUS expr %prec UMINUS   {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>-EXPR\n");
+                                                fprintf(ost, "=>-EXPR Expression (expr -> -expr)\n");
                                             }
                                         }
             | NOT expr                  {
                                            if(TRACE_PRINT){
-                                                fprintf(ost, "=>NOT\n");
+                                                fprintf(ost, "=>NOT Expression (expr -> not expr)\n");
                                             }
                                         }
             | PLUS_PLUS lvalue          {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>PLUS PLUS lvalue\n");
+                                                fprintf(ost, "=>PLUS PLUS lvalue Expression (expr -> ++lvalue)\n");
                                             }
                                             ManageAssignValue($2);
                                         }
             | lvalue PLUS_PLUS          {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>lvalue PLUS PLUS\n");
+                                                fprintf(ost, "=>lvalue PLUS PLUS Expression (expr -> lvalue++ )\n");
                                             }
                                             ManageAssignValue($1);
                                         }
             | MINUS_MINUS lvalue        {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>MINUS MINUS lvalue\n");
+                                                fprintf(ost, "=>MINUS MINUS lvalue Expression (expr -> --lvalue)\n");
                                             }
                                             ManageAssignValue($2);
                                         }
             | lvalue MINUS_MINUS        {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>lvalue MINUS MINUS\n");
+                                                fprintf(ost, "=>lvalue MINUS MINUS Expression (expr -> lvalue--)\n");
                                             }
                                             ManageAssignValue($1);
                                         }
             | primary                   {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>PRIMARY\n");
+                                                fprintf(ost, "=>PRIMARY Expression (expr -> primary)\n");
                                             }
                                         }
             ;
 
 primary:    lvalue                      {                                 
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>lvalue \n");
+                                                fprintf(ost, "=>lvalue (primary -> lvalue)\n");
                                             }
                                             ManagePrimaryLValue($1);    
                                         }
             | call                      {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>CALL\n");
+                                                fprintf(ost, "=>CALL (primary -> call)\n");
                                             }
                                             ManagePrimaryFunction($1);
                                         }
             | objectdef                 {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>OBJECT DEF\n");
+                                                fprintf(ost, "=>OBJECT DEF (primary -> objectdef)\n");
                                             }
                                         }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS    
                                         {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>(funcdef)\n");
+                                                fprintf(ost, "=>(funcdef) (primary -> (funcdef))\n");
                                             }
                                         }
             | const                     {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>CONST\n");
+                                                fprintf(ost, "=>CONST (primary -> const)\n");
                                             }
                                         }
             ;
 
 lvalue:     ID                          {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>ID %s\n", $1);
+                                                fprintf(ost, "=>ID %s (lvalue -> ID)\n", $1);
                                             }
                                             $$ = EvaluateLValue($1);
                                         }
 
             | LOCAL ID                  {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=> local ID %s\n", $2);
+                                                fprintf(ost, "=> local ID %s (lvalue -> local ID)\n", $2);
                                             }
                                             $$ = EvaluateLocalLValue($2);
                                         }
             | DOUBLE_COLON ID           {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>global ID %s\n", $2);
+                                                fprintf(ost, "=>global ID %s (lvalue -> global ID)\n", $2);
                                             }
                                             $$ = EvaluateGlobalLValue($2);
                                         }
             | member                    {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>MEMBER\n");
+                                                fprintf(ost, "=>MEMBER (lvalue -> member)\n");
                                             }
                                             $$ = NULL;
                                         }
@@ -291,55 +291,55 @@ lvalue:     ID                          {
 
 member:     lvalue FULLSTOP ID                          {
                                                             if(TRACE_PRINT){
-                                                                fprintf(ost, "=>lvalue . ID %s\n", $3);
+                                                                fprintf(ost, "=>lvalue . ID %s (member -> lvalue.ID)\n", $3);
                                                             }
                                                         }
             | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {
                                                             if(TRACE_PRINT){
-                                                                fprintf(ost, "=>lvalue [ EXPR ]\n");
+                                                                fprintf(ost, "=>lvalue [ EXPR ] (member -> lvalue[expr])\n");
                                                             }
                                                         }
             | call FULLSTOP ID                          {
                                                             if(TRACE_PRINT){
-                                                                fprintf(ost, "=>Call.ID %s\n", $3);
+                                                                fprintf(ost, "=>Call.ID %s (member -> call.ID)\n", $3);
                                                             }
                                                         }
             | call LEFT_BRACKET expr RIGHT_BRACKET      {
                                                             if(TRACE_PRINT){
-                                                                fprintf(ost, "=>CALL [ EXPR ]\n");
+                                                                fprintf(ost, "=>CALL [ EXPR ] (member -> call[expr])\n");
                                                             }
                                                         }
             ;
 
 call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
                                                                 if(TRACE_PRINT){
-                                                                    fprintf(ost, "=>CALL ( ELIST )\n");
+                                                                    fprintf(ost, "=>CALL ( ELIST ) (call -> call(elist))\n");
                                                                 }                                    
                                                                 $$ = $1;
                                                             }
             | call LEFT_PARENTHESIS RIGHT_PARENTHESIS       {
                                                                 if(TRACE_PRINT){
-                                                                    fprintf(ost, "=>CALL ( empty )\n");
+                                                                    fprintf(ost, "=>CALL ( empty ) (call -> call())\n");
                                                                 }                                       
                                                                 $$ = $1;
                                                             }
             | lvalue callsuffix                             {
                                                                 if(TRACE_PRINT){
-                                                                    fprintf(ost, "=>lvalue ( CALL SUFFIX )\n");                                       
+                                                                    fprintf(ost, "=>lvalue ( CALL SUFFIX ) (call -> lvalue callsuffix)\n");                                       
                                                                 }
                                                                 $$ = $1;
                                                             }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   
                                                             {
                                                                 if(TRACE_PRINT){
-                                                                    fprintf(ost, "=>(FUNCDEF)(ELIST)\n");
+                                                                    fprintf(ost, "=>(FUNCDEF)(ELIST) (call -> ( funcdef(elist) ))\n");
                                                                 }
                                                                 $$ = $2;    
                                                             }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS 
                                                             {
                                                                 if(TRACE_PRINT){
-                                                                    fprintf(ost, "=>(FUNCDEF)(empty)\n");
+                                                                    fprintf(ost, "=>(FUNCDEF)(empty) (call -> ( funcdef() ))\n");
                                                                 }
                                                                 $$ = $2;    
                                                             }                                                                                        
@@ -347,84 +347,84 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
 
 callsuffix: normcall        {
                                 if(TRACE_PRINT){
-                                    fprintf(ost, "=>NORMAL CALL\n");
+                                    fprintf(ost, "=>NORMAL CALL (callsuffix -> normcall)\n");
                                 }
                             }
             | methodcall    {
                                 if(TRACE_PRINT){
-                                    fprintf(ost, "=>METHOD CALL\n");
+                                    fprintf(ost, "=>METHOD CALL (callsuffix -> methodcall)\n");
                                 }
                             }
             ;
 
 normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS    {
                                                             if(TRACE_PRINT){
-                                                                fprintf(ost, "=>(ELIST)\n");
+                                                                fprintf(ost, "=>(ELIST) (normcall -> (elist) )\n");
                                                             }
                                                         }
             | LEFT_PARENTHESIS RIGHT_PARENTHESIS        {
                                                             if(TRACE_PRINT){
-                                                                fprintf(ost, "=>(empty)\n");
+                                                                fprintf(ost, "=>(empty) (normcall -> ())\n");
                                                             }
                                                         }                                            
             ;
 
 methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS     {
                                                                                 if(TRACE_PRINT){
-                                                                                    fprintf(ost, "=> ..%s (ELIST)\n", $2);
+                                                                                    fprintf(ost, "=> ..%s (ELIST) (methodcall -> ..ID(elist))\n", $2);
                                                                                 }
                                                                             }
             | DOUBLE_FULLSTOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS         {
                                                                                 if(TRACE_PRINT){
-                                                                                    fprintf(ost, "=> ..%s (empty)\n", $2);
+                                                                                    fprintf(ost, "=> ..%s (empty) (methodcall -> ..ID())\n", $2);
                                                                                 }
                                                                             }                                                                
             ;
 
 elist:      expr                {
                                     if(TRACE_PRINT){
-                                        fprintf(ost, "=>EXPR\n");
+                                        fprintf(ost, "=>EXPR (elist -> expr)\n");
                                     }
                                 }
             | elist COMMA expr  {
                                     if(TRACE_PRINT){
-                                        fprintf(ost, "=>ELIST , EXPR\n");
+                                        fprintf(ost, "=>ELIST , EXPR (elist -> elist COMMA expr)\n");
                                     }
                                 }
             ;
 
 objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
                                                     if(TRACE_PRINT){
-                                                        fprintf(ost, "=>[INDEXED]\n");
+                                                        fprintf(ost, "=>[INDEXED] (objectdef -> [indexed])\n");
                                                     }
                                                 }
             | LEFT_BRACKET elist RIGHT_BRACKET  {
                                                     if(TRACE_PRINT){
-                                                        fprintf(ost, "=>[ELIST]\n");
+                                                        fprintf(ost, "=>[ELIST] (objectdef -> [ELIST])\n");
                                                     }
                                                 }
-            | LEFT_BRACKET  RIGHT_BRACKET       {
+            | LEFT_BRACKET RIGHT_BRACKET        {
                                                     if(TRACE_PRINT){
-                                                        fprintf(ost, "=>[empty]\n");
+                                                        fprintf(ost, "=>[empty] (objectdef -> [])\n");
                                                     }
                                                 }
             ;
 
 indexed:    indexedelem                 {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=>INDEXED_ELEM\n");
+                                                fprintf(ost, "=>INDEXED_ELEM (indexed -> indexedelem)\n");
                                             }
                                         }
             | indexed COMMA indexedelem {
                                             if(TRACE_PRINT){
-                                                fprintf(ost, "=> INDEXED , INDEXED_ELEM\n");
+                                                fprintf(ost, "=> INDEXED , INDEXED_ELEM (indexed -> indexed COMMA indexedelem)\n");
                                             }
                                         }
             ;
 
 indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE  {
                                                         if(TRACE_PRINT){
-                                                            fprintf(ost, "=>{EXPR : EXPR}\n");
+                                                            fprintf(ost, "=>{EXPR : EXPR} (indexedelem -> { expr : expr })\n");
                                                         }
                                                     }
             ;
@@ -433,14 +433,14 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE           {
                                                             ScopeTable_hide_scope(scopeTab, scope);
                                                             scope--;
                                                             if(TRACE_PRINT){
-                                                                fprintf(ost, "=>{Empty}\n");
+                                                                fprintf(ost, "=>{Empty} (block -> {})\n");
                                                             }
                                                         }
             | LEFT_BRACE {scope++;} stmts RIGHT_BRACE   {
                                                             ScopeTable_hide_scope(scopeTab, scope);
                                                             scope--;
                                                             if(TRACE_PRINT){
-                                                                fprintf(ost, "=>{STMTS}\n");
+                                                                fprintf(ost, "=>{STMTS} (block -> {stmts})\n");
                                                             }
                                                         }
             ;
@@ -455,7 +455,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                         } 
                                         idlist RIGHT_PARENTHESIS {scope--;} block   {
                                                                                         if(TRACE_PRINT){
-                                                                                            fprintf(ost, "=>FUNCDEF without ID, with IDLIST\n");
+                                                                                            fprintf(ost, "=>FUNCDEF (funcdef -> function (idlist) block)\n");
                                                                                         } 
                                                                                         $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
                                                                                         //FuncStack_print(functionStack);
@@ -468,7 +468,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                                             }
                                                             block   {
                                                                         if(TRACE_PRINT){
-                                                                            fprintf(ost, "=>FUNCDEF without ID, without IDLIST\n");
+                                                                            fprintf(ost, "=>FUNCDEF (funcdef -> function () block)\n");
                                                                         }
                                                                         $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
                                                                         //FuncStack_print(functionStack);
@@ -481,7 +481,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                             idlist RIGHT_PARENTHESIS {scope--;} block  
                                                                                     {
                                                                                         if(TRACE_PRINT){
-                                                                                            printf("=>FUNCDEF with ID, with IDLIST\n");
+                                                                                            printf("=>FUNCDEF (funcdef -> function ID (idlist) block)\n");
                                                                                         }
                                                                                         $$ = SymbolTable_lookup(symTab, $2, scope); //care for libfunc ID
                                                                                         //FuncStack_print(functionStack);
@@ -492,7 +492,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                                             } block  
                                                                                     {
                                                                                         if(TRACE_PRINT){
-                                                                                            printf("=>FUNCDEF with ID, without IDLIST\n");
+                                                                                            printf("=>FUNCDEF (funcdef -> function ID () block)\n");
                                                                                         }
                                                                                         $$ = SymbolTable_lookup(symTab, $2, scope); //care for libfunc ID
                                                                                         //FuncStack_print(functionStack);
@@ -502,45 +502,45 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
 
 const:      INTEGER     {
                             if(TRACE_PRINT){
-                                fprintf(ost, "=>INTEGER %d\n", $1);
+                                fprintf(ost, "=>INTEGER %d (const -> INTEGER)\n", $1);
                             }
                         }
             | REAL      {
                             if(TRACE_PRINT){
-                                fprintf(ost, "=>Real %f\n", $1);
+                                fprintf(ost, "=>Real %f (const -> REAL)\n", $1);
                             }
                         }
             | STRING    {
                             if(TRACE_PRINT){
-                                fprintf(ost, "=>String %s\n", $1);
+                                fprintf(ost, "=>String %s (const -> STRING)\n", $1);
                             }
                         }
             | NIL       {
                             if(TRACE_PRINT){
-                                fprintf(ost, "=>NIL\n");
+                                fprintf(ost, "=>NIL (const -> NIL)\n");
                             }
                         }
             | TRUE      {
                             if(TRACE_PRINT){
-                                fprintf(ost, "=>TRUE\n");
+                                fprintf(ost, "=>TRUE (const -> TRUE)\n");
                             }
                         }
             | FALSE     {
                             if(TRACE_PRINT){
-                                fprintf(ost, "=>FALSE");
+                                fprintf(ost, "=>FALSE (const -> FALSE)\n");
                             }
                         }
             ;
 
 idlist:     ID                  {
                                     if(TRACE_PRINT){
-                                        fprintf(ost, "=>ID %s\n", $1);
+                                        fprintf(ost, "=>ID %s (idlist -> ID)\n", $1);
                                     }
                                     CheckAddFormal($1);
                                 }
             | idlist COMMA ID   {
                                     if(TRACE_PRINT){
-                                        fprintf(ost, "=>IDLIST , ID %s\n", $3);
+                                        fprintf(ost, "=>IDLIST , ID %s (idlist -> idlist, ID)\n", $3);
                                     }
                                     CheckAddFormal($3);
                                 }
@@ -549,19 +549,19 @@ idlist:     ID                  {
 ifstmt:     
             IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt   {
                                                                             if(TRACE_PRINT){
-                                                                                fprintf(ost, "=>IF(EXPR)STMT ELSE STMT\n");
+                                                                                fprintf(ost, "=>IF ELSE (ifstmt -> if(expr)stmt else stmt)\n");
                                                                             }
                                                                         }
             | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt           {
                                                                             if(TRACE_PRINT){
-                                                                                fprintf(ost, "=>IF(EXPR) STMT\n");
+                                                                                fprintf(ost, "=>IF ELSE (ifstmt -> if(expr) stmt)\n");
                                                                             }
                                                                         }                                                                
             ;
 
 whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_stack++;} stmt  {
                                                                     if(TRACE_PRINT){
-                                                                        fprintf(ost, "=>while(EXPR)\n");
+                                                                        fprintf(ost, "=>while(EXPR) (whilestmt -> while(expr) stmt)\n");
                                                                     }
                                                                     loop_stack--;
                                                                 }
@@ -569,24 +569,24 @@ whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_stack++;} stmt  
 
 forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++;} stmt    {
                                                                                                     if(TRACE_PRINT){
-                                                                                                        fprintf(ost, "=>for(ELIST; EXPR; ELIST)\n");
+                                                                                                        fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
                                                                                                     }
                                                                                                 }
             |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++;}  stmt        {
                                                                                                     if(TRACE_PRINT){
-                                                                                                        fprintf(ost, "->for(; EXPR; ELIST)\n");
+                                                                                                        fprintf(ost, "=>FOR (forstmt -> for(; expr; elist))\n");
                                                                                                     }
                                                                                                     loop_stack--;
                                                                                                 }
             |FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++;} stmt         {
                                                                                                     if(TRACE_PRINT){
-                                                                                                        fprintf(ost, "->for(ELIST; EXPR;)\n");
+                                                                                                        fprintf(ost, "=>FOR (forstmt -> for(elist; expr; ))\n");
                                                                                                     }
                                                                                                     loop_stack--;
                                                                                                 }
             |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++;} stmt               {
                                                                                                     if(TRACE_PRINT){
-                                                                                                        fprintf(ost, "->for(; EXPR;)\n");
+                                                                                                        fprintf(ost, "=>FOR (forstmt -> for( ; expr; ))\n");
                                                                                                     }
                                                                                                     loop_stack--;
                                                                                                 }
@@ -594,13 +594,13 @@ forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARE
 
 returnstmt: RETURN SEMICOLON        {
                                         if(TRACE_PRINT){
-                                            fprintf(ost, "=>ret;\n");
+                                            fprintf(ost, "=>ret; (returnstmt -> return;)\n");
                                         }
                                         ManageReturnStatement();
                                     }
             | RETURN expr SEMICOLON {
                                         if(TRACE_PRINT){
-                                            fprintf(ost, "=>ret EXPR;\n");
+                                            fprintf(ost, "=>ret EXPR; (returnstmt -> return expr;)\n");
                                         }
                                         ManageReturnStatement();
                                     }
