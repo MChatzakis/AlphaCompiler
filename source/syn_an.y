@@ -481,7 +481,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                             idlist RIGHT_PARENTHESIS {scope--;} block  
                                                                                     {
                                                                                         if(TRACE_PRINT){
-                                                                                            printf("=>FUNCDEF (funcdef -> function ID (idlist) block)\n");
+                                                                                            fprintf(ost, "=>FUNCDEF (funcdef -> function ID (idlist) block)\n");
                                                                                         }
                                                                                         $$ = SymbolTable_lookup(symTab, $2, scope); //care for libfunc ID
                                                                                         //FuncStack_print(functionStack);
@@ -492,7 +492,7 @@ funcdef:    FUNCTION LEFT_PARENTHESIS   {
                                                             } block  
                                                                                     {
                                                                                         if(TRACE_PRINT){
-                                                                                            printf("=>FUNCDEF (funcdef -> function ID () block)\n");
+                                                                                            fprintf(ost, "=>FUNCDEF (funcdef -> function ID () block)\n");
                                                                                         }
                                                                                         $$ = SymbolTable_lookup(symTab, $2, scope); //care for libfunc ID
                                                                                         //FuncStack_print(functionStack);
