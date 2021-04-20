@@ -448,29 +448,29 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE           {
 
 
 funcdef:    FUNCTION LEFT_PARENTHESIS   { 
-                                            GenerateName(); 
-                                            ManageIDFunctionDefinition(noname_prefix);
-                                            unamed_functions++;
+                                            GenerateFuncName(); 
+                                            ManageIDFunctionDefinition(anonymous_func_prefix);
+                                            //unamed_functions++;
                                             scope++;
                                         } 
                                         idlist RIGHT_PARENTHESIS {scope--;} block   {
                                                                                         if(TRACE_PRINT){
                                                                                             fprintf(ost, "=>FUNCDEF (funcdef -> function (idlist) block)\n");
                                                                                         } 
-                                                                                        $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
+                                                                                        $$ = SymbolTable_lookup(symTab, anonymous_func_prefix, scope);
                                                                                         //FuncStack_print(functionStack);
                                                                                         FuncStack_pop(functionStack);                                  
                                                                                     }
             |FUNCTION LEFT_PARENTHESIS RIGHT_PARENTHESIS    { 
-                                                                GenerateName();
-                                                                ManageIDFunctionDefinition(noname_prefix);
-                                                                unamed_functions++;
+                                                                GenerateFuncName();
+                                                                ManageIDFunctionDefinition(anonymous_func_prefix);
+                                                                //unamed_functions++;
                                                             }
                                                             block   {
                                                                         if(TRACE_PRINT){
                                                                             fprintf(ost, "=>FUNCDEF (funcdef -> function () block)\n");
                                                                         }
-                                                                        $$ = SymbolTable_lookup(symTab, noname_prefix, scope);
+                                                                        $$ = SymbolTable_lookup(symTab, anonymous_func_prefix, scope);
                                                                         //FuncStack_print(functionStack);
                                                                         FuncStack_pop(functionStack); 
                                                                     }
@@ -659,7 +659,7 @@ int main(int argc, char **argv){
         }
     }    
 
-    InitNames();
+    InitFuncNames();
 
     symTab = SymbolTable_init();
     scopeTab = ScopeTable_init();

@@ -21,9 +21,16 @@ extern FILE *yyin;
 
 unsigned int scope = 0;
 unsigned int unamed_functions = 0;
+unsigned int tempcounter = 0;
 unsigned int loop_stack = 0;
 
-char noname_prefix[12];
+unsigned programVarOffset = 0;
+unsigned functionLocalOffset = 0;
+unsigned formalArgOffset = 0;
+unsigned scopeSpaceCounter = 1;
+
+char anonymous_func_prefix[13];
+char temp_var_prefix[13];
 
 SymbolTable *symTab;
 ScopeTable *scopeTab;
@@ -31,6 +38,84 @@ FuncStack *functionStack;
 NumberStack *loopStack;
 
 FILE *ost; /*Output stream*/
+
+typedef enum iopcode
+{
+    assign_op,
+    add_op,
+    sub_op,
+    mul_op,
+    div_op,
+    mod_op,
+    uminus_op,
+    and_op,
+    or_op,
+    not_op,
+    if_eq_op,
+    if_noteq_op,
+    if_lesseq_op,
+    if_greatereq_op,
+    if_less_op,
+    if_greater_op,
+    call_op,
+    param_op,
+    ret_op,
+    getretval_op,
+    funcstart_op,
+    funcend_op,
+    tablecreate_op,
+    tablegetelem_op,
+    tablesetelem_op
+} iopcode;
+
+typedef enum expr_t
+{
+    var_e,
+    tableitem_e,
+
+    programfunc_e,
+    libraryfunc_e,
+
+    arithexpr_e,
+    boolexpr_e,
+    assignexpr_e,
+    newtable_e,
+
+    constnum_e,
+    constbool_e,
+    conststring_e,
+
+    nil_e
+} expr_t;
+
+typedef struct expr
+{
+    expr_t type;
+    SymbolTableEntry *sym;
+    struct expr *index;
+    double numConst;
+    char *srtConst;
+    unsigned char boolConst;
+    struct expr *next;
+} expr;
+
+typedef struct quad
+{
+    iopcode op;
+    expr *result;
+    expr *arg1;
+    expr *arg2;
+    unsigned label;
+    unsigned line;
+} quad;
+
+quad *quads = NULL;
+unsigned total = 0;
+unsigned int currQuad = 0;
+
+#define EXPAND_SIZE 1024
+#define CURR_SIZE (total * sizeof(quad))
+#define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
 #define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
 
@@ -51,6 +136,41 @@ FILE *ost; /*Output stream*/
      !strcmp(id, "sqrt") ||               \
      !strcmp(id, "cos") ||                \
      !strcmp(id, "sin"))
+
+void expand()
+{
+    assert(total == currQuad);
+    quad *p = (quad *)malloc(NEW_SIZE);
+    if (quads)
+    {
+        memcpy(p, quads, CURR_SIZE);
+        free(quads);
+    }
+    quads = p;
+    total += EXPAND_SIZE;
+}
+
+void emit(
+    iopcode op,
+    expr *arg1,
+    expr *arg2,
+    expr *result,
+    unsigned label,
+    unsigned line)
+{
+
+    if (currQuad == total)
+    {
+        expand();
+    }
+
+    quad *p = quads + currQuad++;
+    p->arg1 = arg1;
+    p->arg2 = arg2;
+    p->result = result;
+    p->label = label;
+    p->line = line;
+}
 
 /**
  * @brief Checks if the entry is accesible.
@@ -404,22 +524,126 @@ void ManageLoopKeywords(char *keyword)
  * @brief Generates names for every anonymous function
  * 
  */
-void GenerateName()
+void GenerateFuncName()
 {
-    sprintf(noname_prefix + 1, "%u", unamed_functions);
+    sprintf(anonymous_func_prefix + 2, "%u", unamed_functions);
+    unamed_functions++;
 }
 
 /**
  * @brief Initializes the name array
  * 
  */
-void InitNames()
+void InitFuncNames()
 {
     int i;
 
-    noname_prefix[0] = '_';
-    for (i = 1; i < 12; i++)
+    anonymous_func_prefix[0] = '_';
+    anonymous_func_prefix[1] = 'f';
+    for (i = 2; i < 13; i++)
     {
-        noname_prefix[i] = '\0';
+        anonymous_func_prefix[i] = '\0';
     }
+}
+
+void newtempname()
+{
+    sprintf(temp_var_prefix + 2, "%u", tempcounter);
+    tempcounter++;
+}
+
+void resettemp()
+{
+    int i;
+
+    tempcounter = 0;
+
+    temp_var_prefix[0] = '_';
+    temp_var_prefix[1] = 'v';
+
+    for (i = 2; i < 13; i++)
+    {
+        temp_var_prefix[i] = '\0';
+    }
+}
+
+SymbolTableEntry *newtemp()
+{
+    char *name;
+    SymbolTableEntry *sym;
+
+    newtempname();
+
+    name = temp_var_prefix;
+
+    sym = SymbolTable_lookup(symTab, name, scope);
+    if (sym == NULL)
+    {
+        if (scope > 0)
+        {
+            sym = SymbolTable_insert(symTab, name, scope, yylineno, LOCAL_ID);
+        }
+        else
+        {
+            sym = SymbolTable_insert(symTab, name, scope, yylineno, GLOBAL_ID);
+        }
+    }
+
+    return sym;
+}
+
+enum scopespace_t currscopespace()
+{
+    if (scopeSpaceCounter == 1)
+    {
+        return programvar;
+    }
+    else if (scopeSpaceCounter % 2 == 0)
+    {
+        return formalarg;
+    }
+
+    return functionlocal;
+}
+
+unsigned currscopeoffset()
+{
+    switch (currscopespace())
+    {
+    case programvar:
+        return programVarOffset;
+    case functionlocal:
+        return functionLocalOffset;
+    case formalarg:
+        return formalArgOffset;
+    default:
+        assert(0);
+    }
+}
+
+void incurrscopeoffset()
+{
+    switch (currscopespace())
+    {
+    case programvar:
+        ++programVarOffset;
+        break;
+    case functionlocal:
+        ++functionLocalOffset;
+        break;
+    case formalarg:
+        ++formalArgOffset;
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void enterscopespace(){
+    ++scopeSpaceCounter;
+}
+
+void exitscopespace(){
+    assert(scopeSpaceCounter > 1);
+    --scopeSpaceCounter;
 }

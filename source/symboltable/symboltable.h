@@ -17,6 +17,13 @@ enum SymbolType
     LIBFUNC_ID
 };
 
+enum scopespace_t
+{
+    programvar,
+    functionlocal,
+    formalarg
+};
+
 /* ------------------------------------ SymbolTable Structures ------------------------------------ */
 typedef struct Variable
 {
@@ -44,6 +51,11 @@ typedef struct SymbolTableEntry
     } value;
 
     enum SymbolType type;
+    enum scopespace_t space;
+    unsigned offset;
+    //unsigned scope;
+    //char *name;
+    //unsigned line;
     struct SymbolTableEntry *next;
 
 } SymbolTableEntry;
