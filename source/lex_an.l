@@ -11,7 +11,9 @@
     #include <stdlib.h>
     #include <stdio.h>
 
-    #include "symboltable/symboltable.h"
+    //#include "symboltable/symboltable.h"
+    #include "yacc_libs/structs.h"
+
     #include "parser.h"
 
     //#include "lex_libs/token/token.h"

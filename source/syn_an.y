@@ -18,8 +18,9 @@
     int int_value;
     char* string_value;
     double real_value;
-
+    expr* exprVal;
     SymbolTableEntry *symTabEntry;
+
 }
 
 %token <int_value> INTEGER
@@ -43,7 +44,10 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-%type <symTabEntry> lvalue
+%type <exprVal> lvalue expr
+//member primary assignexpr call term objectdef const
+
+//%type <symTabEntry> lvalue
 %type <symTabEntry> funcdef
 %type <symTabEntry> call
 %type <symTabEntry> member
@@ -118,7 +122,7 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Assignment Expression (expr -> lvalue = expr)\n");
                                             }
-                                            ManageAssignValue($1);
+                                            $$ = ManageAssignValue($1, $3);
                                         }
             | expr OR expr              {
                                             if(TRACE_PRINT){
@@ -205,25 +209,25 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PLUS PLUS lvalue Expression (expr -> ++lvalue)\n");
                                             }
-                                            ManageAssignValue($2);
+                                            //ManageAssignValue($2);
                                         }
             | lvalue PLUS_PLUS          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue PLUS PLUS Expression (expr -> lvalue++ )\n");
                                             }
-                                            ManageAssignValue($1);
+                                            //ManageAssignValue($1);
                                         }
             | MINUS_MINUS lvalue        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MINUS MINUS lvalue Expression (expr -> --lvalue)\n");
                                             }
-                                            ManageAssignValue($2);
+                                            //ManageAssignValue($2);
                                         }
             | lvalue MINUS_MINUS        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue MINUS MINUS Expression (expr -> lvalue--)\n");
                                             }
-                                            ManageAssignValue($1);
+                                            //ManageAssignValue($1);
                                         }
             | primary                   {
                                             if(TRACE_PRINT){
@@ -327,7 +331,7 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>lvalue ( CALL SUFFIX ) (call -> lvalue callsuffix)\n");                                       
                                                                 }
-                                                                $$ = $1;
+                                                                //$$ = $1;
                                                             }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   
                                                             {

@@ -11,6 +11,8 @@ STACK_IMP_FILE = lex_libs/comment_stack/comment_stack.c
 UTIL_FILE = utils/utils.h
 UTIL_IMP_FILE = utils/utils.c
 
+STRUCTS = yacc_libs/structs.h
+
 SYMBOL_TABLE = symboltable/symboltable.h
 SYMBOL_TABLE_IMP = symboltable/symboltable.c
 
@@ -26,7 +28,7 @@ yacc: $(YACC_FILE)
 lex: $(LEX_FILE)
 	lex $(LEX_FILE)
 
-gcc: $(LEX_C_FILE) $(YACC_C_FILE) $(YACC_H_FILE) $(SYMBOL_TABLE) $(SYMBOL_TABLE_IMP) $(UTIL_FILE) $(UTIL_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE) $(YACC_API)
+gcc: $(LEX_C_FILE) $(YACC_C_FILE) $(YACC_H_FILE) $(SYMBOL_TABLE) $(SYMBOL_TABLE_IMP) $(UTIL_FILE) $(UTIL_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE) $(YACC_API) $(STRUCTS)
 	gcc $(LEX_C_FILE) $(YACC_C_FILE) $(STACK_IMP_FILE) $(UTIL_IMP_FILE) $(SYMBOL_TABLE_IMP) -Werror -Wall -o $(EXEC)
 
 clean:

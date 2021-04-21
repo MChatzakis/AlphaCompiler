@@ -10,7 +10,8 @@
 #include <string.h>
 
 #include "../utils/utils.h"
-#include "../symboltable/symboltable.h"
+//#include "../symboltable/symboltable.h"
+#include "structs.h"
 
 int yyerror(char *message);
 int yylex(void);
@@ -38,76 +39,6 @@ FuncStack *functionStack;
 NumberStack *loopStack;
 
 FILE *ost; /*Output stream*/
-
-typedef enum iopcode
-{
-    assign_op,
-    add_op,
-    sub_op,
-    mul_op,
-    div_op,
-    mod_op,
-    uminus_op,
-    and_op,
-    or_op,
-    not_op,
-    if_eq_op,
-    if_noteq_op,
-    if_lesseq_op,
-    if_greatereq_op,
-    if_less_op,
-    if_greater_op,
-    call_op,
-    param_op,
-    ret_op,
-    getretval_op,
-    funcstart_op,
-    funcend_op,
-    tablecreate_op,
-    tablegetelem_op,
-    tablesetelem_op
-} iopcode;
-
-typedef enum expr_t
-{
-    var_e,
-    tableitem_e,
-
-    programfunc_e,
-    libraryfunc_e,
-
-    arithexpr_e,
-    boolexpr_e,
-    assignexpr_e,
-    newtable_e,
-
-    constnum_e,
-    constbool_e,
-    conststring_e,
-
-    nil_e
-} expr_t;
-
-typedef struct expr
-{
-    expr_t type;
-    SymbolTableEntry *sym;
-    struct expr *index;
-    double numConst;
-    char *srtConst;
-    unsigned char boolConst;
-    struct expr *next;
-} expr;
-
-typedef struct quad
-{
-    iopcode op;
-    expr *result;
-    expr *arg1;
-    expr *arg2;
-    unsigned label;
-    unsigned line;
-} quad;
 
 quad *quads = NULL;
 unsigned total = 0;
@@ -173,6 +104,222 @@ void emit(
 }
 
 /**
+ * @brief Generates names for every anonymous function
+ * 
+ */
+void GenerateFuncName()
+{
+    sprintf(anonymous_func_prefix + 2, "%u", unamed_functions);
+    unamed_functions++;
+}
+
+/**
+ * @brief Initializes the name array
+ * 
+ */
+void InitFuncNames()
+{
+    int i;
+
+    anonymous_func_prefix[0] = '_';
+    anonymous_func_prefix[1] = 'f';
+    for (i = 2; i < 13; i++)
+    {
+        anonymous_func_prefix[i] = '\0';
+    }
+}
+
+void newtempname()
+{
+    sprintf(temp_var_prefix + 2, "%u", tempcounter);
+    tempcounter++;
+}
+
+void resettemp()
+{
+    int i;
+
+    tempcounter = 0;
+
+    temp_var_prefix[0] = '_';
+    temp_var_prefix[1] = 'v';
+
+    for (i = 2; i < 13; i++)
+    {
+        temp_var_prefix[i] = '\0';
+    }
+}
+
+SymbolTableEntry *newtemp()
+{
+    char *name;
+    SymbolTableEntry *sym;
+
+    newtempname();
+
+    name = temp_var_prefix;
+
+    sym = SymbolTable_lookup(symTab, name, scope);
+    if (sym == NULL)
+    {
+        if (scope > 0)
+        {
+            sym = SymbolTable_insert(symTab, name, scope, yylineno, LOCAL_ID);
+        }
+        else
+        {
+            sym = SymbolTable_insert(symTab, name, scope, yylineno, GLOBAL_ID);
+        }
+    }
+
+    return sym;
+}
+
+enum scopespace_t currscopespace()
+{
+    if (scopeSpaceCounter == 1)
+    {
+        return programvar;
+    }
+    else if (scopeSpaceCounter % 2 == 0)
+    {
+        return formalarg;
+    }
+
+    return functionlocal;
+}
+
+unsigned currscopeoffset()
+{
+    switch (currscopespace())
+    {
+    case programvar:
+        return programVarOffset;
+    case functionlocal:
+        return functionLocalOffset;
+    case formalarg:
+        return formalArgOffset;
+    default:
+        assert(0);
+    }
+}
+
+void incurrscopeoffset()
+{
+    switch (currscopespace())
+    {
+    case programvar:
+        ++programVarOffset;
+        break;
+    case functionlocal:
+        ++functionLocalOffset;
+        break;
+    case formalarg:
+        ++formalArgOffset;
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void enterscopespace()
+{
+    ++scopeSpaceCounter;
+}
+
+void exitscopespace()
+{
+    assert(scopeSpaceCounter > 1);
+    --scopeSpaceCounter;
+}
+
+void resetformalargsoffset()
+{
+    formalArgOffset = 0;
+}
+
+void resetfunctionlocalsoffset()
+{
+    functionLocalOffset = 0;
+}
+
+void restorecurrscopeoffset(unsigned n)
+{
+    switch (currscopespace())
+    {
+    case programvar:
+        programVarOffset = n;
+        break;
+    case functionlocal:
+        functionLocalOffset = n;
+        break;
+    case formalarg:
+        formalArgOffset = n;
+        break;
+    default:
+        assert(0);
+    }
+}
+
+unsigned nextquadlabel()
+{
+    return currQuad;
+}
+
+void patchlabel(unsigned quadNo, unsigned label)
+{
+    assert(quadNo < currQuad);
+    quads[quadNo].label = label;
+}
+
+expr *lvalue_expr(SymbolTableEntry *sym)
+{
+    assert(sym);
+    expr *e = (expr *)malloc(sizeof(expr));
+    memset(e, 0, sizeof(expr));
+
+    e->next = NULL;
+    e->sym = sym;
+
+    switch (sym->type)
+    {
+    case LOCAL_ID:
+        e->type = var_e;
+        break;
+    case GLOBAL_ID:
+        e->type = var_e;
+        break;
+    case FORMAL_ID:
+        e->type = var_e;
+        break;
+    case USERFUNC_ID:
+        e->type = programfunc_e;
+        break;
+    case LIBFUNC_ID:
+        e->type = libraryfunc_e;
+        break;
+    default:
+        assert(0);
+    }
+    return e;
+}
+
+expr *newexpr(expr_t t)
+{
+    expr *e = (expr *)malloc(sizeof(expr));
+    memset(e, 0, sizeof(expr));
+    e->type = t;
+    return e;
+}
+
+expr *newexpr_conststring(char *s)
+{
+    expr *e = newexpr(conststring_e);
+    e->srtConst = strdup(s);
+    return e;
+}
+
+/**
  * @brief Checks if the entry is accesible.
  * 
  * @param entry The symbol table entry to be checked
@@ -212,36 +359,72 @@ int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
     return 1; /*Access Allowed*/
 }
 
+int CheckForAssignError(SymbolTableEntry *entry)
+{
+    assert(entry);
+    /*If the lvalue refers to a function (eg. print = 5;) an error is thrown*/
+    if (entry->type == 3)
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to User defined function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
+        fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Function \"%s\" defined at line %lu\n", (entry->value).funcVal->name, (entry->value).funcVal->line);
+        return 1;
+    }
+    else if (entry->type == 4)
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to Library function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
+        return 1;
+    }
+    /*If the lvalue is not a function, we only need to check for the accessibility.*/
+    else if (!CheckForAccess(entry, scope))
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
+        fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" is declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
+        return 1;
+    }
+
+    return 0;
+}
+
 /**
  * @brief Manages the actions to be done at an assignment expression.
  * It corresponds to rule expr: lvalue ASSIGN expr.
  * 
  * @param entry The symboltable entry of the identifier
  */
-void ManageAssignValue(SymbolTableEntry *entry)
+expr *ManageAssignValue(expr *lval, expr *rval)
 {
-    if (entry != NULL)
+    expr *newExpr;
+    SymbolTableEntry *entry;
+
+    if (lval == NULL)
     {
-        /*If the lvalue refers to a function (eg. print = 5;) an error is thrown*/
-        if (entry->type == 3)
+        return NULL;
+    }
+
+    if (lval->type == tableitem_e)
+    {
+        //todo pinaka
+        entry = NULL;
+        return NULL;
+    }
+    else
+    {
+        entry = lval->sym;
+
+        if (CheckForAssignError(entry) || rval == NULL)
         {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to User defined function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
-            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Function \"%s\" defined at line %lu\n", (entry->value).funcVal->name, (entry->value).funcVal->line);
+            return NULL;
         }
-        else if (entry->type == 4)
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to Library function \"%s\" at line %u\n", (entry->value).funcVal->name, yylineno);
-        }
-        /*If the lvalue is not a function, we only need to check for the accessibility.*/
-        else if (!CheckForAccess(entry, scope))
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Assigned value to not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" is declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
-        }
-        else
-        {
-            /*Getting here means that the assignment is valid*/
-        }
+
+        //okay
+        emit(assign_op, rval, NULL, lval, 0, yylineno);
+
+        newExpr = newexpr(assignexpr_e);
+        newExpr->sym = newtemp();
+
+        emit(assign_op, lval, NULL, newExpr, 0, yylineno);
+
+        return newExpr;
     }
 }
 
@@ -252,21 +435,24 @@ void ManageAssignValue(SymbolTableEntry *entry)
  * 
  * @param entry The symboltable entry of the identifier
  */
-void ManagePrimaryLValue(SymbolTableEntry *entry)
+expr *ManagePrimaryLValue(expr *exVal)
 {
-    if (entry != NULL)
+    SymbolTableEntry *entry;
+    if (exVal == NULL)
     {
-        /*As calling a function as a variable (etc x = print;) is allowed on alpha, we only need to check for access*/
-        if (!CheckForAccess(entry, scope))
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
-            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" is declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
-        }
-        else
-        {
-            /*Getting here means that the expression is valid*/
-        }
+        return NULL;
     }
+
+    entry = exVal->sym;
+
+    if (!CheckForAccess(entry, scope))
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
+        fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" is declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
+        return NULL;
+    }
+
+    return exVal;
 }
 
 /**
@@ -276,10 +462,10 @@ void ManagePrimaryLValue(SymbolTableEntry *entry)
  * @param id The name of the variable
  * @return SymbolTableEntry * The entry of the identifier
  */
-SymbolTableEntry *EvaluateLValue(char *id)
+expr *EvaluateLValue(char *id)
 {
     SymbolTableEntry *entry, *insertEntry;
-
+    expr *exVal;
     /*Lookup, starting from current scope and goind backwards till global scope*/
     if (!(entry = SymbolTable_lookup_general(symTab, id, scope)))
     {
@@ -296,10 +482,12 @@ SymbolTableEntry *EvaluateLValue(char *id)
         }
 
         entry = insertEntry;
+        //fix
     }
     /*Else the id found somewhere in the symtab and its returned right after the lookup*/
+    exVal = lvalue_expr(entry);
 
-    return entry;
+    return exVal;
 }
 
 /**
@@ -309,10 +497,10 @@ SymbolTableEntry *EvaluateLValue(char *id)
  * @param id The name of the local variable 
  * @return SymbolTableEntry* The entry of the variable if no error occurs, otherwise NULL
  */
-SymbolTableEntry *EvaluateLocalLValue(char *id)
+expr *EvaluateLocalLValue(char *id)
 {
     SymbolTableEntry *entry, *insertEntry;
-
+    expr *exVal;
     /*Look up on current scope*/
     if ((entry = SymbolTable_lookup(symTab, id, scope)) == NULL)
     {
@@ -341,8 +529,8 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
         entry = insertEntry;
     }
     //else it means that the lookup to the current scope found the corresponding symbol, so no actions needed here.
-
-    return entry;
+    exVal = lvalue_expr(entry);
+    return exVal;
 }
 
 /**
@@ -352,19 +540,22 @@ SymbolTableEntry *EvaluateLocalLValue(char *id)
  * @param id The name of the global variable 
  * @return SymbolTableEntry* The entry of the variable if no error occurs, otherwise NULL 
  */
-SymbolTableEntry *EvaluateGlobalLValue(char *id)
+expr *EvaluateGlobalLValue(char *id)
 {
     SymbolTableEntry *entry;
-
+    expr *exVal;
     /*Lookup in the global scope*/
     entry = SymbolTable_lookup(symTab, id, 0);
     if (entry == NULL)
     {
         /*If nothing is found, error is thrown and NULL is returned*/
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined global symbol \"%s\" at line %u\n", id, yylineno);
+        return NULL;
     }
 
-    return entry;
+    exVal = lvalue_expr(entry);
+
+    return exVal;
 }
 
 /**
@@ -518,132 +709,4 @@ void ManageLoopKeywords(char *keyword)
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"%s\" statement outside of loop at line %lu\n", keyword, yylineno);
         }
     }
-}
-
-/**
- * @brief Generates names for every anonymous function
- * 
- */
-void GenerateFuncName()
-{
-    sprintf(anonymous_func_prefix + 2, "%u", unamed_functions);
-    unamed_functions++;
-}
-
-/**
- * @brief Initializes the name array
- * 
- */
-void InitFuncNames()
-{
-    int i;
-
-    anonymous_func_prefix[0] = '_';
-    anonymous_func_prefix[1] = 'f';
-    for (i = 2; i < 13; i++)
-    {
-        anonymous_func_prefix[i] = '\0';
-    }
-}
-
-void newtempname()
-{
-    sprintf(temp_var_prefix + 2, "%u", tempcounter);
-    tempcounter++;
-}
-
-void resettemp()
-{
-    int i;
-
-    tempcounter = 0;
-
-    temp_var_prefix[0] = '_';
-    temp_var_prefix[1] = 'v';
-
-    for (i = 2; i < 13; i++)
-    {
-        temp_var_prefix[i] = '\0';
-    }
-}
-
-SymbolTableEntry *newtemp()
-{
-    char *name;
-    SymbolTableEntry *sym;
-
-    newtempname();
-
-    name = temp_var_prefix;
-
-    sym = SymbolTable_lookup(symTab, name, scope);
-    if (sym == NULL)
-    {
-        if (scope > 0)
-        {
-            sym = SymbolTable_insert(symTab, name, scope, yylineno, LOCAL_ID);
-        }
-        else
-        {
-            sym = SymbolTable_insert(symTab, name, scope, yylineno, GLOBAL_ID);
-        }
-    }
-
-    return sym;
-}
-
-enum scopespace_t currscopespace()
-{
-    if (scopeSpaceCounter == 1)
-    {
-        return programvar;
-    }
-    else if (scopeSpaceCounter % 2 == 0)
-    {
-        return formalarg;
-    }
-
-    return functionlocal;
-}
-
-unsigned currscopeoffset()
-{
-    switch (currscopespace())
-    {
-    case programvar:
-        return programVarOffset;
-    case functionlocal:
-        return functionLocalOffset;
-    case formalarg:
-        return formalArgOffset;
-    default:
-        assert(0);
-    }
-}
-
-void incurrscopeoffset()
-{
-    switch (currscopespace())
-    {
-    case programvar:
-        ++programVarOffset;
-        break;
-    case functionlocal:
-        ++functionLocalOffset;
-        break;
-    case formalarg:
-        ++formalArgOffset;
-        break;
-    default:
-        assert(0);
-    }
-}
-
-void enterscopespace(){
-    ++scopeSpaceCounter;
-}
-
-void exitscopespace(){
-    assert(scopeSpaceCounter > 1);
-    --scopeSpaceCounter;
 }

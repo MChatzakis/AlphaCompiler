@@ -1,0 +1,5 @@
+1) Allagh grammatikhs
+2) Simplirwsi kanonwn mesa sta {} apla gia na kanei compile (arxika)
+3) Na doume gia return NULL sta errors mipws kanoume kati lathos + global variable for compiler errors
+4) Function to print the quads
+5) molis kanoume kapoia pragmata na paizoun na dokimasoume oti akoma o compiler kanei swsto syntax analysis
