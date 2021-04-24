@@ -47,9 +47,10 @@ typedef enum expr_t
     constbool_e,
     conststring_e,
 
-    nil_e
-} expr_t;
+    nil_e,
+    undef_e
 
+} expr_t;
 
 typedef struct expr
 {
@@ -71,3 +72,10 @@ typedef struct quad
     unsigned label;
     unsigned line;
 } quad;
+
+typedef struct call
+{
+    expr *elist;
+    unsigned char method;
+    char *name;
+} call;

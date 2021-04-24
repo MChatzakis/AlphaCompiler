@@ -39,6 +39,8 @@ typedef struct Function
     struct FuncArg *args;
     unsigned int scope;
     unsigned int line;
+    unsigned int address;
+    unsigned int totalLocals;
 } Function;
 
 typedef struct SymbolTableEntry

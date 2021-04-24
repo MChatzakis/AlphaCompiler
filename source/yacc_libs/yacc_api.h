@@ -25,6 +25,7 @@ unsigned int unamed_functions = 0;
 unsigned int tempcounter = 0;
 unsigned int loop_stack = 0;
 
+unsigned compileError = 0;
 unsigned programVarOffset = 0;
 unsigned functionLocalOffset = 0;
 unsigned formalArgOffset = 0;
@@ -37,6 +38,7 @@ SymbolTable *symTab;
 ScopeTable *scopeTab;
 FuncStack *functionStack;
 NumberStack *loopStack;
+NumberStack *scopeoffsetstack;
 
 FILE *ost; /*Output stream*/
 
@@ -48,7 +50,7 @@ unsigned int currQuad = 0;
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -89,6 +91,11 @@ void emit(
     unsigned label,
     unsigned line)
 {
+
+    if (compileError)
+    {
+        return;
+    }
 
     if (currQuad == total)
     {
@@ -148,31 +155,6 @@ void resettemp()
     {
         temp_var_prefix[i] = '\0';
     }
-}
-
-SymbolTableEntry *newtemp()
-{
-    char *name;
-    SymbolTableEntry *sym;
-
-    newtempname();
-
-    name = temp_var_prefix;
-
-    sym = SymbolTable_lookup(symTab, name, scope);
-    if (sym == NULL)
-    {
-        if (scope > 0)
-        {
-            sym = SymbolTable_insert(symTab, name, scope, yylineno, LOCAL_ID);
-        }
-        else
-        {
-            sym = SymbolTable_insert(symTab, name, scope, yylineno, GLOBAL_ID);
-        }
-    }
-
-    return sym;
 }
 
 enum scopespace_t currscopespace()
@@ -304,6 +286,39 @@ expr *lvalue_expr(SymbolTableEntry *sym)
     return e;
 }
 
+SymbolTableEntry *newtemp()
+{
+    char *name;
+    SymbolTableEntry *sym;
+
+    newtempname();
+
+    name = temp_var_prefix;
+
+    sym = SymbolTable_lookup(symTab, name, scope);
+    if (sym == NULL)
+    {
+        if (scope > 0)
+        {
+            sym = SymbolTable_insert(symTab, name, scope, yylineno, LOCAL_ID);
+        }
+        else
+        {
+            sym = SymbolTable_insert(symTab, name, scope, yylineno, GLOBAL_ID);
+        }
+
+        sym->space = currscopespace();
+        sym->offset = currscopeoffset();
+        incurrscopeoffset();
+
+        ScopeTable_insert(scopeTab, sym, scope);
+
+        //printf("Added new symtab entry\n");
+    }
+
+    return sym;
+}
+
 expr *newexpr(expr_t t)
 {
     expr *e = (expr *)malloc(sizeof(expr));
@@ -312,11 +327,96 @@ expr *newexpr(expr_t t)
     return e;
 }
 
+call *newcall()
+{
+    call *c = (call *)malloc(sizeof(call));
+    memset(c, 0, sizeof(call));
+    return c;
+}
+
+expr *newexpr_constnum(double i)
+{
+    expr *e;
+    e = newexpr(constnum_e);
+    e->numConst = i;
+    return e;
+}
+
 expr *newexpr_conststring(char *s)
 {
     expr *e = newexpr(conststring_e);
     e->srtConst = strdup(s);
     return e;
+}
+
+expr *emit_iftableitem(expr *e)
+{
+    if (e->type != tableitem_e)
+    {
+        return e;
+    }
+    else
+    {
+        expr *result = newexpr(var_e);
+        result->sym = newtemp();
+        emit(tablegetelem_op, e, e->index, result, 0, yylineno);
+        return result;
+    }
+}
+
+expr *member_item(expr *lv, char *name)
+{
+    lv = emit_iftableitem(lv);       // Emit code if r-value use of table item
+    expr *ti = newexpr(tableitem_e); // Make a new expression
+    ti->sym = lv->sym;
+    ti->index = newexpr_conststring(name); // Const string index
+    return ti;
+}
+
+expr *make_call(expr *lv, expr *reversed_elist)
+{
+    assert(lv && reversed_elist);
+    expr *func = emit_iftableitem(lv);
+    while (reversed_elist)
+    {
+        emit(param_op, reversed_elist, NULL, NULL, 0, yylineno);
+        reversed_elist = reversed_elist->next;
+    }
+    emit(call_op, func, NULL, NULL, 0, yylineno);
+    expr *result = newexpr(var_e);
+    result->sym = newtemp();
+    emit(getretval_op, NULL, NULL, result, 0, yylineno);
+    return result;
+}
+
+expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
+{
+    expr *callFunc;
+    expr *t;
+
+    assert(lvalue && callsuffix);
+    lvalue = emit_iftableitem(lvalue);
+    if (callsuffix->method)
+    {
+        t = lvalue;
+        lvalue = emit_iftableitem(member_item(t, callsuffix->name));
+        callsuffix->elist->next = t; //vazei to onoma sto elist?
+    }
+    callFunc = make_call(lvalue, callsuffix->elist);
+    return callFunc;
+}
+
+expr *ManageObjectDef(expr *elist)
+{
+    expr *t;
+    int i;
+    t = newexpr(newtable_e);
+    t->sym = newtemp();
+    emit(tablecreate_op, t, NULL, NULL, 0, yylineno);
+    for (i = 0; elist; elist = elist->next)
+        emit(tablesetelem_op, t, newexpr_constnum(i++), elist, 0, yylineno);
+
+    return t;
 }
 
 /**
@@ -385,35 +485,58 @@ int CheckForAssignError(SymbolTableEntry *entry)
     return 0;
 }
 
+call *ManageMethodCall(expr *elist, char *id)
+{
+    call *newCall = newcall();
+
+    newCall->elist = elist;
+    newCall->method = 1;
+    newCall->name = strdup(id);
+
+    return newCall;
+}
+
+call *ManageNormalCall(expr *elist)
+{
+    call *newCall = newcall();
+
+    newCall->elist = elist;
+    newCall->method = 0;
+    newCall->name = NULL;
+
+    return newCall;
+}
+
 /**
  * @brief Manages the actions to be done at an assignment expression.
  * It corresponds to rule expr: lvalue ASSIGN expr.
  * 
  * @param entry The symboltable entry of the identifier
  */
-expr *ManageAssignValue(expr *lval, expr *rval)
+expr *
+ManageAssignValue(expr *lval, expr *rval)
 {
     expr *newExpr;
     SymbolTableEntry *entry;
 
-    if (lval == NULL)
-    {
-        return NULL;
-    }
+    assert(lval && rval);
 
     if (lval->type == tableitem_e)
     {
-        //todo pinaka
-        entry = NULL;
-        return NULL;
+        emit(tablesetelem_op, lval, lval->index, rval, 0, yylineno);
+        newExpr = emit_iftableitem(lval);
+        newExpr->type = assignexpr_e;
+        return newExpr;
     }
     else
     {
+        //printf("IM IN\n");
         entry = lval->sym;
 
-        if (CheckForAssignError(entry) || rval == NULL)
+        if (entry == NULL || CheckForAssignError(entry))
         {
-            return NULL;
+            compileError = 1;
+            return newexpr(undef_e);
         }
 
         //okay
@@ -428,6 +551,18 @@ expr *ManageAssignValue(expr *lval, expr *rval)
     }
 }
 
+int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope)
+{
+    if (!CheckForAccess(entry, scope))
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
+        fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" is declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
+        return 0;
+    }
+
+    return 1;
+}
+
 /**
  * @brief Manages the actions to be done when the value of a symbol table entry is asked.
  * It corresponds to rule primary:   lvalue x
@@ -437,22 +572,18 @@ expr *ManageAssignValue(expr *lval, expr *rval)
  */
 expr *ManagePrimaryLValue(expr *exVal)
 {
-    SymbolTableEntry *entry;
-    if (exVal == NULL)
+    expr *newExp;
+    assert(exVal);
+
+    newExp = emit_iftableitem(exVal);
+
+    if (newExp->sym == NULL || !CheckPrimaryForAccess(newExp->sym, scope))
     {
-        return NULL;
+        compileError = 1;
+        //return newexpr(undef_e);
     }
 
-    entry = exVal->sym;
-
-    if (!CheckForAccess(entry, scope))
-    {
-        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
-        fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" is declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
-        return NULL;
-    }
-
-    return exVal;
+    return newExp;
 }
 
 /**
@@ -482,7 +613,9 @@ expr *EvaluateLValue(char *id)
         }
 
         entry = insertEntry;
-        //fix
+        entry->space = currscopespace();
+        entry->offset = currscopeoffset();
+        incurrscopeoffset();
     }
     /*Else the id found somewhere in the symtab and its returned right after the lookup*/
     exVal = lvalue_expr(entry);
@@ -511,7 +644,8 @@ expr *EvaluateLocalLValue(char *id)
         if (checkForLibFunc(id))
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Library Function \"%s\" redefined as local variable at line %u\n", id, yylineno);
-            return NULL;
+            compileError = 1;
+            return newexpr(undef_e);
         }
 
         /*At this point, insertion is valid*/
@@ -527,6 +661,9 @@ expr *EvaluateLocalLValue(char *id)
         }
 
         entry = insertEntry;
+        entry->space = currscopespace();
+        entry->offset = currscopeoffset();
+        incurrscopeoffset();
     }
     //else it means that the lookup to the current scope found the corresponding symbol, so no actions needed here.
     exVal = lvalue_expr(entry);
@@ -544,17 +681,18 @@ expr *EvaluateGlobalLValue(char *id)
 {
     SymbolTableEntry *entry;
     expr *exVal;
+
     /*Lookup in the global scope*/
     entry = SymbolTable_lookup(symTab, id, 0);
     if (entry == NULL)
     {
         /*If nothing is found, error is thrown and NULL is returned*/
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined global symbol \"%s\" at line %u\n", id, yylineno);
-        return NULL;
+        compileError = 1;
+        return newexpr(undef_e);
     }
 
     exVal = lvalue_expr(entry);
-
     return exVal;
 }
 
@@ -623,6 +761,7 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
     if (checkForLibFunc(id))
     {
         fprintf_red(stdout, "[Syntax Analysis] -- ERROR: Library function \"%s\" shadowed at line %lu\n", id, yylineno);
+        compileError = 1;
         FuncStack_push(functionStack, NULL, scope);
         return NULL;
     }
@@ -645,6 +784,7 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
         }
 
         FuncStack_push(functionStack, NULL, scope);
+        compileError = 1;
         return NULL;
     }
     else
@@ -655,6 +795,8 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
 
         entry = insertEntry;
         FuncStack_push(functionStack, entry, scope);
+
+        (entry->value).funcVal->address = nextquadlabel();
     }
 
     return entry;
@@ -666,17 +808,19 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
  * 
  * @param entry The ID's entry on symboltable
  */
-void ManagePrimaryFunction(SymbolTableEntry *entry)
+expr *ManagePrimaryFunction(expr *exVal)
 {
-    if (entry != NULL)
+    expr *newExp;
+    assert(exVal);
+
+    newExp = emit_iftableitem(exVal);
+
+    if (newExp->sym == NULL || !CheckPrimaryForAccess(newExp->sym, scope))
     {
-        /*As calling a variable is allowed on alpha, we only need to check if we have access to the entry returned to this rule*/
-        if (!CheckForAccess(entry, scope))
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" at line %u\n", (entry->value).varVal->name, yylineno);
-            fprintf_cyan(stderr, "[Syntax Analysis] -- NOTE: Variable \"%s\" declared at line %lu\n", (entry->value).varVal->name, (entry->value).varVal->line);
-        }
+        compileError = 1;
     }
+
+    return newExp;
 }
 
 /**

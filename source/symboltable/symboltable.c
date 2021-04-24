@@ -104,6 +104,8 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
         (entry->value).funcVal->name = strdup(id);
         (entry->value).funcVal->line = line;
         (entry->value).funcVal->scope = scope;
+        (entry->value).funcVal->address = 0;
+        (entry->value).funcVal->totalLocals = 0;
         (entry->value).funcVal->args = NULL;
     }
 
@@ -398,6 +400,7 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
     ScopeList *curr;
     SymbolTableEntry *entry;
     char *arr[5] = {"global variabe", "local variable", "formal argument", "user function", "library function"};
+    char *scopeArr[3] = {"program var", "function local", "formal arg"};
 
     assert(st);
 
@@ -416,11 +419,12 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
 
             if (entry->type < 3)
             {
-                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d)\n", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->isActive);
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d) (offset %u) (space %s)\n", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->isActive, entry->offset, scopeArr[entry->space]);
             }
             else
             {
-                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d) ", (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive);
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d) (total locals %u) (iaddress %u) ",
+                        (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive, (entry->value).funcVal->totalLocals, (entry->value).funcVal->address);
                 if (entry->type == 3)
                 {
                     FuncArg_print(entry, stream);

@@ -19,6 +19,7 @@
     char* string_value;
     double real_value;
     expr* exprVal;
+    call* callFunc;
     SymbolTableEntry *symTabEntry;
 
 }
@@ -44,13 +45,13 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-%type <exprVal> lvalue expr
-//member primary assignexpr call term objectdef const
+%type <exprVal> lvalue expr member primary call elist objectdef const
+%type <callFunc> callsuffix normcall methodcall
 
-//%type <symTabEntry> lvalue
-%type <symTabEntry> funcdef
-%type <symTabEntry> call
-%type <symTabEntry> member
+%type <string_value> funcname;
+%type <int_value>    funcbody;
+%type <symTabEntry>  funcprefix funcdef
+
 
 
 /*Grammar*/
@@ -64,53 +65,73 @@ stmt:       expr SEMICOLON              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Expr Statement (stmt -> expr;)\n");
                                             }
+
+                                            resettemp();
                                         }
             | ifstmt                    {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
+
+                                            resettemp();
                                         }
             | whilestmt                 {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>While Statement (stmt -> whilestmt)\n");
                                             }
+
+                                            resettemp();
                                         }
             | forstmt                   {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>For Statement (stmt -> forstmt)\n");
                                             }
+
+                                            resettemp();
                                         }
             | returnstmt                {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Return Statement (stmt -> return)\n");
                                             }
+
+                                            resettemp();
                                         }
             | BREAK SEMICOLON           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Break Statement (stmt -> break)\n");
                                             }
                                             ManageLoopKeywords("break");
+
+                                            resettemp();
                                         }
             | CONTINUE SEMICOLON        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Continue Statement (stmt -> continue;)\n");
                                             }
                                             ManageLoopKeywords("continue");
+
+                                            resettemp();
                                         }
             | block                     {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Block Statement (stmt -> block)\n");
                                             }
+
+                                            resettemp();
                                         }
             | funcdef                   {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Func Def Statement (stmt -> funcdef)\n");
                                             }
+
+                                            resettemp();
                                         }
             | SEMICOLON                 {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Semicolon Statement (stmt -> ;)\n");
                                             }
+
+                                            resettemp();
                                         }
             ;
 
@@ -240,24 +261,30 @@ primary:    lvalue                      {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue (primary -> lvalue)\n");
                                             }
-                                            ManagePrimaryLValue($1);    
+                                            $$ = ManagePrimaryLValue($1);    
                                         }
             | call                      {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>CALL (primary -> call)\n");
                                             }
-                                            ManagePrimaryFunction($1);
+                                            $$ = ManagePrimaryFunction($1);
+
                                         }
             | objectdef                 {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>OBJECT DEF (primary -> objectdef)\n");
                                             }
+
+                                            $$ = $1;
                                         }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS    
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>(funcdef) (primary -> (funcdef))\n");
                                             }
+
+                                            $$ = newexpr(programfunc_e);
+                                            $$->sym = $2;
                                         }
             | const                     {
                                             if(TRACE_PRINT){
@@ -289,7 +316,8 @@ lvalue:     ID                          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MEMBER (lvalue -> member)\n");
                                             }
-                                            $$ = NULL;
+
+                                            $$ = $1;
                                         }
             ;
 
@@ -297,11 +325,18 @@ member:     lvalue FULLSTOP ID                          {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>lvalue . ID %s (member -> lvalue.ID)\n", $3);
                                                             }
+
+                                                            $$ = member_item($1, $3); 
                                                         }
             | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>lvalue [ EXPR ] (member -> lvalue[expr])\n");
                                                             }
+
+                                                            $1 = emit_iftableitem($1);
+                                                            $$ = newexpr(tableitem_e);
+                                                            $$->sym = $1->sym;
+                                                            $$->index = $3;
                                                         }
             | call FULLSTOP ID                          {
                                                             if(TRACE_PRINT){
@@ -318,34 +353,44 @@ member:     lvalue FULLSTOP ID                          {
 call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>CALL ( ELIST ) (call -> call(elist))\n");
-                                                                }                                    
-                                                                $$ = $1;
+                                                                }           
+
+                                                                $$ = make_call($1, $3);
                                                             }
             | call LEFT_PARENTHESIS RIGHT_PARENTHESIS       {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>CALL ( empty ) (call -> call())\n");
                                                                 }                                       
-                                                                $$ = $1;
+                                                                
+                                                                $$ = make_call($1, NULL);
+
                                                             }
             | lvalue callsuffix                             {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>lvalue ( CALL SUFFIX ) (call -> lvalue callsuffix)\n");                                       
                                                                 }
                                                                 //$$ = $1;
+                                                                $$ = ManageLvalueCallsuffix($1, $2);
                                                             }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   
                                                             {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>(FUNCDEF)(ELIST) (call -> ( funcdef(elist) ))\n");
                                                                 }
-                                                                $$ = $2;    
+                                                                
+                                                                expr* func = newexpr(programfunc_e);
+                                                                func->sym = $2;
+                                                                $$ = make_call(func, $5);
                                                             }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS 
                                                             {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>(FUNCDEF)(empty) (call -> ( funcdef() ))\n");
                                                                 }
-                                                                $$ = $2;    
+
+                                                                expr* func = newexpr(programfunc_e);
+                                                                func->sym = $2;
+                                                                $$ = make_call(func, NULL);
                                                             }                                                                                        
             ;
 
@@ -353,11 +398,13 @@ callsuffix: normcall        {
                                 if(TRACE_PRINT){
                                     fprintf(ost, "=>NORMAL CALL (callsuffix -> normcall)\n");
                                 }
+                                $$ = $1;
                             }
             | methodcall    {
                                 if(TRACE_PRINT){
                                     fprintf(ost, "=>METHOD CALL (callsuffix -> methodcall)\n");
                                 }
+                                $$ = $1;
                             }
             ;
 
@@ -365,11 +412,14 @@ normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS    {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>(ELIST) (normcall -> (elist) )\n");
                                                             }
+                                                            $$ = ManageNormalCall($2);
                                                         }
             | LEFT_PARENTHESIS RIGHT_PARENTHESIS        {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>(empty) (normcall -> ())\n");
                                                             }
+
+                                                            $$ = ManageNormalCall(NULL);
                                                         }                                            
             ;
 
@@ -377,11 +427,15 @@ methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS     {
                                                                                 if(TRACE_PRINT){
                                                                                     fprintf(ost, "=> ..%s (ELIST) (methodcall -> ..ID(elist))\n", $2);
                                                                                 }
+
+                                                                                $$ = ManageMethodCall($4,$2);
                                                                             }
             | DOUBLE_FULLSTOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS         {
                                                                                 if(TRACE_PRINT){
                                                                                     fprintf(ost, "=> ..%s (empty) (methodcall -> ..ID())\n", $2);
                                                                                 }
+
+                                                                                $$ = ManageMethodCall(NULL,$2);
                                                                             }                                                                
             ;
 
@@ -389,11 +443,15 @@ elist:      expr                {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>EXPR (elist -> expr)\n");
                                     }
+                                    $$ = $1; //kseroume $1->next = NULL 
                                 }
             | elist COMMA expr  {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>ELIST , EXPR (elist -> elist COMMA expr)\n");
                                     }
+                                    
+                                    $3->next = $1;
+                                    $$ = $3;
                                 }
             ;
 
@@ -406,11 +464,13 @@ objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[ELIST] (objectdef -> [ELIST])\n");
                                                     }
+                                                    $$ = ManageObjectDef($2);
                                                 }
             | LEFT_BRACKET RIGHT_BRACKET        {
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[empty] (objectdef -> [])\n");
                                                     }
+                                                    $$ = ManageObjectDef(NULL);
                                                 }
             ;
 
@@ -449,60 +509,66 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE           {
                                                         }
             ;
 
-
-
-funcdef:    FUNCTION LEFT_PARENTHESIS   { 
-                                            GenerateFuncName(); 
-                                            ManageIDFunctionDefinition(anonymous_func_prefix);
-                                            //unamed_functions++;
-                                            scope++;
-                                        } 
-                                        idlist RIGHT_PARENTHESIS {scope--;} block   {
-                                                                                        if(TRACE_PRINT){
-                                                                                            fprintf(ost, "=>FUNCDEF (funcdef -> function (idlist) block)\n");
-                                                                                        } 
-                                                                                        $$ = SymbolTable_lookup(symTab, anonymous_func_prefix, scope);
-                                                                                        //FuncStack_print(functionStack);
-                                                                                        FuncStack_pop(functionStack);                                  
-                                                                                    }
-            |FUNCTION LEFT_PARENTHESIS RIGHT_PARENTHESIS    { 
-                                                                GenerateFuncName();
-                                                                ManageIDFunctionDefinition(anonymous_func_prefix);
-                                                                //unamed_functions++;
-                                                            }
-                                                            block   {
-                                                                        if(TRACE_PRINT){
-                                                                            fprintf(ost, "=>FUNCDEF (funcdef -> function () block)\n");
-                                                                        }
-                                                                        $$ = SymbolTable_lookup(symTab, anonymous_func_prefix, scope);
-                                                                        //FuncStack_print(functionStack);
-                                                                        FuncStack_pop(functionStack); 
-                                                                    }
-            |FUNCTION ID LEFT_PARENTHESIS   {
-                                                ManageIDFunctionDefinition($2);
-                                                scope++;
-                                            } 
-                                            idlist RIGHT_PARENTHESIS {scope--;} block  
-                                                                                    {
-                                                                                        if(TRACE_PRINT){
-                                                                                            fprintf(ost, "=>FUNCDEF (funcdef -> function ID (idlist) block)\n");
-                                                                                        }
-                                                                                        $$ = SymbolTable_lookup(symTab, $2, scope); //care for libfunc ID
-                                                                                        //FuncStack_print(functionStack);
-                                                                                        FuncStack_pop(functionStack); 
-                                                                                    }
-            |FUNCTION ID LEFT_PARENTHESIS RIGHT_PARENTHESIS { 
-                                                                ManageIDFunctionDefinition($2);
-                                                            } block  
-                                                                                    {
-                                                                                        if(TRACE_PRINT){
-                                                                                            fprintf(ost, "=>FUNCDEF (funcdef -> function ID () block)\n");
-                                                                                        }
-                                                                                        $$ = SymbolTable_lookup(symTab, $2, scope); //care for libfunc ID
-                                                                                        //FuncStack_print(functionStack);
-                                                                                        FuncStack_pop(functionStack);
-                                                                                    }
+funcname:   ID      {
+                        $$ = $1;
+                    }
+            |       {
+                        GenerateFuncName();
+                        $$ = anonymous_func_prefix;
+                    }
             ;
+
+funcprefix:     FUNCTION funcname   {
+                                        $$ = ManageIDFunctionDefinition($2);
+                                        if($$ != NULL){
+                                            emit(funcstart_op, lvalue_expr($$), NULL, NULL, 0, yylineno);
+                                        }
+                                        NumberStack_push(scopeoffsetstack, currscopeoffset());
+                                        scope++;
+                                        enterscopespace();
+                                        resetformalargsoffset();
+                                    }
+                ;
+
+funcargs:       LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS   {
+                                                                enterscopespace();
+                                                                resetfunctionlocalsoffset(); 
+                                                                scope--;
+                                                            }
+                | LEFT_PARENTHESIS RIGHT_PARENTHESIS        {
+                                                                enterscopespace();
+                                                                resetfunctionlocalsoffset(); 
+                                                                scope--;
+                                                            }
+                ;
+
+funcbody:       block   {
+                            $$ = currscopeoffset();
+                            exitscopespace();
+                        }
+                ;
+
+funcdef:    funcprefix funcargs funcbody    {
+                                                if(TRACE_PRINT){
+                                                    fprintf(ost, "=>FUNCDEF (funcdef -> function ID () block)\n");
+                                                }
+
+                                                exitscopespace();
+                                                if($1 != NULL){
+                                                    ($1->value).funcVal->totalLocals = $3; //check
+                                                    emit(funcend_op, lvalue_expr($1), NULL, NULL, 0, yylineno);
+                                                }
+
+                                                int offset = NumberStack_pop(scopeoffsetstack);
+                                                restorecurrscopeoffset(offset);
+                                                
+                                                //FuncStack_print(functionStack);
+                                                FuncStack_pop(functionStack);
+                                                
+                                                $$ = $1;
+                                            }
+            ;
+
 
 const:      INTEGER     {
                             if(TRACE_PRINT){
@@ -664,11 +730,13 @@ int main(int argc, char **argv){
     }    
 
     InitFuncNames();
+    resettemp();
 
     symTab = SymbolTable_init();
     scopeTab = ScopeTable_init();
     functionStack = FuncStack_init();
     loopStack = NumberStack_init();
+    scopeoffsetstack = NumberStack_init();
 
     SymbolTable_add_libfun(symTab, scopeTab);
 
@@ -676,6 +744,13 @@ int main(int argc, char **argv){
 
     ScopeTable_print(scopeTab, ost);
     //SymbolTable_print(symTab, ost);
+
+    if(!compileError){
+        //printQuads(ost);
+    }
+    else{
+        fprintf_red(stderr, "Intermediate code generation failed\n");
+    }
 
     fclose(ost);
     fclose(yyin);
