@@ -70,6 +70,56 @@ unsigned int currQuad = 0;
      !strcmp(id, "cos") ||                \
      !strcmp(id, "sin"))
 
+void expand();
+void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line);
+void GenerateFuncName();
+void InitFuncNames();
+void newtempname();
+void resettemp();
+void patchlabel(unsigned quadNo, unsigned label);
+void incurrscopeoffset();
+void enterscopespace();
+void exitscopespace();
+void resetformalargsoffset();
+void resetfunctionlocalsoffset();
+void restorecurrscopeoffset(unsigned n);
+void ManageLoopKeywords(char *keyword);
+void ManageReturnStatement();
+
+enum scopespace_t currscopespace();
+
+unsigned currscopeoffset();
+unsigned nextquadlabel();
+
+int CheckForAccess(SymbolTableEntry *entry, unsigned int scope);
+int CheckForAssignError(SymbolTableEntry *entry);
+int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope);
+
+SymbolTableEntry *newtemp();
+SymbolTableEntry *CheckAddFormal(char *id);
+SymbolTableEntry *ManageIDFunctionDefinition(char *id);
+
+call *newcall();
+call *ManageMethodCall(expr *elist, char *id);
+call *ManageNormalCall(expr *elist);
+
+expr *newexpr(expr_t t);
+expr *lvalue_expr(SymbolTableEntry *sym);
+expr *newexpr_constnum(double i);
+expr *newexpr_conststring(char *s);
+expr *newexpr_constbool(unsigned char boolConst);
+expr *emit_iftableitem(expr *e);
+expr *member_item(expr *lv, char *name);
+expr *make_call(expr *lv, expr *reversed_elist);
+expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix);
+expr *ManageObjectDef(expr *elist);
+expr *ManageAssignValue(expr *lval, expr *rval);
+expr *ManagePrimaryFunction(expr *exVal);
+expr *ManagePrimaryLValue(expr *exVal);
+expr *EvaluateLValue(char *id);
+expr *EvaluateGlobalLValue(char *id);
+expr *EvaluateLocalLValue(char *id);
+
 void expand()
 {
     assert(total == currQuad);
@@ -346,6 +396,13 @@ expr *newexpr_conststring(char *s)
 {
     expr *e = newexpr(conststring_e);
     e->srtConst = strdup(s);
+    return e;
+}
+
+expr *newexpr_constbool(unsigned char boolConst)
+{
+    expr *e = newexpr(boolexpr_e);
+    e->boolConst = boolConst;
     return e;
 }
 
