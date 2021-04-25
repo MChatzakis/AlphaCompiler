@@ -290,6 +290,8 @@ primary:    lvalue                      {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>CONST (primary -> const)\n");
                                             }
+
+                                            $$ = $1;
                                         }
             ;
 
@@ -574,31 +576,43 @@ const:      INTEGER     {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>INTEGER %d (const -> INTEGER)\n", $1);
                             }
+
+                            $$ = newexpr_constnum($1 * 1.0);
                         }
             | REAL      {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>Real %f (const -> REAL)\n", $1);
                             }
+
+                            $$ = newexpr_constnum($1);
                         }
             | STRING    {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>String %s (const -> STRING)\n", $1);
                             }
+
+                            $$ = newexpr_conststring($1); //strdup inside!
                         }
             | NIL       {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>NIL (const -> NIL)\n");
                             }
+
+                            $$ = newexpr_nil();
                         }
             | TRUE      {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>TRUE (const -> TRUE)\n");
                             }
+
+                            $$ = newexpr_constbool(1);
                         }
             | FALSE     {
                             if(TRACE_PRINT){
                                 fprintf(ost, "=>FALSE (const -> FALSE)\n");
                             }
+
+                            $$ = newexpr_constbool(0);
                         }
             ;
 
@@ -746,7 +760,7 @@ int main(int argc, char **argv){
     //SymbolTable_print(symTab, ost);
 
     if(!compileError){
-        //printQuads(ost);
+        printQuads();
     }
     else{
         fprintf_red(stderr, "Intermediate code generation failed\n");

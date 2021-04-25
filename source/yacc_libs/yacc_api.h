@@ -85,29 +85,25 @@ void resetfunctionlocalsoffset();
 void restorecurrscopeoffset(unsigned n);
 void ManageLoopKeywords(char *keyword);
 void ManageReturnStatement();
-
+void printQuads();
 enum scopespace_t currscopespace();
-
 unsigned currscopeoffset();
 unsigned nextquadlabel();
-
 int CheckForAccess(SymbolTableEntry *entry, unsigned int scope);
 int CheckForAssignError(SymbolTableEntry *entry);
 int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope);
-
 SymbolTableEntry *newtemp();
 SymbolTableEntry *CheckAddFormal(char *id);
 SymbolTableEntry *ManageIDFunctionDefinition(char *id);
-
 call *newcall();
 call *ManageMethodCall(expr *elist, char *id);
 call *ManageNormalCall(expr *elist);
-
 expr *newexpr(expr_t t);
 expr *lvalue_expr(SymbolTableEntry *sym);
 expr *newexpr_constnum(double i);
 expr *newexpr_conststring(char *s);
 expr *newexpr_constbool(unsigned char boolConst);
+expr *newexpr_nil();
 expr *emit_iftableitem(expr *e);
 expr *member_item(expr *lv, char *name);
 expr *make_call(expr *lv, expr *reversed_elist);
@@ -399,6 +395,12 @@ expr *newexpr_conststring(char *s)
     return e;
 }
 
+expr *newexpr_nil()
+{
+    expr *e = newexpr(nil_e);
+    return e;
+}
+
 expr *newexpr_constbool(unsigned char boolConst)
 {
     expr *e = newexpr(boolexpr_e);
@@ -570,8 +572,7 @@ call *ManageNormalCall(expr *elist)
  * 
  * @param entry The symboltable entry of the identifier
  */
-expr *
-ManageAssignValue(expr *lval, expr *rval)
+expr *ManageAssignValue(expr *lval, expr *rval)
 {
     expr *newExpr;
     SymbolTableEntry *entry;
@@ -910,4 +911,9 @@ void ManageLoopKeywords(char *keyword)
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"%s\" statement outside of loop at line %lu\n", keyword, yylineno);
         }
     }
+}
+
+void printQuads()
+{
+    //print to ost stream!
 }
