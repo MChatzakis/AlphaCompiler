@@ -404,6 +404,8 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
 
     assert(st);
 
+     fprintf(stream, "----------------------- SCOPE LIST -----------------------\n");
+
     for (i = 0; i < st->max_scope; i++)
     {
         curr = st->table[i];

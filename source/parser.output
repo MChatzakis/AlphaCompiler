@@ -1,0 +1,3703 @@
+State 163 conflicts: 1 shift/reduce
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: stmts
+    2        | %empty
+
+    3 stmt: expr SEMICOLON
+    4     | ifstmt
+    5     | whilestmt
+    6     | forstmt
+    7     | returnstmt
+    8     | BREAK SEMICOLON
+    9     | CONTINUE SEMICOLON
+   10     | block
+   11     | funcdef
+   12     | SEMICOLON
+
+   13 stmts: stmts stmt
+   14      | stmt
+
+   15 expr: lvalue ASSIGN expr
+   16     | expr OR expr
+   17     | expr AND expr
+   18     | expr NOT_EQUAL expr
+   19     | expr EQUAL expr
+   20     | expr LESS_EQUAL expr
+   21     | expr LESS expr
+   22     | expr GREATER_EQUAL expr
+   23     | expr GREATER expr
+   24     | expr PLUS expr
+   25     | expr MINUS expr
+   26     | expr MUL expr
+   27     | expr DIV expr
+   28     | expr MODULO expr
+   29     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
+   30     | MINUS expr
+   31     | NOT expr
+   32     | PLUS_PLUS lvalue
+   33     | lvalue PLUS_PLUS
+   34     | MINUS_MINUS lvalue
+   35     | lvalue MINUS_MINUS
+   36     | primary
+
+   37 primary: lvalue
+   38        | call
+   39        | objectdef
+   40        | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
+   41        | const
+
+   42 lvalue: ID
+   43       | LOCAL ID
+   44       | DOUBLE_COLON ID
+   45       | member
+
+   46 member: lvalue FULLSTOP ID
+   47       | lvalue LEFT_BRACKET expr RIGHT_BRACKET
+   48       | call FULLSTOP ID
+   49       | call LEFT_BRACKET expr RIGHT_BRACKET
+
+   50 call: call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   51     | call LEFT_PARENTHESIS RIGHT_PARENTHESIS
+   52     | lvalue callsuffix
+   53     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   54     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+   55 callsuffix: normcall
+   56           | methodcall
+
+   57 normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   58         | LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+   59 methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   60           | DOUBLE_FULLSTOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+   61 elist: expr
+   62      | elist COMMA expr
+
+   63 objectdef: LEFT_BRACKET indexed RIGHT_BRACKET
+   64          | LEFT_BRACKET elist RIGHT_BRACKET
+   65          | LEFT_BRACKET RIGHT_BRACKET
+
+   66 indexed: indexedelem
+   67        | indexed COMMA indexedelem
+
+   68 indexedelem: LEFT_BRACE expr COLON expr RIGHT_BRACE
+
+   69 $@1: %empty
+
+   70 block: LEFT_BRACE $@1 RIGHT_BRACE
+
+   71 $@2: %empty
+
+   72 block: LEFT_BRACE $@2 stmts RIGHT_BRACE
+
+   73 funcname: ID
+   74         | %empty
+
+   75 funcprefix: FUNCTION funcname
+
+   76 funcargs: LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS
+   77         | LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+   78 funcbody: block
+
+   79 funcdef: funcprefix funcargs funcbody
+
+   80 const: INTEGER
+   81      | REAL
+   82      | STRING
+   83      | NIL
+   84      | TRUE
+   85      | FALSE
+
+   86 idlist: ID
+   87       | idlist COMMA ID
+
+   88 ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt
+   89       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+
+   90 $@3: %empty
+
+   91 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS $@3 stmt
+
+   92 $@4: %empty
+
+   93 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@4 stmt
+
+   94 $@5: %empty
+
+   95 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@5 stmt
+
+   96 $@6: %empty
+
+   97 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@6 stmt
+
+   98 $@7: %empty
+
+   99 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@7 stmt
+
+  100 returnstmt: RETURN SEMICOLON
+  101           | RETURN expr SEMICOLON
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    INTEGER <int_value> (258) 80
+    REAL <real_value> (259) 81
+    ID <string_value> (260) 42 43 44 46 48 59 60 73 86 87
+    STRING <string_value> (261) 82
+    LEFT_BRACE (262) 68 70 72
+    RIGHT_BRACE (263) 68 70 72
+    LEFT_BRACKET (264) 47 49 63 64 65
+    RIGHT_BRACKET (265) 47 49 63 64 65
+    LEFT_PARENTHESIS (266) 29 40 50 51 53 54 57 58 59 60 76 77 88 89 91 93 95 97 99
+    RIGHT_PARENTHESIS (267) 29 40 50 51 53 54 57 58 59 60 76 77 88 89 91 93 95 97 99
+    SEMICOLON (268) 3 8 9 12 93 95 97 99 100 101
+    COMMA (269) 62 67 87
+    FULLSTOP (270) 46 48
+    COLON (271) 68
+    DOUBLE_FULLSTOP (272) 59 60
+    DOUBLE_COLON (273) 44
+    IF (274) 88 89
+    ELSE (275) 88
+    WHILE (276) 91
+    FOR (277) 93 95 97 99
+    FUNCTION (278) 75
+    RETURN (279) 100 101
+    BREAK (280) 8
+    CONTINUE (281) 9
+    AND (282) 17
+    NOT (283) 31
+    OR (284) 16
+    LOCAL (285) 43
+    TRUE (286) 84
+    FALSE (287) 85
+    NIL (288) 83
+    ASSIGN (289) 15
+    PLUS (290) 24
+    MINUS (291) 25 30
+    MUL (292) 26
+    DIV (293) 27
+    MODULO (294) 28
+    EQUAL (295) 19
+    NOT_EQUAL (296) 18
+    PLUS_PLUS (297) 32 33
+    MINUS_MINUS (298) 34 35
+    GREATER (299) 23
+    GREATER_EQUAL (300) 22
+    LESS (301) 21
+    LESS_EQUAL (302) 20
+    UMINUS (303)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (49)
+        on left: 0
+    program (50)
+        on left: 1 2
+        on right: 0
+    stmt (51)
+        on left: 3 4 5 6 7 8 9 10 11 12
+        on right: 13 14 88 89 91 93 95 97 99
+    stmts (52)
+        on left: 13 14
+        on right: 1 13 72
+    expr <exprVal> (53)
+        on left: 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
+        on right: 3 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 49 61 62 68 88 89 91 93 95 97 99 101
+    primary <exprVal> (54)
+        on left: 37 38 39 40 41
+        on right: 36
+    lvalue <exprVal> (55)
+        on left: 42 43 44 45
+        on right: 15 32 33 34 35 37 46 47 52
+    member <exprVal> (56)
+        on left: 46 47 48 49
+        on right: 45
+    call <exprVal> (57)
+        on left: 50 51 52 53 54
+        on right: 38 48 49 50 51
+    callsuffix <callFunc> (58)
+        on left: 55 56
+        on right: 52
+    normcall <callFunc> (59)
+        on left: 57 58
+        on right: 55
+    methodcall <callFunc> (60)
+        on left: 59 60
+        on right: 56
+    elist <exprVal> (61)
+        on left: 61 62
+        on right: 50 53 57 59 62 64 93 95 97
+    objectdef <exprVal> (62)
+        on left: 63 64 65
+        on right: 39
+    indexed <indPair> (63)
+        on left: 66 67
+        on right: 63 67
+    indexedelem <indPair> (64)
+        on left: 68
+        on right: 66 67
+    block (65)
+        on left: 70 72
+        on right: 10 78
+    $@1 (66)
+        on left: 69
+        on right: 70
+    $@2 (67)
+        on left: 71
+        on right: 72
+    funcname <string_value> (68)
+        on left: 73 74
+        on right: 75
+    funcprefix <symTabEntry> (69)
+        on left: 75
+        on right: 79
+    funcargs (70)
+        on left: 76 77
+        on right: 79
+    funcbody <int_value> (71)
+        on left: 78
+        on right: 79
+    funcdef <symTabEntry> (72)
+        on left: 79
+        on right: 11 40 53 54
+    const <exprVal> (73)
+        on left: 80 81 82 83 84 85
+        on right: 41
+    idlist (74)
+        on left: 86 87
+        on right: 76 87
+    ifstmt (75)
+        on left: 88 89
+        on right: 4
+    whilestmt (76)
+        on left: 91
+        on right: 5
+    $@3 (77)
+        on left: 90
+        on right: 91
+    forstmt (78)
+        on left: 93 95 97 99
+        on right: 6
+    $@4 (79)
+        on left: 92
+        on right: 93
+    $@5 (80)
+        on left: 94
+        on right: 95
+    $@6 (81)
+        on left: 96
+        on right: 97
+    $@7 (82)
+        on left: 98
+        on right: 99
+    returnstmt (83)
+        on left: 100 101
+        on right: 7
+
+
+State 0
+
+    0 $accept: . program $end
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    $default  reduce using rule 2 (program)
+
+    program     go to state 25
+    stmt        go to state 26
+    stmts       go to state 27
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 1
+
+   80 const: INTEGER .
+
+    $default  reduce using rule 80 (const)
+
+
+State 2
+
+   81 const: REAL .
+
+    $default  reduce using rule 81 (const)
+
+
+State 3
+
+   42 lvalue: ID .
+
+    $default  reduce using rule 42 (lvalue)
+
+
+State 4
+
+   82 const: STRING .
+
+    $default  reduce using rule 82 (const)
+
+
+State 5
+
+   70 block: LEFT_BRACE . $@1 RIGHT_BRACE
+   72      | LEFT_BRACE . $@2 stmts RIGHT_BRACE
+
+    RIGHT_BRACE  reduce using rule 69 ($@1)
+    $default     reduce using rule 71 ($@2)
+
+    $@1  go to state 42
+    $@2  go to state 43
+
+
+State 6
+
+   63 objectdef: LEFT_BRACKET . indexed RIGHT_BRACKET
+   64          | LEFT_BRACKET . elist RIGHT_BRACKET
+   65          | LEFT_BRACKET . RIGHT_BRACKET
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 44
+    LEFT_BRACKET      shift, and go to state 6
+    RIGHT_BRACKET     shift, and go to state 45
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr         go to state 46
+    primary      go to state 29
+    lvalue       go to state 30
+    member       go to state 31
+    call         go to state 32
+    elist        go to state 47
+    objectdef    go to state 33
+    indexed      go to state 48
+    indexedelem  go to state 49
+    const        go to state 37
+
+
+State 7
+
+   29 expr: LEFT_PARENTHESIS . expr RIGHT_PARENTHESIS
+   40 primary: LEFT_PARENTHESIS . funcdef RIGHT_PARENTHESIS
+   53 call: LEFT_PARENTHESIS . funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   54     | LEFT_PARENTHESIS . funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    FUNCTION          shift, and go to state 13
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr        go to state 50
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    funcprefix  go to state 35
+    funcdef     go to state 51
+    const       go to state 37
+
+
+State 8
+
+   12 stmt: SEMICOLON .
+
+    $default  reduce using rule 12 (stmt)
+
+
+State 9
+
+   44 lvalue: DOUBLE_COLON . ID
+
+    ID  shift, and go to state 52
+
+
+State 10
+
+   88 ifstmt: IF . LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt
+   89       | IF . LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+
+    LEFT_PARENTHESIS  shift, and go to state 53
+
+
+State 11
+
+   91 whilestmt: WHILE . LEFT_PARENTHESIS expr RIGHT_PARENTHESIS $@3 stmt
+
+    LEFT_PARENTHESIS  shift, and go to state 54
+
+
+State 12
+
+   93 forstmt: FOR . LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@4 stmt
+   95        | FOR . LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@5 stmt
+   97        | FOR . LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@6 stmt
+   99        | FOR . LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@7 stmt
+
+    LEFT_PARENTHESIS  shift, and go to state 55
+
+
+State 13
+
+   75 funcprefix: FUNCTION . funcname
+
+    ID  shift, and go to state 56
+
+    $default  reduce using rule 74 (funcname)
+
+    funcname  go to state 57
+
+
+State 14
+
+  100 returnstmt: RETURN . SEMICOLON
+  101           | RETURN . expr SEMICOLON
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 58
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 59
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 15
+
+    8 stmt: BREAK . SEMICOLON
+
+    SEMICOLON  shift, and go to state 60
+
+
+State 16
+
+    9 stmt: CONTINUE . SEMICOLON
+
+    SEMICOLON  shift, and go to state 61
+
+
+State 17
+
+   31 expr: NOT . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 62
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 18
+
+   43 lvalue: LOCAL . ID
+
+    ID  shift, and go to state 63
+
+
+State 19
+
+   84 const: TRUE .
+
+    $default  reduce using rule 84 (const)
+
+
+State 20
+
+   85 const: FALSE .
+
+    $default  reduce using rule 85 (const)
+
+
+State 21
+
+   83 const: NIL .
+
+    $default  reduce using rule 83 (const)
+
+
+State 22
+
+   30 expr: MINUS . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 64
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 23
+
+   32 expr: PLUS_PLUS . lvalue
+
+    ID                shift, and go to state 3
+    LEFT_PARENTHESIS  shift, and go to state 65
+    DOUBLE_COLON      shift, and go to state 9
+    LOCAL             shift, and go to state 18
+
+    lvalue  go to state 66
+    member  go to state 31
+    call    go to state 67
+
+
+State 24
+
+   34 expr: MINUS_MINUS . lvalue
+
+    ID                shift, and go to state 3
+    LEFT_PARENTHESIS  shift, and go to state 65
+    DOUBLE_COLON      shift, and go to state 9
+    LOCAL             shift, and go to state 18
+
+    lvalue  go to state 68
+    member  go to state 31
+    call    go to state 67
+
+
+State 25
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 69
+
+
+State 26
+
+   14 stmts: stmt .
+
+    $default  reduce using rule 14 (stmts)
+
+
+State 27
+
+    1 program: stmts .
+   13 stmts: stmts . stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    $default  reduce using rule 1 (program)
+
+    stmt        go to state 70
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 28
+
+    3 stmt: expr . SEMICOLON
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    SEMICOLON      shift, and go to state 71
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+
+State 29
+
+   36 expr: primary .
+
+    $default  reduce using rule 36 (expr)
+
+
+State 30
+
+   15 expr: lvalue . ASSIGN expr
+   33     | lvalue . PLUS_PLUS
+   35     | lvalue . MINUS_MINUS
+   37 primary: lvalue .
+   46 member: lvalue . FULLSTOP ID
+   47       | lvalue . LEFT_BRACKET expr RIGHT_BRACKET
+   52 call: lvalue . callsuffix
+
+    LEFT_BRACKET      shift, and go to state 85
+    LEFT_PARENTHESIS  shift, and go to state 86
+    FULLSTOP          shift, and go to state 87
+    DOUBLE_FULLSTOP   shift, and go to state 88
+    ASSIGN            shift, and go to state 89
+    PLUS_PLUS         shift, and go to state 90
+    MINUS_MINUS       shift, and go to state 91
+
+    $default  reduce using rule 37 (primary)
+
+    callsuffix  go to state 92
+    normcall    go to state 93
+    methodcall  go to state 94
+
+
+State 31
+
+   45 lvalue: member .
+
+    $default  reduce using rule 45 (lvalue)
+
+
+State 32
+
+   38 primary: call .
+   48 member: call . FULLSTOP ID
+   49       | call . LEFT_BRACKET expr RIGHT_BRACKET
+   50 call: call . LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   51     | call . LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    LEFT_BRACKET      shift, and go to state 95
+    LEFT_PARENTHESIS  shift, and go to state 96
+    FULLSTOP          shift, and go to state 97
+
+    $default  reduce using rule 38 (primary)
+
+
+State 33
+
+   39 primary: objectdef .
+
+    $default  reduce using rule 39 (primary)
+
+
+State 34
+
+   10 stmt: block .
+
+    $default  reduce using rule 10 (stmt)
+
+
+State 35
+
+   79 funcdef: funcprefix . funcargs funcbody
+
+    LEFT_PARENTHESIS  shift, and go to state 98
+
+    funcargs  go to state 99
+
+
+State 36
+
+   11 stmt: funcdef .
+
+    $default  reduce using rule 11 (stmt)
+
+
+State 37
+
+   41 primary: const .
+
+    $default  reduce using rule 41 (primary)
+
+
+State 38
+
+    4 stmt: ifstmt .
+
+    $default  reduce using rule 4 (stmt)
+
+
+State 39
+
+    5 stmt: whilestmt .
+
+    $default  reduce using rule 5 (stmt)
+
+
+State 40
+
+    6 stmt: forstmt .
+
+    $default  reduce using rule 6 (stmt)
+
+
+State 41
+
+    7 stmt: returnstmt .
+
+    $default  reduce using rule 7 (stmt)
+
+
+State 42
+
+   70 block: LEFT_BRACE $@1 . RIGHT_BRACE
+
+    RIGHT_BRACE  shift, and go to state 100
+
+
+State 43
+
+   72 block: LEFT_BRACE $@2 . stmts RIGHT_BRACE
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 26
+    stmts       go to state 101
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 44
+
+   68 indexedelem: LEFT_BRACE . expr COLON expr RIGHT_BRACE
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 102
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 45
+
+   65 objectdef: LEFT_BRACKET RIGHT_BRACKET .
+
+    $default  reduce using rule 65 (objectdef)
+
+
+State 46
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   61 elist: expr .
+
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+    $default  reduce using rule 61 (elist)
+
+
+State 47
+
+   62 elist: elist . COMMA expr
+   64 objectdef: LEFT_BRACKET elist . RIGHT_BRACKET
+
+    RIGHT_BRACKET  shift, and go to state 103
+    COMMA          shift, and go to state 104
+
+
+State 48
+
+   63 objectdef: LEFT_BRACKET indexed . RIGHT_BRACKET
+   67 indexed: indexed . COMMA indexedelem
+
+    RIGHT_BRACKET  shift, and go to state 105
+    COMMA          shift, and go to state 106
+
+
+State 49
+
+   66 indexed: indexedelem .
+
+    $default  reduce using rule 66 (indexed)
+
+
+State 50
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   29     | LEFT_PARENTHESIS expr . RIGHT_PARENTHESIS
+
+    RIGHT_PARENTHESIS  shift, and go to state 107
+    AND                shift, and go to state 72
+    OR                 shift, and go to state 73
+    PLUS               shift, and go to state 74
+    MINUS              shift, and go to state 75
+    MUL                shift, and go to state 76
+    DIV                shift, and go to state 77
+    MODULO             shift, and go to state 78
+    EQUAL              shift, and go to state 79
+    NOT_EQUAL          shift, and go to state 80
+    GREATER            shift, and go to state 81
+    GREATER_EQUAL      shift, and go to state 82
+    LESS               shift, and go to state 83
+    LESS_EQUAL         shift, and go to state 84
+
+
+State 51
+
+   40 primary: LEFT_PARENTHESIS funcdef . RIGHT_PARENTHESIS
+   53 call: LEFT_PARENTHESIS funcdef . RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   54     | LEFT_PARENTHESIS funcdef . RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    RIGHT_PARENTHESIS  shift, and go to state 108
+
+
+State 52
+
+   44 lvalue: DOUBLE_COLON ID .
+
+    $default  reduce using rule 44 (lvalue)
+
+
+State 53
+
+   88 ifstmt: IF LEFT_PARENTHESIS . expr RIGHT_PARENTHESIS stmt ELSE stmt
+   89       | IF LEFT_PARENTHESIS . expr RIGHT_PARENTHESIS stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 109
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 54
+
+   91 whilestmt: WHILE LEFT_PARENTHESIS . expr RIGHT_PARENTHESIS $@3 stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 110
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 55
+
+   93 forstmt: FOR LEFT_PARENTHESIS . elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@4 stmt
+   95        | FOR LEFT_PARENTHESIS . SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@5 stmt
+   97        | FOR LEFT_PARENTHESIS . elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@6 stmt
+   99        | FOR LEFT_PARENTHESIS . SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@7 stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 111
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 46
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    elist      go to state 112
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 56
+
+   73 funcname: ID .
+
+    $default  reduce using rule 73 (funcname)
+
+
+State 57
+
+   75 funcprefix: FUNCTION funcname .
+
+    $default  reduce using rule 75 (funcprefix)
+
+
+State 58
+
+  100 returnstmt: RETURN SEMICOLON .
+
+    $default  reduce using rule 100 (returnstmt)
+
+
+State 59
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+  101 returnstmt: RETURN expr . SEMICOLON
+
+    SEMICOLON      shift, and go to state 113
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+
+State 60
+
+    8 stmt: BREAK SEMICOLON .
+
+    $default  reduce using rule 8 (stmt)
+
+
+State 61
+
+    9 stmt: CONTINUE SEMICOLON .
+
+    $default  reduce using rule 9 (stmt)
+
+
+State 62
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   31     | NOT expr .
+
+    $default  reduce using rule 31 (expr)
+
+
+State 63
+
+   43 lvalue: LOCAL ID .
+
+    $default  reduce using rule 43 (lvalue)
+
+
+State 64
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   30     | MINUS expr .
+
+    $default  reduce using rule 30 (expr)
+
+
+State 65
+
+   53 call: LEFT_PARENTHESIS . funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   54     | LEFT_PARENTHESIS . funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    FUNCTION  shift, and go to state 13
+
+    funcprefix  go to state 35
+    funcdef     go to state 114
+
+
+State 66
+
+   32 expr: PLUS_PLUS lvalue .
+   46 member: lvalue . FULLSTOP ID
+   47       | lvalue . LEFT_BRACKET expr RIGHT_BRACKET
+   52 call: lvalue . callsuffix
+
+    LEFT_BRACKET      shift, and go to state 85
+    LEFT_PARENTHESIS  shift, and go to state 86
+    FULLSTOP          shift, and go to state 87
+    DOUBLE_FULLSTOP   shift, and go to state 88
+
+    $default  reduce using rule 32 (expr)
+
+    callsuffix  go to state 92
+    normcall    go to state 93
+    methodcall  go to state 94
+
+
+State 67
+
+   48 member: call . FULLSTOP ID
+   49       | call . LEFT_BRACKET expr RIGHT_BRACKET
+   50 call: call . LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   51     | call . LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    LEFT_BRACKET      shift, and go to state 95
+    LEFT_PARENTHESIS  shift, and go to state 96
+    FULLSTOP          shift, and go to state 97
+
+
+State 68
+
+   34 expr: MINUS_MINUS lvalue .
+   46 member: lvalue . FULLSTOP ID
+   47       | lvalue . LEFT_BRACKET expr RIGHT_BRACKET
+   52 call: lvalue . callsuffix
+
+    LEFT_BRACKET      shift, and go to state 85
+    LEFT_PARENTHESIS  shift, and go to state 86
+    FULLSTOP          shift, and go to state 87
+    DOUBLE_FULLSTOP   shift, and go to state 88
+
+    $default  reduce using rule 34 (expr)
+
+    callsuffix  go to state 92
+    normcall    go to state 93
+    methodcall  go to state 94
+
+
+State 69
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 70
+
+   13 stmts: stmts stmt .
+
+    $default  reduce using rule 13 (stmts)
+
+
+State 71
+
+    3 stmt: expr SEMICOLON .
+
+    $default  reduce using rule 3 (stmt)
+
+
+State 72
+
+   17 expr: expr AND . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 115
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 73
+
+   16 expr: expr OR . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 116
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 74
+
+   24 expr: expr PLUS . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 117
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 75
+
+   25 expr: expr MINUS . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 118
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 76
+
+   26 expr: expr MUL . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 119
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 77
+
+   27 expr: expr DIV . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 120
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 78
+
+   28 expr: expr MODULO . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 121
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 79
+
+   19 expr: expr EQUAL . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 122
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 80
+
+   18 expr: expr NOT_EQUAL . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 123
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 81
+
+   23 expr: expr GREATER . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 124
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 82
+
+   22 expr: expr GREATER_EQUAL . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 125
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 83
+
+   21 expr: expr LESS . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 126
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 84
+
+   20 expr: expr LESS_EQUAL . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 127
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 85
+
+   47 member: lvalue LEFT_BRACKET . expr RIGHT_BRACKET
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 128
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 86
+
+   57 normcall: LEFT_PARENTHESIS . elist RIGHT_PARENTHESIS
+   58         | LEFT_PARENTHESIS . RIGHT_PARENTHESIS
+
+    INTEGER            shift, and go to state 1
+    REAL               shift, and go to state 2
+    ID                 shift, and go to state 3
+    STRING             shift, and go to state 4
+    LEFT_BRACKET       shift, and go to state 6
+    LEFT_PARENTHESIS   shift, and go to state 7
+    RIGHT_PARENTHESIS  shift, and go to state 129
+    DOUBLE_COLON       shift, and go to state 9
+    NOT                shift, and go to state 17
+    LOCAL              shift, and go to state 18
+    TRUE               shift, and go to state 19
+    FALSE              shift, and go to state 20
+    NIL                shift, and go to state 21
+    MINUS              shift, and go to state 22
+    PLUS_PLUS          shift, and go to state 23
+    MINUS_MINUS        shift, and go to state 24
+
+    expr       go to state 46
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    elist      go to state 130
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 87
+
+   46 member: lvalue FULLSTOP . ID
+
+    ID  shift, and go to state 131
+
+
+State 88
+
+   59 methodcall: DOUBLE_FULLSTOP . ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   60           | DOUBLE_FULLSTOP . ID LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    ID  shift, and go to state 132
+
+
+State 89
+
+   15 expr: lvalue ASSIGN . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 133
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 90
+
+   33 expr: lvalue PLUS_PLUS .
+
+    $default  reduce using rule 33 (expr)
+
+
+State 91
+
+   35 expr: lvalue MINUS_MINUS .
+
+    $default  reduce using rule 35 (expr)
+
+
+State 92
+
+   52 call: lvalue callsuffix .
+
+    $default  reduce using rule 52 (call)
+
+
+State 93
+
+   55 callsuffix: normcall .
+
+    $default  reduce using rule 55 (callsuffix)
+
+
+State 94
+
+   56 callsuffix: methodcall .
+
+    $default  reduce using rule 56 (callsuffix)
+
+
+State 95
+
+   49 member: call LEFT_BRACKET . expr RIGHT_BRACKET
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 134
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 96
+
+   50 call: call LEFT_PARENTHESIS . elist RIGHT_PARENTHESIS
+   51     | call LEFT_PARENTHESIS . RIGHT_PARENTHESIS
+
+    INTEGER            shift, and go to state 1
+    REAL               shift, and go to state 2
+    ID                 shift, and go to state 3
+    STRING             shift, and go to state 4
+    LEFT_BRACKET       shift, and go to state 6
+    LEFT_PARENTHESIS   shift, and go to state 7
+    RIGHT_PARENTHESIS  shift, and go to state 135
+    DOUBLE_COLON       shift, and go to state 9
+    NOT                shift, and go to state 17
+    LOCAL              shift, and go to state 18
+    TRUE               shift, and go to state 19
+    FALSE              shift, and go to state 20
+    NIL                shift, and go to state 21
+    MINUS              shift, and go to state 22
+    PLUS_PLUS          shift, and go to state 23
+    MINUS_MINUS        shift, and go to state 24
+
+    expr       go to state 46
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    elist      go to state 136
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 97
+
+   48 member: call FULLSTOP . ID
+
+    ID  shift, and go to state 137
+
+
+State 98
+
+   76 funcargs: LEFT_PARENTHESIS . idlist RIGHT_PARENTHESIS
+   77         | LEFT_PARENTHESIS . RIGHT_PARENTHESIS
+
+    ID                 shift, and go to state 138
+    RIGHT_PARENTHESIS  shift, and go to state 139
+
+    idlist  go to state 140
+
+
+State 99
+
+   79 funcdef: funcprefix funcargs . funcbody
+
+    LEFT_BRACE  shift, and go to state 5
+
+    block     go to state 141
+    funcbody  go to state 142
+
+
+State 100
+
+   70 block: LEFT_BRACE $@1 RIGHT_BRACE .
+
+    $default  reduce using rule 70 (block)
+
+
+State 101
+
+   13 stmts: stmts . stmt
+   72 block: LEFT_BRACE $@2 stmts . RIGHT_BRACE
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    RIGHT_BRACE       shift, and go to state 143
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 70
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 102
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   68 indexedelem: LEFT_BRACE expr . COLON expr RIGHT_BRACE
+
+    COLON          shift, and go to state 144
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+
+State 103
+
+   64 objectdef: LEFT_BRACKET elist RIGHT_BRACKET .
+
+    $default  reduce using rule 64 (objectdef)
+
+
+State 104
+
+   62 elist: elist COMMA . expr
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 145
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 105
+
+   63 objectdef: LEFT_BRACKET indexed RIGHT_BRACKET .
+
+    $default  reduce using rule 63 (objectdef)
+
+
+State 106
+
+   67 indexed: indexed COMMA . indexedelem
+
+    LEFT_BRACE  shift, and go to state 44
+
+    indexedelem  go to state 146
+
+
+State 107
+
+   29 expr: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 29 (expr)
+
+
+State 108
+
+   40 primary: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS .
+   53 call: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS . LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   54     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS . LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    LEFT_PARENTHESIS  shift, and go to state 147
+
+    $default  reduce using rule 40 (primary)
+
+
+State 109
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   88 ifstmt: IF LEFT_PARENTHESIS expr . RIGHT_PARENTHESIS stmt ELSE stmt
+   89       | IF LEFT_PARENTHESIS expr . RIGHT_PARENTHESIS stmt
+
+    RIGHT_PARENTHESIS  shift, and go to state 148
+    AND                shift, and go to state 72
+    OR                 shift, and go to state 73
+    PLUS               shift, and go to state 74
+    MINUS              shift, and go to state 75
+    MUL                shift, and go to state 76
+    DIV                shift, and go to state 77
+    MODULO             shift, and go to state 78
+    EQUAL              shift, and go to state 79
+    NOT_EQUAL          shift, and go to state 80
+    GREATER            shift, and go to state 81
+    GREATER_EQUAL      shift, and go to state 82
+    LESS               shift, and go to state 83
+    LESS_EQUAL         shift, and go to state 84
+
+
+State 110
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   91 whilestmt: WHILE LEFT_PARENTHESIS expr . RIGHT_PARENTHESIS $@3 stmt
+
+    RIGHT_PARENTHESIS  shift, and go to state 149
+    AND                shift, and go to state 72
+    OR                 shift, and go to state 73
+    PLUS               shift, and go to state 74
+    MINUS              shift, and go to state 75
+    MUL                shift, and go to state 76
+    DIV                shift, and go to state 77
+    MODULO             shift, and go to state 78
+    EQUAL              shift, and go to state 79
+    NOT_EQUAL          shift, and go to state 80
+    GREATER            shift, and go to state 81
+    GREATER_EQUAL      shift, and go to state 82
+    LESS               shift, and go to state 83
+    LESS_EQUAL         shift, and go to state 84
+
+
+State 111
+
+   95 forstmt: FOR LEFT_PARENTHESIS SEMICOLON . expr SEMICOLON elist RIGHT_PARENTHESIS $@5 stmt
+   99        | FOR LEFT_PARENTHESIS SEMICOLON . expr SEMICOLON RIGHT_PARENTHESIS $@7 stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 150
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 112
+
+   62 elist: elist . COMMA expr
+   93 forstmt: FOR LEFT_PARENTHESIS elist . SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@4 stmt
+   97        | FOR LEFT_PARENTHESIS elist . SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@6 stmt
+
+    SEMICOLON  shift, and go to state 151
+    COMMA      shift, and go to state 104
+
+
+State 113
+
+  101 returnstmt: RETURN expr SEMICOLON .
+
+    $default  reduce using rule 101 (returnstmt)
+
+
+State 114
+
+   53 call: LEFT_PARENTHESIS funcdef . RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   54     | LEFT_PARENTHESIS funcdef . RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    RIGHT_PARENTHESIS  shift, and go to state 152
+
+
+State 115
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   17     | expr AND expr .
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+    $default  reduce using rule 17 (expr)
+
+
+State 116
+
+   16 expr: expr . OR expr
+   16     | expr OR expr .
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    AND            shift, and go to state 72
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+    $default  reduce using rule 16 (expr)
+
+
+State 117
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   24     | expr PLUS expr .
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    MUL     shift, and go to state 76
+    DIV     shift, and go to state 77
+    MODULO  shift, and go to state 78
+
+    $default  reduce using rule 24 (expr)
+
+
+State 118
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   25     | expr MINUS expr .
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    MUL     shift, and go to state 76
+    DIV     shift, and go to state 77
+    MODULO  shift, and go to state 78
+
+    $default  reduce using rule 25 (expr)
+
+
+State 119
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   26     | expr MUL expr .
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    $default  reduce using rule 26 (expr)
+
+
+State 120
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   27     | expr DIV expr .
+   28     | expr . MODULO expr
+
+    $default  reduce using rule 27 (expr)
+
+
+State 121
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   28     | expr MODULO expr .
+
+    $default  reduce using rule 28 (expr)
+
+
+State 122
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   19     | expr EQUAL expr .
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+    EQUAL      error (nonassociative)
+    NOT_EQUAL  error (nonassociative)
+
+    $default  reduce using rule 19 (expr)
+
+
+State 123
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   18     | expr NOT_EQUAL expr .
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+    EQUAL      error (nonassociative)
+    NOT_EQUAL  error (nonassociative)
+
+    $default  reduce using rule 18 (expr)
+
+
+State 124
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   23     | expr GREATER expr .
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    PLUS    shift, and go to state 74
+    MINUS   shift, and go to state 75
+    MUL     shift, and go to state 76
+    DIV     shift, and go to state 77
+    MODULO  shift, and go to state 78
+
+    GREATER        error (nonassociative)
+    GREATER_EQUAL  error (nonassociative)
+    LESS           error (nonassociative)
+    LESS_EQUAL     error (nonassociative)
+
+    $default  reduce using rule 23 (expr)
+
+
+State 125
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   22     | expr GREATER_EQUAL expr .
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    PLUS    shift, and go to state 74
+    MINUS   shift, and go to state 75
+    MUL     shift, and go to state 76
+    DIV     shift, and go to state 77
+    MODULO  shift, and go to state 78
+
+    GREATER        error (nonassociative)
+    GREATER_EQUAL  error (nonassociative)
+    LESS           error (nonassociative)
+    LESS_EQUAL     error (nonassociative)
+
+    $default  reduce using rule 22 (expr)
+
+
+State 126
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   21     | expr LESS expr .
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    PLUS    shift, and go to state 74
+    MINUS   shift, and go to state 75
+    MUL     shift, and go to state 76
+    DIV     shift, and go to state 77
+    MODULO  shift, and go to state 78
+
+    GREATER        error (nonassociative)
+    GREATER_EQUAL  error (nonassociative)
+    LESS           error (nonassociative)
+    LESS_EQUAL     error (nonassociative)
+
+    $default  reduce using rule 21 (expr)
+
+
+State 127
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   20     | expr LESS_EQUAL expr .
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    PLUS    shift, and go to state 74
+    MINUS   shift, and go to state 75
+    MUL     shift, and go to state 76
+    DIV     shift, and go to state 77
+    MODULO  shift, and go to state 78
+
+    GREATER        error (nonassociative)
+    GREATER_EQUAL  error (nonassociative)
+    LESS           error (nonassociative)
+    LESS_EQUAL     error (nonassociative)
+
+    $default  reduce using rule 20 (expr)
+
+
+State 128
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   47 member: lvalue LEFT_BRACKET expr . RIGHT_BRACKET
+
+    RIGHT_BRACKET  shift, and go to state 153
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+
+State 129
+
+   58 normcall: LEFT_PARENTHESIS RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 58 (normcall)
+
+
+State 130
+
+   57 normcall: LEFT_PARENTHESIS elist . RIGHT_PARENTHESIS
+   62 elist: elist . COMMA expr
+
+    RIGHT_PARENTHESIS  shift, and go to state 154
+    COMMA              shift, and go to state 104
+
+
+State 131
+
+   46 member: lvalue FULLSTOP ID .
+
+    $default  reduce using rule 46 (member)
+
+
+State 132
+
+   59 methodcall: DOUBLE_FULLSTOP ID . LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   60           | DOUBLE_FULLSTOP ID . LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    LEFT_PARENTHESIS  shift, and go to state 155
+
+
+State 133
+
+   15 expr: lvalue ASSIGN expr .
+   16     | expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+    $default  reduce using rule 15 (expr)
+
+
+State 134
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   49 member: call LEFT_BRACKET expr . RIGHT_BRACKET
+
+    RIGHT_BRACKET  shift, and go to state 156
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+
+State 135
+
+   51 call: call LEFT_PARENTHESIS RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 51 (call)
+
+
+State 136
+
+   50 call: call LEFT_PARENTHESIS elist . RIGHT_PARENTHESIS
+   62 elist: elist . COMMA expr
+
+    RIGHT_PARENTHESIS  shift, and go to state 157
+    COMMA              shift, and go to state 104
+
+
+State 137
+
+   48 member: call FULLSTOP ID .
+
+    $default  reduce using rule 48 (member)
+
+
+State 138
+
+   86 idlist: ID .
+
+    $default  reduce using rule 86 (idlist)
+
+
+State 139
+
+   77 funcargs: LEFT_PARENTHESIS RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 77 (funcargs)
+
+
+State 140
+
+   76 funcargs: LEFT_PARENTHESIS idlist . RIGHT_PARENTHESIS
+   87 idlist: idlist . COMMA ID
+
+    RIGHT_PARENTHESIS  shift, and go to state 158
+    COMMA              shift, and go to state 159
+
+
+State 141
+
+   78 funcbody: block .
+
+    $default  reduce using rule 78 (funcbody)
+
+
+State 142
+
+   79 funcdef: funcprefix funcargs funcbody .
+
+    $default  reduce using rule 79 (funcdef)
+
+
+State 143
+
+   72 block: LEFT_BRACE $@2 stmts RIGHT_BRACE .
+
+    $default  reduce using rule 72 (block)
+
+
+State 144
+
+   68 indexedelem: LEFT_BRACE expr COLON . expr RIGHT_BRACE
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 160
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 145
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   62 elist: elist COMMA expr .
+
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+    $default  reduce using rule 62 (elist)
+
+
+State 146
+
+   67 indexed: indexed COMMA indexedelem .
+
+    $default  reduce using rule 67 (indexed)
+
+
+State 147
+
+   53 call: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS . elist RIGHT_PARENTHESIS
+   54     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS . RIGHT_PARENTHESIS
+
+    INTEGER            shift, and go to state 1
+    REAL               shift, and go to state 2
+    ID                 shift, and go to state 3
+    STRING             shift, and go to state 4
+    LEFT_BRACKET       shift, and go to state 6
+    LEFT_PARENTHESIS   shift, and go to state 7
+    RIGHT_PARENTHESIS  shift, and go to state 161
+    DOUBLE_COLON       shift, and go to state 9
+    NOT                shift, and go to state 17
+    LOCAL              shift, and go to state 18
+    TRUE               shift, and go to state 19
+    FALSE              shift, and go to state 20
+    NIL                shift, and go to state 21
+    MINUS              shift, and go to state 22
+    PLUS_PLUS          shift, and go to state 23
+    MINUS_MINUS        shift, and go to state 24
+
+    expr       go to state 46
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    elist      go to state 162
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 148
+
+   88 ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS . stmt ELSE stmt
+   89       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS . stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 163
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 149
+
+   91 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS . $@3 stmt
+
+    $default  reduce using rule 90 ($@3)
+
+    $@3  go to state 164
+
+
+State 150
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   95 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr . SEMICOLON elist RIGHT_PARENTHESIS $@5 stmt
+   99        | FOR LEFT_PARENTHESIS SEMICOLON expr . SEMICOLON RIGHT_PARENTHESIS $@7 stmt
+
+    SEMICOLON      shift, and go to state 165
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+
+State 151
+
+   93 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON . expr SEMICOLON elist RIGHT_PARENTHESIS $@4 stmt
+   97        | FOR LEFT_PARENTHESIS elist SEMICOLON . expr SEMICOLON RIGHT_PARENTHESIS $@6 stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    DOUBLE_COLON      shift, and go to state 9
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    expr       go to state 166
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 152
+
+   53 call: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS . LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+   54     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS . LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+    LEFT_PARENTHESIS  shift, and go to state 147
+
+
+State 153
+
+   47 member: lvalue LEFT_BRACKET expr RIGHT_BRACKET .
+
+    $default  reduce using rule 47 (member)
+
+
+State 154
+
+   57 normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 57 (normcall)
+
+
+State 155
+
+   59 methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS . elist RIGHT_PARENTHESIS
+   60           | DOUBLE_FULLSTOP ID LEFT_PARENTHESIS . RIGHT_PARENTHESIS
+
+    INTEGER            shift, and go to state 1
+    REAL               shift, and go to state 2
+    ID                 shift, and go to state 3
+    STRING             shift, and go to state 4
+    LEFT_BRACKET       shift, and go to state 6
+    LEFT_PARENTHESIS   shift, and go to state 7
+    RIGHT_PARENTHESIS  shift, and go to state 167
+    DOUBLE_COLON       shift, and go to state 9
+    NOT                shift, and go to state 17
+    LOCAL              shift, and go to state 18
+    TRUE               shift, and go to state 19
+    FALSE              shift, and go to state 20
+    NIL                shift, and go to state 21
+    MINUS              shift, and go to state 22
+    PLUS_PLUS          shift, and go to state 23
+    MINUS_MINUS        shift, and go to state 24
+
+    expr       go to state 46
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    elist      go to state 168
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 156
+
+   49 member: call LEFT_BRACKET expr RIGHT_BRACKET .
+
+    $default  reduce using rule 49 (member)
+
+
+State 157
+
+   50 call: call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 50 (call)
+
+
+State 158
+
+   76 funcargs: LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 76 (funcargs)
+
+
+State 159
+
+   87 idlist: idlist COMMA . ID
+
+    ID  shift, and go to state 169
+
+
+State 160
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   68 indexedelem: LEFT_BRACE expr COLON expr . RIGHT_BRACE
+
+    RIGHT_BRACE    shift, and go to state 170
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+
+State 161
+
+   54 call: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 54 (call)
+
+
+State 162
+
+   53 call: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist . RIGHT_PARENTHESIS
+   62 elist: elist . COMMA expr
+
+    RIGHT_PARENTHESIS  shift, and go to state 171
+    COMMA              shift, and go to state 104
+
+
+State 163
+
+   88 ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt . ELSE stmt
+   89       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt .
+
+    ELSE  shift, and go to state 172
+
+    ELSE      [reduce using rule 89 (ifstmt)]
+    $default  reduce using rule 89 (ifstmt)
+
+
+State 164
+
+   91 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS $@3 . stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 173
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 165
+
+   95 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON . elist RIGHT_PARENTHESIS $@5 stmt
+   99        | FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON . RIGHT_PARENTHESIS $@7 stmt
+
+    INTEGER            shift, and go to state 1
+    REAL               shift, and go to state 2
+    ID                 shift, and go to state 3
+    STRING             shift, and go to state 4
+    LEFT_BRACKET       shift, and go to state 6
+    LEFT_PARENTHESIS   shift, and go to state 7
+    RIGHT_PARENTHESIS  shift, and go to state 174
+    DOUBLE_COLON       shift, and go to state 9
+    NOT                shift, and go to state 17
+    LOCAL              shift, and go to state 18
+    TRUE               shift, and go to state 19
+    FALSE              shift, and go to state 20
+    NIL                shift, and go to state 21
+    MINUS              shift, and go to state 22
+    PLUS_PLUS          shift, and go to state 23
+    MINUS_MINUS        shift, and go to state 24
+
+    expr       go to state 46
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    elist      go to state 175
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 166
+
+   16 expr: expr . OR expr
+   17     | expr . AND expr
+   18     | expr . NOT_EQUAL expr
+   19     | expr . EQUAL expr
+   20     | expr . LESS_EQUAL expr
+   21     | expr . LESS expr
+   22     | expr . GREATER_EQUAL expr
+   23     | expr . GREATER expr
+   24     | expr . PLUS expr
+   25     | expr . MINUS expr
+   26     | expr . MUL expr
+   27     | expr . DIV expr
+   28     | expr . MODULO expr
+   93 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr . SEMICOLON elist RIGHT_PARENTHESIS $@4 stmt
+   97        | FOR LEFT_PARENTHESIS elist SEMICOLON expr . SEMICOLON RIGHT_PARENTHESIS $@6 stmt
+
+    SEMICOLON      shift, and go to state 176
+    AND            shift, and go to state 72
+    OR             shift, and go to state 73
+    PLUS           shift, and go to state 74
+    MINUS          shift, and go to state 75
+    MUL            shift, and go to state 76
+    DIV            shift, and go to state 77
+    MODULO         shift, and go to state 78
+    EQUAL          shift, and go to state 79
+    NOT_EQUAL      shift, and go to state 80
+    GREATER        shift, and go to state 81
+    GREATER_EQUAL  shift, and go to state 82
+    LESS           shift, and go to state 83
+    LESS_EQUAL     shift, and go to state 84
+
+
+State 167
+
+   60 methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 60 (methodcall)
+
+
+State 168
+
+   59 methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist . RIGHT_PARENTHESIS
+   62 elist: elist . COMMA expr
+
+    RIGHT_PARENTHESIS  shift, and go to state 177
+    COMMA              shift, and go to state 104
+
+
+State 169
+
+   87 idlist: idlist COMMA ID .
+
+    $default  reduce using rule 87 (idlist)
+
+
+State 170
+
+   68 indexedelem: LEFT_BRACE expr COLON expr RIGHT_BRACE .
+
+    $default  reduce using rule 68 (indexedelem)
+
+
+State 171
+
+   53 call: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 53 (call)
+
+
+State 172
+
+   88 ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE . stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 178
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 173
+
+   91 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS $@3 stmt .
+
+    $default  reduce using rule 91 (whilestmt)
+
+
+State 174
+
+   99 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS . $@7 stmt
+
+    $default  reduce using rule 98 ($@7)
+
+    $@7  go to state 179
+
+
+State 175
+
+   62 elist: elist . COMMA expr
+   95 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist . RIGHT_PARENTHESIS $@5 stmt
+
+    RIGHT_PARENTHESIS  shift, and go to state 180
+    COMMA              shift, and go to state 104
+
+
+State 176
+
+   93 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON . elist RIGHT_PARENTHESIS $@4 stmt
+   97        | FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON . RIGHT_PARENTHESIS $@6 stmt
+
+    INTEGER            shift, and go to state 1
+    REAL               shift, and go to state 2
+    ID                 shift, and go to state 3
+    STRING             shift, and go to state 4
+    LEFT_BRACKET       shift, and go to state 6
+    LEFT_PARENTHESIS   shift, and go to state 7
+    RIGHT_PARENTHESIS  shift, and go to state 181
+    DOUBLE_COLON       shift, and go to state 9
+    NOT                shift, and go to state 17
+    LOCAL              shift, and go to state 18
+    TRUE               shift, and go to state 19
+    FALSE              shift, and go to state 20
+    NIL                shift, and go to state 21
+    MINUS              shift, and go to state 22
+    PLUS_PLUS          shift, and go to state 23
+    MINUS_MINUS        shift, and go to state 24
+
+    expr       go to state 46
+    primary    go to state 29
+    lvalue     go to state 30
+    member     go to state 31
+    call       go to state 32
+    elist      go to state 182
+    objectdef  go to state 33
+    const      go to state 37
+
+
+State 177
+
+   59 methodcall: DOUBLE_FULLSTOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS .
+
+    $default  reduce using rule 59 (methodcall)
+
+
+State 178
+
+   88 ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt .
+
+    $default  reduce using rule 88 (ifstmt)
+
+
+State 179
+
+   99 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@7 . stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 183
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 180
+
+   95 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS . $@5 stmt
+
+    $default  reduce using rule 94 ($@5)
+
+    $@5  go to state 184
+
+
+State 181
+
+   97 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS . $@6 stmt
+
+    $default  reduce using rule 96 ($@6)
+
+    $@6  go to state 185
+
+
+State 182
+
+   62 elist: elist . COMMA expr
+   93 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist . RIGHT_PARENTHESIS $@4 stmt
+
+    RIGHT_PARENTHESIS  shift, and go to state 186
+    COMMA              shift, and go to state 104
+
+
+State 183
+
+   99 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@7 stmt .
+
+    $default  reduce using rule 99 (forstmt)
+
+
+State 184
+
+   95 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@5 . stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 187
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 185
+
+   97 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@6 . stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 188
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 186
+
+   93 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS . $@4 stmt
+
+    $default  reduce using rule 92 ($@4)
+
+    $@4  go to state 189
+
+
+State 187
+
+   95 forstmt: FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@5 stmt .
+
+    $default  reduce using rule 95 (forstmt)
+
+
+State 188
+
+   97 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS $@6 stmt .
+
+    $default  reduce using rule 97 (forstmt)
+
+
+State 189
+
+   93 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@4 . stmt
+
+    INTEGER           shift, and go to state 1
+    REAL              shift, and go to state 2
+    ID                shift, and go to state 3
+    STRING            shift, and go to state 4
+    LEFT_BRACE        shift, and go to state 5
+    LEFT_BRACKET      shift, and go to state 6
+    LEFT_PARENTHESIS  shift, and go to state 7
+    SEMICOLON         shift, and go to state 8
+    DOUBLE_COLON      shift, and go to state 9
+    IF                shift, and go to state 10
+    WHILE             shift, and go to state 11
+    FOR               shift, and go to state 12
+    FUNCTION          shift, and go to state 13
+    RETURN            shift, and go to state 14
+    BREAK             shift, and go to state 15
+    CONTINUE          shift, and go to state 16
+    NOT               shift, and go to state 17
+    LOCAL             shift, and go to state 18
+    TRUE              shift, and go to state 19
+    FALSE             shift, and go to state 20
+    NIL               shift, and go to state 21
+    MINUS             shift, and go to state 22
+    PLUS_PLUS         shift, and go to state 23
+    MINUS_MINUS       shift, and go to state 24
+
+    stmt        go to state 190
+    expr        go to state 28
+    primary     go to state 29
+    lvalue      go to state 30
+    member      go to state 31
+    call        go to state 32
+    objectdef   go to state 33
+    block       go to state 34
+    funcprefix  go to state 35
+    funcdef     go to state 36
+    const       go to state 37
+    ifstmt      go to state 38
+    whilestmt   go to state 39
+    forstmt     go to state 40
+    returnstmt  go to state 41
+
+
+State 190
+
+   93 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS $@4 stmt .
+
+    $default  reduce using rule 93 (forstmt)

@@ -722,6 +722,7 @@ returnstmt: RETURN SEMICOLON        {
 
 int yyerror(char *message){
     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: %s: at line %d, on token: %s\n", message, yylineno, yytext);
+    compileError = 1;
     return 0;
 }
 
@@ -784,7 +785,7 @@ int main(int argc, char **argv){
         printQuads();
     }
     else{
-        fprintf_red(stderr, "Intermediate code generation failed\n");
+        fprintf_red(stderr, "[Alpha Compiler] -- COMPILATION ERROR: Intermediate code generation failed.\n");
     }
 
     fclose(ost);

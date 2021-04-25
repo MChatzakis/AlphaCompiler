@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 
 #include "../utils/utils.h"
 //#include "../symboltable/symboltable.h"
@@ -86,12 +87,16 @@ void restorecurrscopeoffset(unsigned n);
 void ManageLoopKeywords(char *keyword);
 void ManageReturnStatement();
 void printQuads();
+void printQuad(unsigned int i);
+void printExprVal(expr *ex);
+void printSymTabEntry(SymbolTableEntry *entry);
 enum scopespace_t currscopespace();
 unsigned currscopeoffset();
 unsigned nextquadlabel();
 int CheckForAccess(SymbolTableEntry *entry, unsigned int scope);
 int CheckForAssignError(SymbolTableEntry *entry);
 int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope);
+int is_int(double d);
 SymbolTableEntry *newtemp();
 SymbolTableEntry *CheckAddFormal(char *id);
 SymbolTableEntry *ManageIDFunctionDefinition(char *id);
@@ -129,13 +134,7 @@ void expand()
     total += EXPAND_SIZE;
 }
 
-void emit(
-    iopcode op,
-    expr *arg1,
-    expr *arg2,
-    expr *result,
-    unsigned label,
-    unsigned line)
+void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line)
 {
 
     if (compileError)
@@ -149,6 +148,7 @@ void emit(
     }
 
     quad *p = quads + currQuad++;
+    p->op = op;
     p->arg1 = arg1;
     p->arg2 = arg2;
     p->result = result;
@@ -928,25 +928,25 @@ void printSymTabEntry(SymbolTableEntry *entry)
     assert(entry);
     if (entry->type < 3)
     {
-        fprintf(ost, "\"%s\"\n", (entry->value).varVal->name);
+        fprintf(ost, "%s", (entry->value).varVal->name);
     }
     else
     {
-        fprintf(ost, "\"%s\" (iaddress %u)\n",
-                (entry->value).funcVal->name, (entry->value).funcVal->address);
+        fprintf(ost, "%s", (entry->value).funcVal->name);
     }
 }
 
 void printExprVal(expr *expr)
 {
     assert(expr);
+
     switch (expr->type)
     {
     case var_e:
         printSymTabEntry(expr->sym);
         break;
     case tableitem_e:
-
+        printSymTabEntry(expr->sym);
         break;
     case programfunc_e:
         printSymTabEntry(expr->sym);
@@ -958,17 +958,23 @@ void printExprVal(expr *expr)
         printSymTabEntry(expr->sym);
         break;
     case boolexpr_e:
-
+        printSymTabEntry(expr->sym);
         break;
-
     case assignexpr_e:
-
+        printSymTabEntry(expr->sym);
         break;
     case newtable_e:
-
+        printSymTabEntry(expr->sym);
         break;
     case constnum_e:
-        fprintf(ost, "%f", expr->numConst);
+        if (is_int(expr->numConst))
+        {
+            fprintf(ost, "%d", (int)expr->numConst);
+        }
+        else
+        {
+            fprintf(ost, "%f", expr->numConst);
+        }
         break;
     case constbool_e:
         fprintf(ost, "%u", expr->boolConst);
@@ -977,8 +983,10 @@ void printExprVal(expr *expr)
         fprintf(ost, "%s", expr->strConst);
         break;
     case nil_e:
-        fprintf(ost, " ");
+        fprintf(ost, "NIL");
         break;
+    default:
+        assert(0);
     }
 }
 
@@ -1012,49 +1020,71 @@ void printQuad(unsigned int i)
         "tablesetelem",
         "jump"};
 
-    fprintf(ost, "#%u %s ", i, names[quads[i].op]);
+    fprintf(ost, "#%u: [%s] ", i, names[quads[i].op]);
     expr *ex;
     if (quads[i].result != NULL)
     {
+        fprintf(ost, "[result: ");
         ex = quads[i].result;
         printExprVal(ex);
+        fprintf(ost, "] ");
     }
-    else
+    /*else
     {
-        fprintf(ost, "  ");
+        fprintf(ost, "-");
     }
-
+    fprintf(ost, ",");*/
     if (quads[i].arg1 != NULL)
     {
+        fprintf(ost, "[arg1: ");
         ex = quads[i].arg1;
         printExprVal(ex);
+        fprintf(ost, "] ");
     }
-    else
+    /*else
     {
-        fprintf(ost, "  ");
+        fprintf(ost, "-");
     }
-
+    fprintf(ost, ",");*/
     if (quads[i].arg2 != NULL)
     {
+        fprintf(ost, "[arg2: ");
         ex = quads[i].arg2;
         printExprVal(ex);
+        fprintf(ost, "] ");
     }
-    else
+    /*else
     {
-        fprintf(ost, "  ");
+        fprintf(ost, "-");
+    }*/
+
+    if (quads[i].label != 0)
+    {
+        fprintf(ost, "(label: %u) ", quads[i].label);
     }
 
-    fprintf(ost, "%u %u\n", quads[i].label, quads[i].line);
+    fprintf(ost, "(line: %u)", quads[i].line);
+    fprintf(ost, "\n");
 }
 
 void printQuads()
 {
     unsigned int i;
 
-    fprintf(ost, "#quad\topcode\tresult\targ1\targ2\tlabel\tline\n");
+    fprintf(ost, "\n----------------------- QUADS -----------------------\n");
+    //fprintf(ost, "#quad,opcode,result,arg1,arg2,label,line\n");
 
     for (i = 0; i < currQuad; i++)
     {
         printQuad(i);
     }
+
+    fprintf(ost, "-----------------------------------------------------\n");
+    //fprintf(ost, "#quad opcode result arg1 arg2 label line\n");
+}
+
+int is_int(double d)
+{
+    double absolute = abs(d);
+    return absolute == floor(absolute);
 }
