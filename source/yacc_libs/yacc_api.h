@@ -401,7 +401,7 @@ expr *newexpr_constnum(double i)
 expr *newexpr_conststring(char *s)
 {
     expr *e = newexpr(conststring_e);
-    e->srtConst = strdup(s);
+    e->strConst = strdup(s);
     return e;
 }
 
@@ -932,7 +932,7 @@ void printSymTabEntry(SymbolTableEntry *entry)
     }
     else
     {
-        fprintf(stream, "\"%s\" (iaddress %u)\n",
+        fprintf(ost, "\"%s\" (iaddress %u)\n",
                 (entry->value).funcVal->name, (entry->value).funcVal->address);
     }
 }
@@ -955,7 +955,7 @@ void printExprVal(expr *expr)
         printSymTabEntry(expr->sym);
         break;
     case arithexpr_e:
-
+        printSymTabEntry(expr->sym);
         break;
     case boolexpr_e:
 
@@ -971,7 +971,7 @@ void printExprVal(expr *expr)
         fprintf(ost, "%f", expr->numConst);
         break;
     case constbool_e:
-        fprintf(ost, "%u", expr->boolConst) 
+        fprintf(ost, "%u", expr->boolConst);
         break;
     case conststring_e:
         fprintf(ost, "%s", expr->strConst);
@@ -980,7 +980,6 @@ void printExprVal(expr *expr)
         fprintf(ost, " ");
         break;
     }
-    
 }
 
 void printQuad(unsigned int i)
