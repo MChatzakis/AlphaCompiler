@@ -20,6 +20,7 @@
     double real_value;
     expr* exprVal;
     call* callFunc;
+    indexedPair* indPair;
     SymbolTableEntry *symTabEntry;
 
 }
@@ -45,7 +46,8 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-%type <exprVal> lvalue expr member primary call elist objectdef const
+%type <exprVal> lvalue expr member primary call elist objectdef const 
+%type <indPair> indexedelem indexed
 %type <callFunc> callsuffix normcall methodcall
 
 %type <string_value> funcname;
@@ -461,6 +463,17 @@ objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[INDEXED] (objectdef -> [indexed])\n");
                                                     }
+                                                    indexedPair* ptr;
+                                                    expr* t = newexpr(newtable_e);
+                                                    t->sym = newtemp();
+                                                    emit(tablecreate_op, t, NULL, NULL, 0, yylineno);
+                                                    ptr = $2;
+                                                    while(ptr){
+                                                        emit(tablesetelem_op, t, ptr->key, ptr->val, 0, yylineno);
+                                                        ptr = ptr->next;
+                                                    }
+
+                                                    $$ = t;
                                                 }
             | LEFT_BRACKET elist RIGHT_BRACKET  {
                                                     if(TRACE_PRINT){
@@ -480,11 +493,17 @@ indexed:    indexedelem                 {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>INDEXED_ELEM (indexed -> indexedelem)\n");
                                             }
+
+                                            $$ = $1;
+
                                         }
             | indexed COMMA indexedelem {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=> INDEXED , INDEXED_ELEM (indexed -> indexed COMMA indexedelem)\n");
                                             }
+
+                                            $3->next = $1;
+                                            $$ = $3;
                                         }
             ;
 
@@ -492,6 +511,8 @@ indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE  {
                                                         if(TRACE_PRINT){
                                                             fprintf(ost, "=>{EXPR : EXPR} (indexedelem -> { expr : expr })\n");
                                                         }
+                                                        /*We are not sure for this -- Check again*/
+                                                        $$ = newIndexPair($2, $4);
                                                     }
             ;
 

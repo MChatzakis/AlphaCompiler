@@ -58,7 +58,7 @@ typedef struct expr
     SymbolTableEntry *sym;
     struct expr *index;
     double numConst;
-    char *srtConst;
+    char *strConst;
     unsigned char boolConst;
     struct expr *next;
 } expr;
@@ -79,3 +79,10 @@ typedef struct call
     unsigned char method;
     char *name;
 } call;
+
+typedef struct indexedPair
+{
+    expr *key;
+    expr *val;
+    struct indexedPair *next;
+} indexedPair;

@@ -380,6 +380,16 @@ call *newcall()
     return c;
 }
 
+indexedPair *newIndexPair(expr *key, expr *value)
+{
+    indexedPair *pair = (indexedPair *)malloc(sizeof(indexedPair));
+    memset(pair, 0, sizeof(indexedPair));
+    pair->key = key;
+    pair->val = value;
+    pair->next = NULL;
+    return pair;
+}
+
 expr *newexpr_constnum(double i)
 {
     expr *e;
@@ -913,7 +923,139 @@ void ManageLoopKeywords(char *keyword)
     }
 }
 
+void printSymTabEntry(SymbolTableEntry *entry)
+{
+    assert(entry);
+    if (entry->type < 3)
+    {
+        fprintf(ost, "\"%s\"\n", (entry->value).varVal->name);
+    }
+    else
+    {
+        fprintf(stream, "\"%s\" (iaddress %u)\n",
+                (entry->value).funcVal->name, (entry->value).funcVal->address);
+    }
+}
+
+void printExprVal(expr *expr)
+{
+    assert(expr);
+    switch (expr->type)
+    {
+    case var_e:
+        printSymTabEntry(expr->sym);
+        break;
+    case tableitem_e:
+
+        break;
+    case programfunc_e:
+        printSymTabEntry(expr->sym);
+        break;
+    case libraryfunc_e:
+        printSymTabEntry(expr->sym);
+        break;
+    case arithexpr_e:
+
+        break;
+    case boolexpr_e:
+
+        break;
+
+    case assignexpr_e:
+
+        break;
+    case newtable_e:
+
+        break;
+    case constnum_e:
+        fprintf(ost, "%f", expr->numConst);
+        break;
+    case constbool_e:
+        fprintf(ost, "%u", expr->boolConst) 
+        break;
+    case conststring_e:
+        fprintf(ost, "%s", expr->strConst);
+        break;
+    case nil_e:
+        fprintf(ost, " ");
+        break;
+    }
+    
+}
+
+void printQuad(unsigned int i)
+{
+    char *names[26] = {
+        "assign",
+        "add",
+        "sub",
+        "mul",
+        "div",
+        "mod",
+        "uminus",
+        "and",
+        "or",
+        "not",
+        "if_eq",
+        "if_noteq",
+        "if_lesseq",
+        "if_greatereq",
+        "if_less",
+        "if_greater",
+        "call",
+        "param",
+        "ret",
+        "getretval",
+        "funcstart",
+        "funcend",
+        "tablecreate",
+        "tablegetelem",
+        "tablesetelem",
+        "jump"};
+
+    fprintf(ost, "#%u %s ", i, names[quads[i].op]);
+    expr *ex;
+    if (quads[i].result != NULL)
+    {
+        ex = quads[i].result;
+        printExprVal(ex);
+    }
+    else
+    {
+        fprintf(ost, "  ");
+    }
+
+    if (quads[i].arg1 != NULL)
+    {
+        ex = quads[i].arg1;
+        printExprVal(ex);
+    }
+    else
+    {
+        fprintf(ost, "  ");
+    }
+
+    if (quads[i].arg2 != NULL)
+    {
+        ex = quads[i].arg2;
+        printExprVal(ex);
+    }
+    else
+    {
+        fprintf(ost, "  ");
+    }
+
+    fprintf(ost, "%u %u\n", quads[i].label, quads[i].line);
+}
+
 void printQuads()
 {
-    //print to ost stream!
+    unsigned int i;
+
+    fprintf(ost, "#quad\topcode\tresult\targ1\targ2\tlabel\tline\n");
+
+    for (i = 0; i < currQuad; i++)
+    {
+        printQuad(i);
+    }
 }
