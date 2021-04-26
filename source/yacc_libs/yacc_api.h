@@ -1020,7 +1020,7 @@ void printQuad(unsigned int i)
         "tablesetelem",
         "jump"};
 
-    fprintf(ost, "#%u: [%s] ", i, names[quads[i].op]);
+    fprintf(ost, "#%u: %s ", i, names[quads[i].op]);
     expr *ex;
     if (quads[i].result != NULL)
     {
