@@ -90,5 +90,11 @@ typedef struct indexedPair
 typedef struct forPrefixJumps
 {
     unsigned test;
-    unsigned enter; 
-}forPrefixJumps;
+    unsigned enter;
+} forPrefixJumps;
+
+typedef struct stmt_t
+{
+    int breakList;
+    int contList;
+}stmt_t;

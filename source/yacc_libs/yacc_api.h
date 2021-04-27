@@ -87,11 +87,14 @@ void resetfunctionlocalsoffset();
 void restorecurrscopeoffset(unsigned n);
 void ManageLoopKeywords(char *keyword);
 void ManageReturnStatement();
+void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3);
 void printQuads();
 void printQuad(unsigned int i);
 void printExprVal(expr *ex);
 void printSymTabEntry(SymbolTableEntry *entry);
 void check_arith(expr *e);
+void make_stmt(stmt_t *s);
+void patchlist(int list, int label);
 enum scopespace_t currscopespace();
 unsigned currscopeoffset();
 unsigned nextquadlabel();
@@ -100,10 +103,15 @@ unsigned int istempexpr(expr *e);
 int CheckForAccess(SymbolTableEntry *entry, unsigned int scope);
 int CheckForAssignError(SymbolTableEntry *entry);
 int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope);
+int ManageIfPrefix(expr *ex);
 int is_int(double d);
+int newlist(int i);
+int mergelist(int l1, int l2);
 SymbolTableEntry *newtemp();
 SymbolTableEntry *CheckAddFormal(char *id);
 SymbolTableEntry *ManageIDFunctionDefinition(char *id);
+forPrefixJumps *newForPrefixJump(unsigned test, unsigned enter);
+forPrefixJumps *ManageForPrefix(expr *expr, unsigned M);
 call *newcall();
 call *ManageMethodCall(expr *elist, char *id);
 call *ManageNormalCall(expr *elist);
@@ -113,7 +121,6 @@ expr *newexpr_constnum(double i);
 expr *newexpr_conststring(char *s);
 expr *newexpr_constbool(unsigned char boolConst);
 expr *newexpr_nil();
-forPrefixJumps *newForPrefixJump(unsigned test, unsigned enter);
 expr *emit_iftableitem(expr *e);
 expr *member_item(expr *lv, char *name);
 expr *make_call(expr *lv, expr *reversed_elist);
@@ -133,9 +140,6 @@ expr *ManageLvalueMinusMinus(expr *exVal);
 expr *ManageMinusMinusLvalue(expr *exVal);
 expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2);
 expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2);
-int ManageIfPrefix(expr *ex);
-forPrefixJumps *ManageForPrefix(expr *expr, unsigned M);
-void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3);
 
 void expand()
 {
@@ -923,12 +927,18 @@ expr *ManagePrimaryFunction(expr *exVal)
  * @brief Check is the use of return statement is valid
  * 
  */
-void ManageReturnStatement()
+void ManageReturnStatement(expr *ex)
 {
+    //assert(ex);
+
     if (FuncStack_isEmpty(functionStack))
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"return\" statement outside of function at line %lu\n", yylineno);
+        compileError = 1;
+        return;
     }
+
+    emit(ret_op, NULL, NULL, ex, 0, yylineno);
 }
 
 /**
@@ -1005,7 +1015,7 @@ void printExprVal(expr *expr)
         fprintf(ost, "\"%s\"", expr->strConst);
         break;
     case nil_e:
-        fprintf(ost, "NIL");
+        fprintf(ost, "nil");
         break;
     default:
         assert(0);
@@ -1346,4 +1356,41 @@ forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
     forprefix = newForPrefixJump(M, nextquadlabel());
     emit(if_eq_op, expr, newexpr_constbool(1), NULL, 0, yylineno);
     return forprefix;
+}
+
+void make_stmt(stmt_t *s)
+{
+    s->breakList = s->contList = 0;
+}
+
+int newlist(int i)
+{
+    quads[i].label = 0;
+    return i;
+}
+
+int mergelist(int l1, int l2)
+{
+    if (!l1)
+        return l2;
+    else if (!l2)
+        return l1;
+    else
+    {
+        int i = l1;
+        while (quads[i].label)
+            i = quads[i].label;
+        quads[i].label = l2;
+        return l1;
+    }
+}
+
+void patchlist(int list, int label)
+{
+    while (list)
+    {
+        int next = quads[list].label;
+        quads[list].label = label;
+        list = next;
+    }
 }

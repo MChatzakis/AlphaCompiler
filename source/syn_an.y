@@ -594,11 +594,12 @@ funcblockstart:         {
                             NumberStack_push(loopStack, loopcounter);
                             loopcounter = 0;
                         }
-
+                ;
 
 funcblockend:           {
                             loopcounter = NumberStack_pop(loopStack);
                         }
+                ;
 
 funcdef:    funcprefix funcargs funcblockstart funcbody funcblockend    {
                                                 if(TRACE_PRINT){
@@ -778,18 +779,19 @@ forstmt:    forprefix N elist RIGHT_PARENTHESIS N loopstmt N    {
                                                                 }
                                                                 ManageForStatement($1, $2, $4, $6);
                                                             }
+            ;
 
 returnstmt: RETURN SEMICOLON        {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret; (returnstmt -> return;)\n");
                                         }
-                                        ManageReturnStatement();
+                                        ManageReturnStatement(NULL);
                                     }
             | RETURN expr SEMICOLON {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret EXPR; (returnstmt -> return expr;)\n");
                                         }
-                                        ManageReturnStatement();
+                                        ManageReturnStatement($2);
                                     }
             ;
 
