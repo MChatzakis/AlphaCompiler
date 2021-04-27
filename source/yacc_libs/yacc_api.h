@@ -22,6 +22,7 @@ extern char *yytext;
 extern FILE *yyin;
 
 unsigned int scope = 0;
+unsigned int loopcounter = 0;
 unsigned int unamed_functions = 0;
 unsigned int tempcounter = 0;
 unsigned int loop_stack = 0;
@@ -90,9 +91,12 @@ void printQuads();
 void printQuad(unsigned int i);
 void printExprVal(expr *ex);
 void printSymTabEntry(SymbolTableEntry *entry);
+void check_arith(expr *e);
 enum scopespace_t currscopespace();
 unsigned currscopeoffset();
 unsigned nextquadlabel();
+unsigned int istempname(const char *s);
+unsigned int istempexpr(expr *e);
 int CheckForAccess(SymbolTableEntry *entry, unsigned int scope);
 int CheckForAssignError(SymbolTableEntry *entry);
 int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope);
@@ -109,6 +113,7 @@ expr *newexpr_constnum(double i);
 expr *newexpr_conststring(char *s);
 expr *newexpr_constbool(unsigned char boolConst);
 expr *newexpr_nil();
+forPrefixJumps *newForPrefixJump(unsigned test, unsigned enter);
 expr *emit_iftableitem(expr *e);
 expr *member_item(expr *lv, char *name);
 expr *make_call(expr *lv, expr *reversed_elist);
@@ -120,6 +125,17 @@ expr *ManagePrimaryLValue(expr *exVal);
 expr *EvaluateLValue(char *id);
 expr *EvaluateGlobalLValue(char *id);
 expr *EvaluateLocalLValue(char *id);
+expr *ManageUminus(expr *exVal);
+expr *ManageNot(expr *exVal);
+expr *ManageLvaluePlusPlus(expr *exVal);
+expr *ManagePlusPlusLvalue(expr *exVal);
+expr *ManageLvalueMinusMinus(expr *exVal);
+expr *ManageMinusMinusLvalue(expr *exVal);
+expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2);
+expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2);
+int ManageIfPrefix(expr *ex);
+forPrefixJumps *ManageForPrefix(expr *expr, unsigned M);
+void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3);
 
 void expand()
 {
@@ -390,6 +406,17 @@ indexedPair *newIndexPair(expr *key, expr *value)
     return pair;
 }
 
+forPrefixJumps *newForPrefixJump(unsigned test, unsigned enter)
+{
+    forPrefixJumps *jmp = (forPrefixJumps *)malloc(sizeof(forPrefixJumps));
+    memset(jmp, 0, sizeof(forPrefixJumps));
+
+    jmp->enter = enter;
+    jmp->test = test;
+
+    return jmp;
+}
+
 expr *newexpr_constnum(double i)
 {
     expr *e;
@@ -413,8 +440,9 @@ expr *newexpr_nil()
 
 expr *newexpr_constbool(unsigned char boolConst)
 {
-    expr *e = newexpr(boolexpr_e);
-    e->boolConst = boolConst;
+    //expr *e = newexpr(boolexpr_e);expr *e = newexpr(boolexpr_e);
+    expr *e = newexpr(constbool_e);
+    e->boolConst = !!boolConst;
     return e;
 }
 
@@ -910,16 +938,10 @@ void ManageReturnStatement()
  */
 void ManageLoopKeywords(char *keyword)
 {
-    if (NumberStack_isEmpty(loopStack))
+    if (loopcounter == 0)
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"%s\" statement outside of loop at line %lu\n", keyword, yylineno);
-    }
-    else if (!FuncStack_isEmpty(functionStack))
-    {
-        if (FuncStack_topScope(functionStack) >= NumberStack_top(loopStack))
-        {
-            fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"%s\" statement outside of loop at line %lu\n", keyword, yylineno);
-        }
+        compileError = 1;
     }
 }
 
@@ -980,7 +1002,7 @@ void printExprVal(expr *expr)
         fprintf(ost, "%u", expr->boolConst);
         break;
     case conststring_e:
-        fprintf(ost, "%s", expr->strConst);
+        fprintf(ost, "\"%s\"", expr->strConst);
         break;
     case nil_e:
         fprintf(ost, "NIL");
@@ -1087,4 +1109,241 @@ int is_int(double d)
 {
     double absolute = abs(d);
     return absolute == floor(absolute);
+}
+
+void check_arith(expr *e)
+{
+    if (e->type == constbool_e ||
+        e->type == conststring_e ||
+        e->type == nil_e ||
+        e->type == newtable_e ||
+        e->type == programfunc_e ||
+        e->type == libraryfunc_e ||
+        e->type == boolexpr_e)
+    {
+        fprintf_red(stderr, "Illegal expression used!\n");
+        compileError = 1;
+    }
+}
+
+expr *ManageUminus(expr *exVal)
+{
+    expr *ex;
+
+    check_arith(exVal);
+    ex = newexpr(arithexpr_e);
+    ex->sym = newtemp();
+    emit(uminus_op, exVal, NULL, ex, 0, yylineno);
+
+    return ex;
+}
+
+expr *ManageNot(expr *exVal)
+{
+    expr *ex;
+
+    ex = newexpr(boolexpr_e);
+    ex->sym = newtemp();
+    emit(not_op, exVal, NULL, ex, 0, 0);
+
+    return ex;
+}
+
+expr *ManageLvaluePlusPlus(expr *exVal) //lvalue ++
+{
+    expr *ex;
+    check_arith(exVal);
+    ex = newexpr(var_e);
+    ex->sym = newtemp();
+
+    if (exVal->type == tableitem_e)
+    {
+        expr *val = emit_iftableitem(exVal);
+        emit(assign_op, val, NULL, ex, 0, yylineno);
+        emit(add_op, val, newexpr_constnum(1), val, 0, yylineno);
+        emit(tablesetelem_op, exVal, exVal->index, val, 0, yylineno);
+    }
+    else
+    {
+        emit(assign_op, exVal, NULL, ex, 0, yylineno);
+        emit(add_op, exVal, newexpr_constnum(1), exVal, 0, yylineno);
+    }
+
+    return ex;
+}
+
+expr *ManagePlusPlusLvalue(expr *exVal) //++lvalue
+{
+    expr *ex;
+
+    check_arith(exVal);
+    if (exVal->type == tableitem_e)
+    {
+        ex = emit_iftableitem(exVal);
+        emit(add_op, ex, newexpr_constnum(1), ex, 0, yylineno);
+        emit(tablesetelem_op, exVal, exVal->index, ex, 0, yylineno);
+    }
+    else
+    {
+        emit(add_op, exVal, newexpr_constnum(1), exVal, 0, yylineno);
+        ex = newexpr(arithexpr_e);
+        ex->sym = newtemp();
+        emit(assign_op, exVal, NULL, ex, 0, yylineno);
+    }
+
+    return ex;
+}
+
+expr *ManageLvalueMinusMinus(expr *exVal) //val--
+{
+    expr *ex;
+    check_arith(exVal);
+    ex = newexpr(var_e);
+    ex->sym = newtemp();
+
+    if (exVal->type == tableitem_e)
+    {
+        expr *val = emit_iftableitem(exVal);
+        emit(assign_op, val, NULL, ex, 0, yylineno);
+        emit(sub_op, val, newexpr_constnum(1), val, 0, yylineno);
+        emit(tablesetelem_op, exVal, exVal->index, val, 0, yylineno);
+    }
+    else
+    {
+        emit(assign_op, exVal, NULL, ex, 0, yylineno);
+        emit(sub_op, exVal, newexpr_constnum(1), exVal, 0, yylineno);
+    }
+
+    return ex;
+}
+
+expr *ManageMinusMinusLvalue(expr *exVal) //--val
+{
+    expr *ex;
+
+    check_arith(exVal);
+    if (exVal->type == tableitem_e)
+    {
+        ex = emit_iftableitem(exVal);
+        emit(sub_op, ex, newexpr_constnum(1), ex, 0, yylineno);
+        emit(tablesetelem_op, exVal, exVal->index, ex, 0, yylineno);
+    }
+    else
+    {
+        emit(sub_op, exVal, newexpr_constnum(1), exVal, 0, yylineno);
+        ex = newexpr(arithexpr_e);
+        ex->sym = newtemp();
+        emit(assign_op, exVal, NULL, ex, 0, yylineno);
+    }
+
+    return ex;
+}
+
+unsigned int istempname(const char *s)
+{
+    return s[0] == '_';
+}
+unsigned int istempexpr(expr *e)
+{
+    return e->sym && istempname((e->sym->value).varVal->name);
+}
+
+expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
+{
+    expr *expr;
+    assert(expr1 && expr2);
+
+    check_arith(expr1);
+    check_arith(expr2);
+
+    if (expr1->type == constnum_e && expr2->type == constnum_e)
+    {
+        expr = newexpr(constnum_e);
+    }
+    else
+    {
+        expr = newexpr(arithexpr_e);
+    }
+
+    expr->sym = newtemp();
+    emit(op, expr1, expr2, expr, 0, yylineno);
+    return expr;
+}
+
+expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
+{
+    expr *ex;
+
+    assert(ex1 && ex2);
+
+    check_arith(ex1);
+    check_arith(ex2);
+
+    if (ex1->type == constnum_e && ex2->type == constnum_e)
+    {
+        //den paragetai kwdikas leei sto lec
+        ex = newexpr(constbool_e);
+        switch (op)
+        {
+        case if_greater_op: //>
+            ex->boolConst = (ex1->numConst > ex2->numConst);
+            break;
+        case if_less_op: //<
+            ex->boolConst = (ex1->numConst < ex2->numConst);
+            break;
+        case if_greatereq_op: //>=
+            ex->boolConst = (ex1->numConst >= ex2->numConst);
+            break;
+        case if_lesseq_op: //<=
+            ex->boolConst = (ex1->numConst <= ex2->numConst);
+            break;
+        case if_noteq_op: // !=
+            ex->boolConst = (ex1->numConst != ex2->numConst);
+            break;
+        case if_eq_op: // ==
+            ex->boolConst = (ex1->numConst == ex2->numConst);
+            break;
+        default:
+            assert(0);
+        }
+    }
+    else
+    {
+        ex = newexpr(boolexpr_e);
+        ex->sym = newtemp();
+        emit(op, ex1, ex2, NULL, nextquadlabel() + 3, yylineno);
+        emit(assign_op, newexpr_constbool(0), NULL, ex, 0, yylineno);
+        emit(jump_op, NULL, NULL, NULL, nextquadlabel() + 2, yylineno);
+        emit(assign_op, newexpr_constbool(1), NULL, ex, 0, yylineno);
+    }
+
+    return ex;
+}
+
+int ManageIfPrefix(expr *ex)
+{
+    int ifprefix;
+    emit(if_eq_op, ex, newexpr_constbool(1), NULL, nextquadlabel() + 2, yylineno);
+    ifprefix = nextquadlabel();
+    emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+    return ifprefix;
+}
+
+void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3)
+{
+    patchlabel(forPref->enter, N2 + 1);
+    patchlabel(N1, nextquadlabel());
+    patchlabel(N2, forPref->test);
+    patchlabel(N3, N1 + 1);
+    //patchlist($stmt.breaklist, nextquad());
+    //patchlist($stmt.contlist, $N1 + 1);
+}
+
+forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
+{
+    forPrefixJumps *forprefix;
+
+    forprefix = newForPrefixJump(M, nextquadlabel());
+    emit(if_eq_op, expr, newexpr_constbool(1), NULL, 0, yylineno);
+    return forprefix;
 }

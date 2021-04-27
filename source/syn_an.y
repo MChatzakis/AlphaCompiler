@@ -16,13 +16,14 @@
 
 %union {
     int int_value;
+    unsigned un_value;
     char* string_value;
     double real_value;
     expr* exprVal;
     call* callFunc;
     indexedPair* indPair;
     SymbolTableEntry *symTabEntry;
-
+    forPrefixJumps* forPrefJumps;
 }
 
 %token <int_value> INTEGER
@@ -50,11 +51,10 @@
 %type <indPair> indexedelem indexed
 %type <callFunc> callsuffix normcall methodcall
 
-%type <string_value> funcname;
-%type <int_value>    funcbody;
+%type <string_value> funcname
+%type <un_value>    funcbody ifprefix elseprefix whilestart whilecond M N
 %type <symTabEntry>  funcprefix funcdef
-
-
+%type <forPrefJumps> forprefix
 
 /*Grammar*/
 %%
@@ -161,101 +161,120 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>NOT EQUAL Expression (expr -> expr != expr)\n");
                                             }
+
+                                            $$ = ManageRelationExpression($1, if_noteq_op, $3);
                                         }
             | expr EQUAL expr           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>EQUAL Expression (expr -> expr == expr)\n");
                                             }
+                                            $$ = ManageRelationExpression($1, if_eq_op, $3);
                                         }
             | expr LESS_EQUAL expr      {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>LESS EQUAL Expression (expr -> expr <= expr)\n");
                                             }
+                                            $$ = ManageRelationExpression($1, if_lesseq_op, $3);
                                         }
             | expr LESS expr            {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>LESS Expression (expr -> expr < expr)\n");
                                             }
+                                            $$ = ManageRelationExpression($1, if_less_op, $3);
                                         }
             | expr GREATER_EQUAL expr   {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>GREATER EQUAL Expression (expr -> expr >= expr)\n");
                                             }
+                                            $$ = ManageRelationExpression($1, if_greatereq_op, $3);
                                         }
             | expr GREATER expr         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>GREATER Expression (expr -> expr > expr)\n");
                                             }
+                                            $$ = ManageRelationExpression($1, if_greater_op, $3);
                                         }
             | expr PLUS expr            {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PLUS Expression (expr -> expr + expr)\n");
                                             }
+                                            $$ = ManageArithmeticExpression($1,add_op,$3);
                                         }
             | expr MINUS expr           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MINUS Expression (expr -> expr - expr)\n");
                                             }
+                                            $$ = ManageArithmeticExpression($1,sub_op,$3);
                                         }
             | expr MUL expr             {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MUL Expression (expr -> expr * expr) \n");
                                             }
+                                            $$ = ManageArithmeticExpression($1,mul_op,$3);
                                         }
             | expr DIV expr             {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>DIV Expression (expr -> expr / expr) \n");
                                             }
+                                            $$ = ManageArithmeticExpression($1,div_op,$3);
                                         }
             | expr MODULO expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MODULO Expression (expr -> expr MOD expr)\n");
                                             }
+                                            $$ = ManageArithmeticExpression($1,mod_op,$3);
                                         }
             | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS 
                                         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PARENTHESIS EXPR Expression (expr -> (expr) )\n");
                                             }
+                                            $$ = $2;
                                         }
             | MINUS expr %prec UMINUS   {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>-EXPR Expression (expr -> -expr)\n");
                                             }
+
+                                            $$ = ManageUminus($2);
                                         }
             | NOT expr                  {
                                            if(TRACE_PRINT){
                                                 fprintf(ost, "=>NOT Expression (expr -> not expr)\n");
                                             }
+
+                                            $$ = ManageNot($2);
                                         }
             | PLUS_PLUS lvalue          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PLUS PLUS lvalue Expression (expr -> ++lvalue)\n");
                                             }
-                                            //ManageAssignValue($2);
+                                            $$ = ManagePlusPlusLvalue($2);
                                         }
             | lvalue PLUS_PLUS          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue PLUS PLUS Expression (expr -> lvalue++ )\n");
                                             }
-                                            //ManageAssignValue($1);
+                                            $$ = ManageLvaluePlusPlus($1);
                                         }
             | MINUS_MINUS lvalue        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MINUS MINUS lvalue Expression (expr -> --lvalue)\n");
                                             }
-                                            //ManageAssignValue($2);
+                                            $$ = ManageMinusMinusLvalue($2);
                                         }
             | lvalue MINUS_MINUS        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue MINUS MINUS Expression (expr -> lvalue--)\n");
                                             }
-                                            //ManageAssignValue($1);
+                                            ManageLvalueMinusMinus($1);
                                         }
             | primary                   {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PRIMARY Expression (expr -> primary)\n");
                                             }
+
+                                            $$ = $1;
                                         }
             ;
 
@@ -571,14 +590,24 @@ funcbody:       block   {
                         }
                 ;
 
-funcdef:    funcprefix funcargs funcbody    {
+funcblockstart:         {
+                            NumberStack_push(loopStack, loopcounter);
+                            loopcounter = 0;
+                        }
+
+
+funcblockend:           {
+                            loopcounter = NumberStack_pop(loopStack);
+                        }
+
+funcdef:    funcprefix funcargs funcblockstart funcbody funcblockend    {
                                                 if(TRACE_PRINT){
                                                     fprintf(ost, "=>FUNCDEF (funcdef -> function ID () block)\n");
                                                 }
 
                                                 exitscopespace();
                                                 if($1 != NULL){
-                                                    ($1->value).funcVal->totalLocals = $3; //check
+                                                    ($1->value).funcVal->totalLocals = $4; //check
                                                     emit(funcend_op, lvalue_expr($1), NULL, NULL, 0, yylineno);
                                                 }
 
@@ -651,58 +680,104 @@ idlist:     ID                  {
                                 }
             ;
 
-ifstmt:     
-            IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt   {
-                                                                            if(TRACE_PRINT){
-                                                                                fprintf(ost, "=>IF ELSE (ifstmt -> if(expr)stmt else stmt)\n");
-                                                                            }
-                                                                        }
-            | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt           {
-                                                                            if(TRACE_PRINT){
-                                                                                fprintf(ost, "=>IF ELSE (ifstmt -> if(expr) stmt)\n");
-                                                                            }
-                                                                        }                                                                
+ifprefix:   IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS      {
+                                                                $$ = ManageIfPrefix($3);                                             
+                                                            }
             ;
 
-whilestmt:  WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope);} stmt  {
-                                                                    if(TRACE_PRINT){
-                                                                        fprintf(ost, "=>while(EXPR) (whilestmt -> while(expr) stmt)\n");
+elseprefix: ELSE                    {
+                                        $$ = nextquadlabel();
+                                        emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+                                    }
+            ;
+
+ifstmt: ifprefix stmt elseprefix stmt       {
+                                                if(TRACE_PRINT){
+                                                    fprintf(ost, "=>IF ELSE (ifstmt -> if(expr)stmt else stmt)\n");
+                                                }
+
+                                                patchlabel($1, $3 + 1);
+                                                patchlabel($3, nextquadlabel());
+                                            }
+        | ifprefix stmt                     {
+                                                if(TRACE_PRINT){
+                                                    fprintf(ost, "=>IF ELSE (ifstmt -> if(expr) stmt)\n");
+                                                }
+
+                                                patchlabel($1, nextquadlabel());
+                                            }
+        ;                          
+
+loopstart:              {
+                            ++loopcounter;
+                        }
+            ;
+
+loopend:                {
+                            --loopcounter;
+                        }
+            ;            
+
+loopstmt:   loopstart stmt loopend  {
+                                        //$$ = $2; //todo
+                                    }
+            ;                        
+
+whilestart: WHILE       {
+                            
+                            $$ = nextquadlabel();
+                        }
+            ;
+
+whilecond:  LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+                                                        emit(if_eq_op, $2, newexpr_constbool(1), NULL, nextquadlabel() + 2, yylineno);
+                                                        $$ = nextquadlabel();
+                                                        emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+                                                    }
+            ;
+
+whilestmt:  whilestart whilecond loopstmt   {
+                                            if(TRACE_PRINT){
+                                                fprintf(ost, "=>while(EXPR) (whilestmt -> while(expr) stmt)\n");
+                                            }
+                                            emit(jump_op, NULL, NULL, NULL, $1, yylineno);
+                                            patchlabel($2, nextquadlabel());
+                                            //patchlist 1
+                                            //pathclist 2
+                                        }
+            ;                                                                                               
+
+N:          {
+                $$ = nextquadlabel();
+                emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+            }
+    ;
+
+M:          {
+                $$ = nextquadlabel();
+            }
+    ;
+
+forprefix:  FOR LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON   {
+                                                                        $$ = ManageForPrefix($6, $5);
                                                                     }
-                                                                    loop_stack--;
-                                                                    //NumberStack_print(loopStack);
-                                                                    NumberStack_pop(loopStack);
-                                                                }
+            | FOR LEFT_PARENTHESIS SEMICOLON M expr SEMICOLON       {
+                                                                        $$ = ManageForPrefix($5, $4);
+                                                                    }
             ;
 
-forstmt:    FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope);} stmt    {
-                                                                                                    if(TRACE_PRINT){
-                                                                                                        fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
-                                                                                                    }
-                                                                                                    loop_stack--;
-                                                                                                    NumberStack_pop(loopStack);
-                                                                                                }
-            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope);}  stmt        {
-                                                                                                    if(TRACE_PRINT){
-                                                                                                        fprintf(ost, "=>FOR (forstmt -> for(; expr; elist))\n");
-                                                                                                    }
-                                                                                                    loop_stack--;
-                                                                                                    NumberStack_pop(loopStack);
-                                                                                                }
-            |FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope); } stmt         {
-                                                                                                    if(TRACE_PRINT){
-                                                                                                        fprintf(ost, "=>FOR (forstmt -> for(elist; expr; ))\n");
-                                                                                                    }
-                                                                                                    loop_stack--;
-                                                                                                    NumberStack_pop(loopStack);
-                                                                                                }
-            |FOR LEFT_PARENTHESIS SEMICOLON expr SEMICOLON RIGHT_PARENTHESIS {loop_stack++; NumberStack_push(loopStack, scope);} stmt               {
-                                                                                                    if(TRACE_PRINT){
-                                                                                                        fprintf(ost, "=>FOR (forstmt -> for( ; expr; ))\n");
-                                                                                                    }
-                                                                                                    loop_stack--;
-                                                                                                    NumberStack_pop(loopStack);
-                                                                                                }
-            ;
+forstmt:    forprefix N elist RIGHT_PARENTHESIS N loopstmt N    {
+                                                                if(TRACE_PRINT){
+                                                                    fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
+                                                                }
+                                                                ManageForStatement($1, $2, $5, $7);
+                                                            }
+            | forprefix N RIGHT_PARENTHESIS N loopstmt N        {
+                                                                if(TRACE_PRINT){
+                                                                    fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
+                                                                }
+                                                                ManageForStatement($1, $2, $4, $6);
+                                                            }
 
 returnstmt: RETURN SEMICOLON        {
                                         if(TRACE_PRINT){

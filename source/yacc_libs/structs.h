@@ -86,3 +86,9 @@ typedef struct indexedPair
     expr *val;
     struct indexedPair *next;
 } indexedPair;
+
+typedef struct forPrefixJumps
+{
+    unsigned test;
+    unsigned enter; 
+}forPrefixJumps;
