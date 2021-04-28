@@ -24,15 +24,15 @@
     indexedPair* indPair;
     SymbolTableEntry *symTabEntry;
     forPrefixJumps* forPrefJumps;
+    stmt_t *st;
 }
 
 %token <int_value> INTEGER
 %token <real_value> REAL
-%token <string_value> ID
-%token <string_value> STRING
+%token <string_value> ID STRING
 
 %token LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTHESIS RIGHT_PARENTHESIS SEMICOLON COMMA FULLSTOP COLON DOUBLE_FULLSTOP DOUBLE_COLON
-%token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
+%token IF ELSE WHILE FOR FUNCTION BREAK CONTINUE RETURN AND NOT OR LOCAL TRUE FALSE NIL
 %token ASSIGN PLUS MINUS MUL DIV MODULO EQUAL NOT_EQUAL PLUS_PLUS MINUS_MINUS GREATER GREATER_EQUAL LESS LESS_EQUAL
 
 %right ASSIGN
@@ -50,11 +50,11 @@
 %type <exprVal> lvalue expr member primary call elist objectdef const 
 %type <indPair> indexedelem indexed
 %type <callFunc> callsuffix normcall methodcall
-
 %type <string_value> funcname
 %type <un_value>    funcbody ifprefix elseprefix whilestart whilecond M N
 %type <symTabEntry>  funcprefix funcdef
 %type <forPrefJumps> forprefix
+%type <st> stmt stmts loopstmt whilestmt
 
 /*Grammar*/
 %%
@@ -67,21 +67,23 @@ stmt:       expr SEMICOLON              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Expr Statement (stmt -> expr;)\n");
                                             }
-
+                                            $$ = newstmt();
                                             resettemp();
                                         }
             | ifstmt                    {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
-
+                                            $$ = newstmt();
                                             resettemp();
                                         }
             | whilestmt                 {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>While Statement (stmt -> whilestmt)\n");
                                             }
-
+                                            //$$ = newstmt();
+                                            
+                                            $$ = $1;
                                             resettemp();
                                         }
             | forstmt                   {
@@ -90,6 +92,7 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
+                                            $$ = newstmt();
                                         }
             | returnstmt                {
                                             if(TRACE_PRINT){
@@ -97,21 +100,22 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
+
+                                            $$ = newstmt();
                                         }
             | BREAK SEMICOLON           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Break Statement (stmt -> break)\n");
                                             }
-                                            ManageLoopKeywords("break");
-
+                                            $$ = ManageBreak();
+                                            //$$ = newstmt();
                                             resettemp();
                                         }
             | CONTINUE SEMICOLON        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Continue Statement (stmt -> continue;)\n");
                                             }
-                                            ManageLoopKeywords("continue");
-
+                                            $$ = ManageContinue();
                                             resettemp();
                                         }
             | block                     {
@@ -120,6 +124,7 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
+                                            $$ = newstmt();
                                         }
             | funcdef                   {
                                             if(TRACE_PRINT){
@@ -127,6 +132,7 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
+                                            $$ = newstmt();
                                         }
             | SEMICOLON                 {
                                             if(TRACE_PRINT){
@@ -134,11 +140,20 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
+                                            $$ = newstmt();
                                         }
             ;
 
-stmts:      stmts stmt
-            | stmt
+stmts:      stmts stmt                  {
+                                           
+                                            //$$ = newstmt();
+                                            $$->breakList = mergelist($1->breakList, $2->breakList);
+                                            $$->contList = mergelist($1->contList, $2->contList); 
+                                        
+                                        }
+            | stmt                      {
+                                            $$ = $1;
+                                        }
             ;
 
 expr:       lvalue ASSIGN expr          {
@@ -151,6 +166,7 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>OR Expression (expr -> expr or expr)\n");
                                             }
+                                            
                                         }
             | expr AND expr             {
                                             if(TRACE_PRINT){
@@ -273,7 +289,6 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PRIMARY Expression (expr -> primary)\n");
                                             }
-
                                             $$ = $1;
                                         }
             ;
@@ -365,11 +380,20 @@ member:     lvalue FULLSTOP ID                          {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>Call.ID %s (member -> call.ID)\n", $3);
                                                             }
+
+                                                            //ti sto kalo kanoume edw?
+                                                            $$ = member_item($1, $3); 
                                                         }
             | call LEFT_BRACKET expr RIGHT_BRACKET      {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>CALL [ EXPR ] (member -> call[expr])\n");
                                                             }
+
+                                                            //oute edw xerw ti kanoume
+                                                            $1 = emit_iftableitem($1);
+                                                            $$ = newexpr(tableitem_e);
+                                                            $$->sym = $1->sym;
+                                                            $$->index = $3;
                                                         }
             ;
 
@@ -482,11 +506,14 @@ objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[INDEXED] (objectdef -> [indexed])\n");
                                                     }
+
                                                     indexedPair* ptr;
                                                     expr* t = newexpr(newtable_e);
+                                                    
                                                     t->sym = newtemp();
                                                     emit(tablecreate_op, t, NULL, NULL, 0, yylineno);
                                                     ptr = $2;
+                                                    
                                                     while(ptr){
                                                         emit(tablesetelem_op, t, ptr->key, ptr->val, 0, yylineno);
                                                         ptr = ptr->next;
@@ -720,12 +747,11 @@ loopend:                {
             ;            
 
 loopstmt:   loopstart stmt loopend  {
-                                        //$$ = $2; //todo
+                                        $$ = $2; //todo
                                     }
             ;                        
 
 whilestart: WHILE       {
-                            
                             $$ = nextquadlabel();
                         }
             ;
@@ -743,8 +769,10 @@ whilestmt:  whilestart whilecond loopstmt   {
                                             }
                                             emit(jump_op, NULL, NULL, NULL, $1, yylineno);
                                             patchlabel($2, nextquadlabel());
-                                            //patchlist 1
-                                            //pathclist 2
+                                            patchlist($3->breakList, nextquadlabel());
+                                            patchlist($3->contList, $1);
+
+                                            $$ = $3;
                                         }
             ;                                                                                               
 
@@ -771,13 +799,14 @@ forstmt:    forprefix N elist RIGHT_PARENTHESIS N loopstmt N    {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
                                                                 }
-                                                                ManageForStatement($1, $2, $5, $7);
+                                                                ManageForStatement($1, $2, $5, $7, $6);
                                                             }
             | forprefix N RIGHT_PARENTHESIS N loopstmt N        {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
                                                                 }
-                                                                ManageForStatement($1, $2, $4, $6);
+                                                                ManageForStatement($1, $2, $4, $6, $5);
+                                                                
                                                             }
             ;
 
@@ -786,12 +815,14 @@ returnstmt: RETURN SEMICOLON        {
                                             fprintf(ost, "=>ret; (returnstmt -> return;)\n");
                                         }
                                         ManageReturnStatement(NULL);
+                                        
                                     }
             | RETURN expr SEMICOLON {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret EXPR; (returnstmt -> return expr;)\n");
                                         }
                                         ManageReturnStatement($2);
+                                       
                                     }
             ;
 

@@ -533,6 +533,7 @@ FuncStack *FuncStack_init()
         perror("Could not allocate memory for Function Stack");
         exit(EXIT_FAILURE);
     }
+    
     fs->size = 0;
     fs->top = NULL;
 

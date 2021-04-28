@@ -25,7 +25,7 @@ unsigned int scope = 0;
 unsigned int loopcounter = 0;
 unsigned int unamed_functions = 0;
 unsigned int tempcounter = 0;
-unsigned int loop_stack = 0;
+//unsigned int loop_stack = 0;
 
 unsigned compileError = 0;
 unsigned programVarOffset = 0;
@@ -52,7 +52,7 @@ unsigned int currQuad = 0;
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -85,9 +85,8 @@ void exitscopespace();
 void resetformalargsoffset();
 void resetfunctionlocalsoffset();
 void restorecurrscopeoffset(unsigned n);
-void ManageLoopKeywords(char *keyword);
 void ManageReturnStatement();
-void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3);
+void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3, stmt_t *st);
 void printQuads();
 void printQuad(unsigned int i);
 void printExprVal(expr *ex);
@@ -112,6 +111,9 @@ SymbolTableEntry *CheckAddFormal(char *id);
 SymbolTableEntry *ManageIDFunctionDefinition(char *id);
 forPrefixJumps *newForPrefixJump(unsigned test, unsigned enter);
 forPrefixJumps *ManageForPrefix(expr *expr, unsigned M);
+stmt_t *newstmt();
+stmt_t *ManageBreak();
+stmt_t *ManageContinue();
 call *newcall();
 call *ManageMethodCall(expr *elist, char *id);
 call *ManageNormalCall(expr *elist);
@@ -156,7 +158,6 @@ void expand()
 
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line)
 {
-
     if (compileError)
     {
         return;
@@ -385,6 +386,15 @@ SymbolTableEntry *newtemp()
     return sym;
 }
 
+stmt_t *newstmt()
+{
+    stmt_t *s = (stmt_t *)malloc(sizeof(stmt_t));
+    memset((void *)s, 0, sizeof(stmt_t));
+    s->breakList = 0;
+    s->contList = 0;
+    return s;
+}
+
 expr *newexpr(expr_t t)
 {
     expr *e = (expr *)malloc(sizeof(expr));
@@ -476,7 +486,7 @@ expr *member_item(expr *lv, char *name)
 
 expr *make_call(expr *lv, expr *reversed_elist)
 {
-    assert(lv && reversed_elist);
+    assert(lv); //reversed list could be NULL
     expr *func = emit_iftableitem(lv);
     while (reversed_elist)
     {
@@ -812,6 +822,7 @@ SymbolTableEntry *CheckAddFormal(char *id)
     if (checkForLibFunc(id))
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument \"%s\" shadows library function at line %lu\n", id, yylineno);
+        compileError = 1;
         return NULL;
     }
 
@@ -820,12 +831,17 @@ SymbolTableEntry *CheckAddFormal(char *id)
     {
         /*Getting hear means that the current id refers to an already added formal argument*/
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Formal argument already used in function \"%s\" at line %u\n", id, yylineno);
+        compileError = 1;
         return NULL;
     }
 
     /*Getting hear means that the argument name is valid, thus it is added to the scope list and symboltable*/
     entry = SymbolTable_insert(symTab, id, scope, yylineno, FORMAL_ID);
     ScopeTable_insert(scopeTab, entry, scope);
+
+    entry->space = currscopespace();
+    entry->offset = currscopeoffset();
+    incurrscopeoffset();
 
     if (!FuncStack_isEmpty(functionStack)) /*At this point funcStack is never empty: Extra Safety*/
     {
@@ -941,18 +957,42 @@ void ManageReturnStatement(expr *ex)
     emit(ret_op, NULL, NULL, ex, 0, yylineno);
 }
 
-/**
- * @brief Check is the use of break and continue keyword is valid
- * 
- * @param keyword "Break" or "Else"
- */
-void ManageLoopKeywords(char *keyword)
+stmt_t *ManageBreak()
 {
+    stmt_t *breakStmt;
+
+    breakStmt = newstmt();
+    make_stmt(breakStmt); //auto gia kapoio logo to deinxei by reference
     if (loopcounter == 0)
     {
-        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"%s\" statement outside of loop at line %lu\n", keyword, yylineno);
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"break\" statement outside of loop at line %lu\n", yylineno);
+        compileError = 1;
+        return breakStmt;
+    }
+
+    emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+    breakStmt->breakList = newlist(nextquadlabel());
+
+    return breakStmt;
+}
+
+stmt_t *ManageContinue()
+{
+    stmt_t *continueStmt;
+
+    continueStmt = newstmt();
+
+    make_stmt(continueStmt); //auto gia kapoio logo to deinxei by reference
+    if (loopcounter == 0)
+    {
+        fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"continue\" statement outside of loop at line %lu\n", yylineno);
         compileError = 1;
     }
+
+    emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+    continueStmt->contList = newlist(nextquadlabel() - 1);
+
+    return continueStmt;
 }
 
 void printSymTabEntry(SymbolTableEntry *entry)
@@ -1253,6 +1293,7 @@ unsigned int istempname(const char *s)
 {
     return s[0] == '_';
 }
+
 unsigned int istempexpr(expr *e)
 {
     return e->sym && istempname((e->sym->value).varVal->name);
@@ -1269,13 +1310,33 @@ expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
     if (expr1->type == constnum_e && expr2->type == constnum_e)
     {
         expr = newexpr(constnum_e);
+        switch (op)
+        {
+        case add_op:
+            expr->numConst = expr1->numConst + expr2->numConst;
+            break;
+        case sub_op:
+            expr->numConst = expr1->numConst - expr2->numConst;
+            break;
+        case mul_op:
+            expr->numConst = expr1->numConst * expr2->numConst;
+            break;
+        case div_op:
+            expr->numConst = expr1->numConst / expr2->numConst;
+            break;
+        case mod_op:
+            expr->numConst = (int)expr1->numConst % (int)expr2->numConst;
+            break;
+        default:
+            assert(0);
+        }
     }
     else
     {
         expr = newexpr(arithexpr_e);
+        expr->sym = newtemp();
     }
 
-    expr->sym = newtemp();
     emit(op, expr1, expr2, expr, 0, yylineno);
     return expr;
 }
@@ -1339,14 +1400,14 @@ int ManageIfPrefix(expr *ex)
     return ifprefix;
 }
 
-void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3)
+void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3, stmt_t *st)
 {
     patchlabel(forPref->enter, N2 + 1);
     patchlabel(N1, nextquadlabel());
     patchlabel(N2, forPref->test);
     patchlabel(N3, N1 + 1);
-    //patchlist($stmt.breaklist, nextquad());
-    //patchlist($stmt.contlist, $N1 + 1);
+    patchlist(st->breakList, nextquadlabel());
+    patchlist(st->contList, N1 + 1);
 }
 
 forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
@@ -1360,7 +1421,8 @@ forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
 
 void make_stmt(stmt_t *s)
 {
-    s->breakList = s->contList = 0;
+    s->breakList = 0;
+    s->contList = 0;
 }
 
 int newlist(int i)
