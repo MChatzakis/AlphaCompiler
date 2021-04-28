@@ -54,7 +54,7 @@
 %type <un_value>    funcbody ifprefix elseprefix whilestart whilecond M N
 %type <symTabEntry>  funcprefix funcdef
 %type <forPrefJumps> forprefix
-%type <st> stmt stmts loopstmt whilestmt
+%type <st> stmt stmts loopstmt whilestmt block
 
 /*Grammar*/
 %%
@@ -124,7 +124,7 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-                                            $$ = newstmt();
+                                            $$ = $1;
                                         }
             | funcdef                   {
                                             if(TRACE_PRINT){
@@ -147,8 +147,8 @@ stmt:       expr SEMICOLON              {
 stmts:      stmts stmt                  {
                                            
                                             //$$ = newstmt();
-                                            $$->breakList = mergelist($1->breakList, $2->breakList);
-                                            $$->contList = mergelist($1->contList, $2->contList); 
+                                            $$->breakList = mergelist($2->breakList, $1->breakList);
+                                            $$->contList = mergelist($2->contList, $1->contList); 
                                         
                                         }
             | stmt                      {
@@ -568,6 +568,7 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE           {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>{Empty} (block -> {})\n");
                                                             }
+                                                            $$ = newstmt();
                                                         }
             | LEFT_BRACE {scope++;} stmts RIGHT_BRACE   {
                                                             ScopeTable_hide_scope(scopeTab, scope);
@@ -575,6 +576,7 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE           {
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>{STMTS} (block -> {stmts})\n");
                                                             }
+                                                            $$ = $3;
                                                         }
             ;
 

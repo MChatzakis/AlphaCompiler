@@ -971,7 +971,7 @@ stmt_t *ManageBreak()
     }
 
     emit(jump_op, NULL, NULL, NULL, 0, yylineno);
-    breakStmt->breakList = newlist(nextquadlabel());
+    breakStmt->breakList = newlist(nextquadlabel() - 1);
 
     return breakStmt;
 }
@@ -1130,10 +1130,8 @@ void printQuad(unsigned int i)
         fprintf(ost, "-");
     }*/
 
-    if (quads[i].label != 0)
-    {
-        fprintf(ost, "(label: %u) ", quads[i].label);
-    }
+
+    fprintf(ost, "(label: %u) ", quads[i].label);
 
     fprintf(ost, "(line: %u)", quads[i].line);
     fprintf(ost, "\n");
