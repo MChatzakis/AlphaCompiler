@@ -54,7 +54,7 @@
 %type <un_value>    funcbody ifprefix elseprefix whilestart whilecond M N
 %type <symTabEntry>  funcprefix funcdef
 %type <forPrefJumps> forprefix
-%type <st> stmt stmts loopstmt whilestmt block
+%type <st> stmt stmts loopstmt whilestmt block ifstmt
 
 /*Grammar*/
 %%
@@ -74,7 +74,7 @@ stmt:       expr SEMICOLON              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
-                                            $$ = newstmt();
+                                            $$ = $1;
                                             resettemp();
                                         }
             | whilestmt                 {
@@ -728,6 +728,9 @@ ifstmt: ifprefix stmt elseprefix stmt       {
 
                                                 patchlabel($1, $3 + 1);
                                                 patchlabel($3, nextquadlabel());
+                                                $$ = newstmt();
+                                                $$->breakList = mergelist($2->breakList, $4->breakList);
+                                                $$->contList = mergelist($2->contList, $4->contList);
                                             }
         | ifprefix stmt                     {
                                                 if(TRACE_PRINT){
@@ -735,6 +738,7 @@ ifstmt: ifprefix stmt elseprefix stmt       {
                                                 }
 
                                                 patchlabel($1, nextquadlabel());
+                                                $$ = $2;
                                             }
         ;                          
 
