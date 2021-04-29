@@ -52,7 +52,7 @@ unsigned int currQuad = 0;
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -470,7 +470,7 @@ expr *emit_iftableitem(expr *e)
     {
         expr *result = newexpr(var_e);
         result->sym = newtemp();
-        emit(tablegetelem_op, e, e->index, result, 0, yylineno);
+        emit(tablegetelem_op, e->index, e, result, 0, yylineno);
         return result;
     }
 }
@@ -523,9 +523,10 @@ expr *ManageObjectDef(expr *elist)
     int i;
     t = newexpr(newtable_e);
     t->sym = newtemp();
-    emit(tablecreate_op, t, NULL, NULL, 0, yylineno);
+    /*Elist needs to be reversed here*/
+    emit(tablecreate_op, NULL, NULL, t, 0, yylineno);
     for (i = 0; elist; elist = elist->next)
-        emit(tablesetelem_op, t, newexpr_constnum(i++), elist, 0, yylineno);
+        emit(tablesetelem_op, newexpr_constnum(i++), elist, t, 0, yylineno);
 
     return t;
 }
@@ -633,7 +634,7 @@ expr *ManageAssignValue(expr *lval, expr *rval)
 
     if (lval->type == tableitem_e)
     {
-        emit(tablesetelem_op, lval, lval->index, rval, 0, yylineno);
+        emit(tablesetelem_op, lval->index, rval, lval, 0, yylineno);
         newExpr = emit_iftableitem(lval);
         newExpr->type = assignexpr_e;
         return newExpr;
@@ -1130,7 +1131,6 @@ void printQuad(unsigned int i)
         fprintf(ost, "-");
     }*/
 
-
     fprintf(ost, "(label: %u) ", quads[i].label);
 
     fprintf(ost, "(line: %u)", quads[i].line);
@@ -1209,7 +1209,7 @@ expr *ManageLvaluePlusPlus(expr *exVal) //lvalue ++
         expr *val = emit_iftableitem(exVal);
         emit(assign_op, val, NULL, ex, 0, yylineno);
         emit(add_op, val, newexpr_constnum(1), val, 0, yylineno);
-        emit(tablesetelem_op, exVal, exVal->index, val, 0, yylineno);
+        emit(tablesetelem_op, exVal->index, exVal, val, 0, yylineno);
     }
     else
     {
@@ -1229,7 +1229,7 @@ expr *ManagePlusPlusLvalue(expr *exVal) //++lvalue
     {
         ex = emit_iftableitem(exVal);
         emit(add_op, ex, newexpr_constnum(1), ex, 0, yylineno);
-        emit(tablesetelem_op, exVal, exVal->index, ex, 0, yylineno);
+        emit(tablesetelem_op, exVal->index, exVal, ex, 0, yylineno);
     }
     else
     {
@@ -1254,7 +1254,7 @@ expr *ManageLvalueMinusMinus(expr *exVal) //val--
         expr *val = emit_iftableitem(exVal);
         emit(assign_op, val, NULL, ex, 0, yylineno);
         emit(sub_op, val, newexpr_constnum(1), val, 0, yylineno);
-        emit(tablesetelem_op, exVal, exVal->index, val, 0, yylineno);
+        emit(tablesetelem_op, exVal->index, exVal, val, 0, yylineno);
     }
     else
     {
@@ -1274,7 +1274,7 @@ expr *ManageMinusMinusLvalue(expr *exVal) //--val
     {
         ex = emit_iftableitem(exVal);
         emit(sub_op, ex, newexpr_constnum(1), ex, 0, yylineno);
-        emit(tablesetelem_op, exVal, exVal->index, ex, 0, yylineno);
+        emit(tablesetelem_op, exVal->index, exVal, ex, 0, yylineno);
     }
     else
     {

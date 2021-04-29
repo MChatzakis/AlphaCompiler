@@ -54,7 +54,7 @@
 %type <un_value>    funcbody ifprefix elseprefix whilestart whilecond M N
 %type <symTabEntry>  funcprefix funcdef
 %type <forPrefJumps> forprefix
-%type <st> stmt stmts loopstmt whilestmt block ifstmt
+%type <st> stmt stmts loopstmt block ifstmt
 
 /*Grammar*/
 %%
@@ -74,7 +74,8 @@ stmt:       expr SEMICOLON              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
-                                            $$ = $1;
+                                            $$ = $1; //den eimaste sigouroi for that.......
+                                            //$$ = newstmt();
                                             resettemp();
                                         }
             | whilestmt                 {
@@ -83,7 +84,7 @@ stmt:       expr SEMICOLON              {
                                             }
                                             //$$ = newstmt();
                                             
-                                            $$ = $1;
+                                            $$ = newstmt();
                                             resettemp();
                                         }
             | forstmt                   {
@@ -145,11 +146,10 @@ stmt:       expr SEMICOLON              {
             ;
 
 stmts:      stmts stmt                  {
-                                           
                                             //$$ = newstmt();
-                                            $$->breakList = mergelist($2->breakList, $1->breakList);
-                                            $$->contList = mergelist($2->contList, $1->contList); 
-                                        
+                                            $$->breakList = mergelist($1->breakList, $2->breakList);
+                                            $$->contList = mergelist($1->contList, $2->contList); 
+                                            //make_stmt($$);
                                         }
             | stmt                      {
                                             $$ = $1;
@@ -511,11 +511,11 @@ objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
                                                     expr* t = newexpr(newtable_e);
                                                     
                                                     t->sym = newtemp();
-                                                    emit(tablecreate_op, t, NULL, NULL, 0, yylineno);
+                                                    emit(tablecreate_op, NULL, NULL, t, 0, yylineno);
                                                     ptr = $2;
                                                     
                                                     while(ptr){
-                                                        emit(tablesetelem_op, t, ptr->key, ptr->val, 0, yylineno);
+                                                        emit(tablesetelem_op,  ptr->key, ptr->val, t, 0, yylineno);
                                                         ptr = ptr->next;
                                                     }
 
@@ -577,6 +577,7 @@ block:      LEFT_BRACE {scope++;} RIGHT_BRACE           {
                                                                 fprintf(ost, "=>{STMTS} (block -> {stmts})\n");
                                                             }
                                                             $$ = $3;
+                                                            //$$ = newstmt();
                                                         }
             ;
 
@@ -773,12 +774,15 @@ whilestmt:  whilestart whilecond loopstmt   {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>while(EXPR) (whilestmt -> while(expr) stmt)\n");
                                             }
+
                                             emit(jump_op, NULL, NULL, NULL, $1, yylineno);
+                                            
                                             patchlabel($2, nextquadlabel());
+                                            
                                             patchlist($3->breakList, nextquadlabel());
                                             patchlist($3->contList, $1);
 
-                                            $$ = $3;
+                                            //$$ = newstmt();
                                         }
             ;                                                                                               
 
