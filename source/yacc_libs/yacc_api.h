@@ -11,12 +11,12 @@
 #include <math.h>
 
 #include "../utils/utils.h"
-//#include "../symboltable/symboltable.h"
 #include "structs.h"
 
 int yyerror(char *message);
 int yylex(void);
 
+extern unsigned compileError;
 extern int yylineno;
 extern char *yytext;
 extern FILE *yyin;
@@ -25,9 +25,7 @@ unsigned int scope = 0;
 unsigned int loopcounter = 0;
 unsigned int unamed_functions = 0;
 unsigned int tempcounter = 0;
-//unsigned int loop_stack = 0;
 
-unsigned compileError = 0;
 unsigned programVarOffset = 0;
 unsigned functionLocalOffset = 0;
 unsigned formalArgOffset = 0;
@@ -87,8 +85,9 @@ void resetfunctionlocalsoffset();
 void restorecurrscopeoffset(unsigned n);
 void ManageReturnStatement();
 void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3, stmt_t *st);
-void printQuads();
-void printQuad(unsigned int i);
+void printQuads(int verbosePrint);
+void printQuadVerbose(unsigned int i);
+void printQuadFormally(unsigned int i);
 void printExprVal(expr *ex);
 void printSymTabEntry(SymbolTableEntry *entry);
 void check_arith(expr *e);
@@ -104,6 +103,7 @@ int CheckForAssignError(SymbolTableEntry *entry);
 int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope);
 int ManageIfPrefix(expr *ex);
 int is_int(double d);
+int isJumpCode(int i);
 int newlist(int i);
 int mergelist(int l1, int l2);
 SymbolTableEntry *newtemp();
@@ -142,6 +142,9 @@ expr *ManageLvalueMinusMinus(expr *exVal);
 expr *ManageMinusMinusLvalue(expr *exVal);
 expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2);
 expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2);
+expr *reverseExprList(expr *elist);
+expr *ManageIndexedObjectDef(indexedPair *list);
+indexedPair *reverseIndexedPairList(indexedPair *plist);
 
 void expand()
 {
@@ -1050,20 +1053,28 @@ void printExprVal(expr *expr)
         }
         break;
     case constbool_e:
-        fprintf(ost, "%u", expr->boolConst);
+        //fprintf(ost, "%u", expr->boolConst);
+        if (expr->boolConst == 1)
+        {
+            fprintf(ost, "TRUE");
+        }
+        else
+        {
+            fprintf(ost, "FALSE");
+        }
         break;
     case conststring_e:
         fprintf(ost, "\"%s\"", expr->strConst);
         break;
     case nil_e:
-        fprintf(ost, "nil");
+        fprintf(ost, "NIL");
         break;
     default:
         assert(0);
     }
 }
 
-void printQuad(unsigned int i)
+void printQuadVerbose(unsigned int i)
 {
     char *names[26] = {
         "assign",
@@ -1102,11 +1113,7 @@ void printQuad(unsigned int i)
         printExprVal(ex);
         fprintf(ost, "] ");
     }
-    /*else
-    {
-        fprintf(ost, "-");
-    }
-    fprintf(ost, ",");*/
+
     if (quads[i].arg1 != NULL)
     {
         fprintf(ost, "[arg1: ");
@@ -1114,11 +1121,7 @@ void printQuad(unsigned int i)
         printExprVal(ex);
         fprintf(ost, "] ");
     }
-    /*else
-    {
-        fprintf(ost, "-");
-    }
-    fprintf(ost, ",");*/
+
     if (quads[i].arg2 != NULL)
     {
         fprintf(ost, "[arg2: ");
@@ -1126,10 +1129,6 @@ void printQuad(unsigned int i)
         printExprVal(ex);
         fprintf(ost, "] ");
     }
-    /*else
-    {
-        fprintf(ost, "-");
-    }*/
 
     fprintf(ost, "(label: %u) ", quads[i].label);
 
@@ -1137,7 +1136,67 @@ void printQuad(unsigned int i)
     fprintf(ost, "\n");
 }
 
-void printQuads()
+void printQuadFormally(unsigned int i)
+{
+    char *names[26] = {
+        "assign",
+        "add",
+        "sub",
+        "mul",
+        "div",
+        "mod",
+        "uminus",
+        "and",
+        "or",
+        "not",
+        "if_eq",
+        "if_noteq",
+        "if_lesseq",
+        "if_greatereq",
+        "if_less",
+        "if_greater",
+        "call",
+        "param",
+        "ret",
+        "getretval",
+        "funcstart",
+        "funcend",
+        "tablecreate",
+        "tablegetelem",
+        "tablesetelem",
+        "jump"};
+
+    fprintf(ost, "%u: %s ", i, names[quads[i].op]);
+    expr *ex;
+    if (quads[i].result != NULL)
+    {
+        ex = quads[i].result;
+        printExprVal(ex);
+        fprintf(ost, " ");
+    }
+
+    if (quads[i].arg1 != NULL)
+    {
+        ex = quads[i].arg1;
+        printExprVal(ex);
+        fprintf(ost, " ");
+    }
+
+    if (quads[i].arg2 != NULL)
+    {
+        ex = quads[i].arg2;
+        printExprVal(ex);
+        fprintf(ost, " ");
+    }
+
+    if (isJumpCode(i))
+        fprintf(ost, "%u ", quads[i].label);
+
+    //fprintf(ost, "[%u]", quads[i].line);
+    fprintf(ost, "\n");
+}
+
+void printQuads(int verbosePrint)
 {
     unsigned int i;
 
@@ -1146,7 +1205,12 @@ void printQuads()
 
     for (i = 0; i < currQuad; i++)
     {
-        printQuad(i);
+        if (verbosePrint)
+            printQuadVerbose(i);
+        else
+        {
+            printQuadFormally(i);
+        }
     }
 
     fprintf(ost, "-----------------------------------------------------\n");
@@ -1305,7 +1369,7 @@ expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
     check_arith(expr1);
     check_arith(expr2);
 
-    if (expr1->type == constnum_e && expr2->type == constnum_e)
+    /*if (expr1->type == constnum_e && expr2->type == constnum_e)
     {
         expr = newexpr(constnum_e);
         switch (op)
@@ -1333,7 +1397,10 @@ expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
     {
         expr = newexpr(arithexpr_e);
         expr->sym = newtemp();
-    }
+    }*/
+
+    expr = newexpr(arithexpr_e);
+    expr->sym = newtemp();
 
     emit(op, expr1, expr2, expr, 0, yylineno);
     return expr;
@@ -1453,4 +1520,67 @@ void patchlist(int list, int label)
         quads[list].label = label;
         list = next;
     }
+}
+
+expr *reverseExprList(expr *elist)
+{
+    expr *tmp = NULL, *curr = elist, *prev = NULL;
+
+    while (curr)
+    {
+        //printf("??\n");
+        tmp = curr->next;
+
+        curr->next = prev;
+        prev = curr;
+
+        curr = tmp;
+    }
+
+    return prev;
+}
+
+indexedPair *reverseIndexedPairList(indexedPair *plist)
+{
+    indexedPair *tmp = NULL, *curr = plist, *prev = NULL;
+
+    while (curr)
+    {
+        tmp = curr->next;
+
+        curr->next = prev;
+        prev = curr;
+
+        curr = tmp;
+    }
+
+    return prev;
+}
+
+expr *ManageIndexedObjectDef(indexedPair *list)
+{
+    expr *t = newexpr(newtable_e);
+    indexedPair *ptr;
+
+    t->sym = newtemp();
+    emit(tablecreate_op, NULL, NULL, t, 0, yylineno);
+    ptr = list;
+
+    while (ptr)
+    {
+        emit(tablesetelem_op, ptr->key, ptr->val, t, 0, yylineno);
+        ptr = ptr->next;
+    }
+
+    return t;
+}
+
+int isJumpCode(int i)
+{
+    quad q = quads[i];
+    if ((q.op >= 10 && q.op <= 15) || q.op == 25)
+    { //?????
+        return 1;
+    }
+    return 0;
 }

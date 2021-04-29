@@ -31,6 +31,8 @@
     
     //The default string size
     #define DEFAULT_STR_SIZE 128
+
+    unsigned compileError = 0;
 %}
 
 %option outfile = "scanner.c"
@@ -517,6 +519,7 @@ unknown_token .
 
                     if(!valid){
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: String starting at line %u has not closed.\n", starting_line);
+                        compileError = 1;
                     }
                     else{
                         //alpha_token_insert((alpha_token_t *)ylval, starting_line, yylineno, str, STRING, "STRING"); 
@@ -588,6 +591,7 @@ unknown_token .
                             printf("Den exoun kleisei ta sxolia!\n");
                         }
                         fprintf_red(stderr ,"[Lexical Analysis] -- ERROR: Comment Never Ends at line %u\n", comment_stack_pop(cs));
+                        compileError = 1;
                     }
                     
                     comment_stack_free(cs);
@@ -596,6 +600,7 @@ unknown_token .
 
 {unknown_token}     {
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: Unkown token \"%s\" given at line %d\n",yytext, yylineno);
+                        compileError = 1;
                     }
 
 %%

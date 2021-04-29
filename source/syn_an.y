@@ -503,29 +503,22 @@ elist:      expr                {
             ;
 
 objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
+                                                    indexedPair *p;
+
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[INDEXED] (objectdef -> [indexed])\n");
                                                     }
 
-                                                    indexedPair* ptr;
-                                                    expr* t = newexpr(newtable_e);
-                                                    
-                                                    t->sym = newtemp();
-                                                    emit(tablecreate_op, NULL, NULL, t, 0, yylineno);
-                                                    ptr = $2;
-                                                    
-                                                    while(ptr){
-                                                        emit(tablesetelem_op,  ptr->key, ptr->val, t, 0, yylineno);
-                                                        ptr = ptr->next;
-                                                    }
-
-                                                    $$ = t;
+                                                    p = reverseIndexedPairList($2);
+                                                    $$ = ManageIndexedObjectDef(p);
                                                 }
             | LEFT_BRACKET elist RIGHT_BRACKET  {
+                                                    expr *rev;
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[ELIST] (objectdef -> [ELIST])\n");
                                                     }
-                                                    $$ = ManageObjectDef($2);
+                                                    rev = reverseExprList($2);
+                                                    $$ = ManageObjectDef(rev);
                                                 }
             | LEFT_BRACKET RIGHT_BRACKET        {
                                                     if(TRACE_PRINT){
@@ -900,7 +893,8 @@ int main(int argc, char **argv){
     //SymbolTable_print(symTab, ost);
 
     if(!compileError){
-        printQuads();
+        printQuads(1);
+        printQuads(0);
     }
     else{
         fprintf_red(stderr, "[Alpha Compiler] -- COMPILATION ERROR: Intermediate code generation failed.\n");

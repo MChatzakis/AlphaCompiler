@@ -16,4 +16,6 @@ The parser uses lex to detect the tokens ignoring whitespaces, and manipulates t
 
 The Symboltable library contains the symboltable structure (to store every symbol), the scope list (to keep together symbols of the same scope), the function argument list (to keep the arguments of a function) and the function stack (to check symbol accessibility and to match every formal argument to its corresponding function).
 
+## Intermediate Code Generation:
+
 
