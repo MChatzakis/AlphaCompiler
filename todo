@@ -1,11 +1,16 @@
 =================================
 TODO:
-1) Meriki apotimisi / Oloklirwsi kwdika gia ola ta expressions ( + Metatropi vals se booleans )
-2) Check oti me tous neous kanones doylevei (palia tests) kai den trwei seg
-3) Functors
+0) Stmt allocation
+
+1) Metatropi vals se booleans
+
+3) Functors => ask
+
 4) Na ksanadoume tis krifes metavlties sto telos tou lecture 10
-5) Table elist na kanoume reverse (i kapoia kaliteri lisi)
-6) Read FAQ
+
+5) Read FAQ
+
+2) Check oti me tous neous kanones doylevei (palia tests) kai den trwei seg
 
 ================================
 After TODO:

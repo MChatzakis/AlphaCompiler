@@ -50,7 +50,7 @@ unsigned int currQuad = 0;
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -93,6 +93,7 @@ void printSymTabEntry(SymbolTableEntry *entry);
 void check_arith(expr *e);
 void make_stmt(stmt_t *s);
 void patchlist(int list, int label);
+void partEvaluation(expr *rval);
 enum scopespace_t currscopespace();
 unsigned currscopeoffset();
 unsigned nextquadlabel();
@@ -144,6 +145,9 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2);
 expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2);
 expr *reverseExprList(expr *elist);
 expr *ManageIndexedObjectDef(indexedPair *list);
+expr *ManageANDexpression(expr *ex1, expr *ex2, int qd);
+expr *ManageORexpression(expr *ex1, expr *ex2, int qd);
+expr *valToBool(expr *ex);
 indexedPair *reverseIndexedPairList(indexedPair *plist);
 
 void expand()
@@ -635,6 +639,8 @@ expr *ManageAssignValue(expr *lval, expr *rval)
 
     assert(lval && rval);
 
+    partEvaluation(rval);
+
     if (lval->type == tableitem_e)
     {
         emit(tablesetelem_op, lval->index, rval, lval, 0, yylineno);
@@ -644,7 +650,6 @@ expr *ManageAssignValue(expr *lval, expr *rval)
     }
     else
     {
-        //printf("IM IN\n");
         entry = lval->sym;
 
         if (entry == NULL || CheckForAssignError(entry))
@@ -653,7 +658,6 @@ expr *ManageAssignValue(expr *lval, expr *rval)
             return newexpr(undef_e);
         }
 
-        //okay
         emit(assign_op, rval, NULL, lval, 0, yylineno);
 
         newExpr = newexpr(assignexpr_e);
@@ -662,6 +666,19 @@ expr *ManageAssignValue(expr *lval, expr *rval)
         emit(assign_op, lval, NULL, newExpr, 0, yylineno);
 
         return newExpr;
+    }
+}
+
+void partEvaluation(expr *rval)
+{
+    assert(rval);
+    if (rval->type == boolexpr_e)
+    {
+        patchlist(rval->truelist, nextquadlabel());
+        emit(assign_op, newexpr_constbool(1), NULL, rval, 0, yylineno);
+        emit(jump_op, NULL, NULL, NULL, nextquadlabel() + 2, yylineno);
+        patchlist(rval->falselist, nextquadlabel());
+        emit(assign_op, newexpr_constbool(0), NULL, rval, 0, yylineno);
     }
 }
 
@@ -1203,7 +1220,7 @@ void printQuads(int verbosePrint)
     fprintf(ost, "\n----------------------- QUADS -----------------------\n");
     //fprintf(ost, "#quad,opcode,result,arg1,arg2,label,line\n");
 
-    for (i = 0; i < currQuad; i++)
+    for (i = 1; i < currQuad; i++)
     {
         if (verbosePrint)
             printQuadVerbose(i);
@@ -1256,7 +1273,9 @@ expr *ManageNot(expr *exVal)
 
     ex = newexpr(boolexpr_e);
     ex->sym = newtemp();
-    emit(not_op, exVal, NULL, ex, 0, 0);
+    //emit(not_op, exVal, NULL, ex, 0, 0);
+    ex->truelist = exVal->falselist;
+    ex->falselist = exVal->truelist;
 
     return ex;
 }
@@ -1415,9 +1434,8 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
     check_arith(ex1);
     check_arith(ex2);
 
-    if (ex1->type == constnum_e && ex2->type == constnum_e)
+    /*if (ex1->type == constnum_e && ex2->type == constnum_e)
     {
-        //den paragetai kwdikas leei sto lec
         ex = newexpr(constbool_e);
         switch (op)
         {
@@ -1447,12 +1465,20 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
     {
         ex = newexpr(boolexpr_e);
         ex->sym = newtemp();
-        emit(op, ex1, ex2, NULL, nextquadlabel() + 3, yylineno);
-        emit(assign_op, newexpr_constbool(0), NULL, ex, 0, yylineno);
-        emit(jump_op, NULL, NULL, NULL, nextquadlabel() + 2, yylineno);
-        emit(assign_op, newexpr_constbool(1), NULL, ex, 0, yylineno);
-    }
+        ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
+        ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
 
+        emit(op, ex1, ex2, NULL, 0, yylineno); //???
+        emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+    }*/
+    //na rwtisoume!
+    ex = newexpr(boolexpr_e);
+    ex->sym = newtemp();
+    ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
+    ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
+
+    emit(op, ex1, ex2, NULL, 0, yylineno); //???
+    emit(jump_op, NULL, NULL, NULL, 0, yylineno);
     return ex;
 }
 
@@ -1516,6 +1542,7 @@ void patchlist(int list, int label)
 {
     while (list)
     {
+        printf("sda\n");
         int next = quads[list].label;
         quads[list].label = label;
         list = next;
@@ -1528,7 +1555,6 @@ expr *reverseExprList(expr *elist)
 
     while (curr)
     {
-        //printf("??\n");
         tmp = curr->next;
 
         curr->next = prev;
@@ -1579,8 +1605,61 @@ int isJumpCode(int i)
 {
     quad q = quads[i];
     if ((q.op >= 10 && q.op <= 15) || q.op == 25)
-    { //?????
+    {
         return 1;
     }
     return 0;
+}
+
+expr *ManageANDexpression(expr *ex1, expr *ex2, int qd)
+{
+    expr *e;
+    e = newexpr(boolexpr_e);
+    e->sym = newtemp();
+
+    patchlist(ex1->truelist, qd);
+
+    e->truelist = ex2->truelist;
+    e->falselist = mergelist(ex1->falselist, ex2->falselist);
+    return e;
+}
+
+expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
+{
+    expr *e;
+    e = newexpr(boolexpr_e);
+    e->sym = newtemp();
+
+    patchlist(ex1->falselist, qd);
+    e->truelist = mergelist(ex1->truelist, ex2->truelist);
+    e->falselist = ex2->falselist;
+
+    return e;
+}
+
+expr *valToBool(expr *ex)
+{
+    switch (ex->type)
+    {
+    case libraryfunc_e:
+        return newexpr_constbool(1);
+        break;
+    case programfunc_e:
+        return newexpr_constbool(1);
+        break;
+    case nil_e:
+        return newexpr_constbool(0);
+        break;
+    case constnum_e:
+        return newexpr_constbool(ex->numConst != 0);
+        break;
+    case conststring_e:
+        return newexpr_constbool(!!strcmp(ex->strConst, ""));
+        break;
+    case newtable_e:
+        return newexpr_constbool(1);
+        break;
+    default:
+        return ex;
+    }
 }

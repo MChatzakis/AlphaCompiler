@@ -61,6 +61,9 @@ typedef struct expr
     char *strConst;
     unsigned char boolConst;
     struct expr *next;
+
+    int truelist;
+    int falselist;
 } expr;
 
 typedef struct quad

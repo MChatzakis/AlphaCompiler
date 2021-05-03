@@ -51,7 +51,7 @@
 %type <indPair> indexedelem indexed
 %type <callFunc> callsuffix normcall methodcall
 %type <string_value> funcname
-%type <un_value>    funcbody ifprefix elseprefix whilestart whilecond M N
+%type <un_value> gq funcbody ifprefix elseprefix whilestart whilecond M N
 %type <symTabEntry>  funcprefix funcdef
 %type <forPrefJumps> forprefix
 %type <st> stmt stmts loopstmt block ifstmt
@@ -68,6 +68,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Expr Statement (stmt -> expr;)\n");
                                             }
                                             $$ = newstmt();
+                                            partEvaluation($1);
                                             resettemp();
                                         }
             | ifstmt                    {
@@ -156,22 +157,28 @@ stmts:      stmts stmt                  {
                                         }
             ;
 
+gq:         {$$ = nextquadlabel();}
+            ;
+
 expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Assignment Expression (expr -> lvalue = expr)\n");
                                             }
                                             $$ = ManageAssignValue($1, $3);
                                         }
-            | expr OR expr              {
+            | expr OR gq expr              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>OR Expression (expr -> expr or expr)\n");
                                             }
+
+                                            $$ = ManageORexpression($1,$4,$3);
                                             
                                         }
-            | expr AND expr             {
+            | expr AND gq expr             {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>AND Expression (expr -> expr and expr)\n");
                                             }
+                                            $$ = ManageANDexpression($1,$4,$3);
                                         }
             | expr NOT_EQUAL expr       {
                                             if(TRACE_PRINT){
@@ -410,7 +417,6 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
                                                                 }                                       
                                                                 
                                                                 $$ = make_call($1, NULL);
-
                                                             }
             | lvalue callsuffix                             {
                                                                 if(TRACE_PRINT){
@@ -747,7 +753,7 @@ loopend:                {
             ;            
 
 loopstmt:   loopstart stmt loopend  {
-                                        $$ = $2; //todo
+                                        $$ = $2;
                                     }
             ;                        
 
@@ -886,6 +892,9 @@ int main(int argc, char **argv){
     scopeoffsetstack = NumberStack_init();
 
     SymbolTable_add_libfun(symTab, scopeTab);
+
+    //expand();
+    emit(jump_op, NULL, NULL, NULL, 0, yylineno);
 
     yyparse();
 
