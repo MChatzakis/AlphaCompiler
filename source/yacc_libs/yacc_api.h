@@ -674,6 +674,7 @@ void partEvaluation(expr *rval)
     assert(rval);
     if (rval->type == boolexpr_e)
     {
+        printf("patching putch\n");
         patchlist(rval->truelist, nextquadlabel());
         emit(assign_op, newexpr_constbool(1), NULL, rval, 0, yylineno);
         emit(jump_op, NULL, NULL, NULL, nextquadlabel() + 2, yylineno);
@@ -1542,7 +1543,7 @@ void patchlist(int list, int label)
 {
     while (list)
     {
-        printf("sda\n");
+        printf("quad[%d].label == %d\n", list, label);
         int next = quads[list].label;
         quads[list].label = label;
         list = next;
@@ -1637,9 +1638,10 @@ expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
     return e;
 }
 
-expr *valToBool(expr *ex)
+expr *valToBool(expr *ex1)
 {
-    switch (ex->type)
+
+    /*switch (ex->type)
     {
     case libraryfunc_e:
         return newexpr_constbool(1);
@@ -1661,5 +1663,22 @@ expr *valToBool(expr *ex)
         break;
     default:
         return ex;
+    }*/
+    expr *ex;
+    if (ex1->type != boolexpr_e)
+    {
+        ex = newexpr(boolexpr_e);
+        ex->sym = newtemp();
+
+        ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
+        ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
+        emit(if_eq_op, ex1, newexpr_constbool(1), NULL, 0 , yylineno);
+        emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+        printf("Ex truelist... %d\n", ex->truelist);
+        printf("Ex falselist... %d\n", ex->falselist);
+
+        return ex;
     }
+    else
+        return ex1;
 }

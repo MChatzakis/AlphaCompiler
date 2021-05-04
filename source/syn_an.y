@@ -166,19 +166,22 @@ expr:       lvalue ASSIGN expr          {
                                             }
                                             $$ = ManageAssignValue($1, $3);
                                         }
-            | expr OR gq expr              {
+            | expr {$1 = valToBool($1);} OR gq expr              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>OR Expression (expr -> expr or expr)\n");
                                             }
-
-                                            $$ = ManageORexpression($1,$4,$3);
+                                            
+                                            $5 = valToBool($5);
+                                            $$ = ManageORexpression($1,$5,$4);
                                             
                                         }
-            | expr AND gq expr             {
+            | expr {$1 = valToBool($1);} AND gq expr             {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>AND Expression (expr -> expr and expr)\n");
                                             }
-                                            $$ = ManageANDexpression($1,$4,$3);
+                                            
+                                            $5 = valToBool($5);
+                                            $$ = ManageANDexpression($1,$5,$4);
                                         }
             | expr NOT_EQUAL expr       {
                                             if(TRACE_PRINT){
