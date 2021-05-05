@@ -762,12 +762,21 @@ ifstmt: ifprefix stmt elseprefix stmt       {
                                                 if(TRACE_PRINT){
                                                     fprintf(ost, "=>IF ELSE (ifstmt -> if(expr)stmt else stmt)\n");
                                                 }
+                                                int breaklist1 = 0, breaklist2 = 0, contlist1 = 0, contlist2 = 0;
 
                                                 patchlabel($1, $3 + 1);
                                                 patchlabel($3, nextquadlabel());
                                                 $$ = newstmt();
-                                                $$->breakList = mergelist($2->breakList, $4->breakList);
-                                                $$->contList = mergelist($2->contList, $4->contList);
+                                                if($2 != NULL){
+                                                    breaklist1 = $2->breakList;
+                                                    contlist1 = $2->contList;
+                                                }
+                                                if($4 != NULL){
+                                                    breaklist2 = $4->breakList;
+                                                    contlist2 = $4->contList;
+                                                }
+                                                $$->breakList = mergelist(breaklist1, breaklist2);
+                                                $$->contList = mergelist(contlist1, contlist2);
                                             }
         | ifprefix stmt                     {
                                                 if(TRACE_PRINT){
