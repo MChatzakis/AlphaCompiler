@@ -518,7 +518,9 @@ expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
     {
         t = lvalue;
         lvalue = emit_iftableitem(member_item(t, callsuffix->name));
-        callsuffix->elist->next = t; //vazei to onoma sto elist?
+
+        if (callsuffix->elist != NULL) /* ! fix gia to seg sta palia test Grammar kai tree! */
+            callsuffix->elist->next = t; //vazei to onoma sto elist?
     }
     callFunc = make_call(lvalue, callsuffix->elist);
     return callFunc;
@@ -973,7 +975,7 @@ void ManageReturnStatement(expr *ex)
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"return\" statement outside of function at line %lu\n", yylineno);
         compileError = 1;
-        return;
+        //return;
     }
 
     emit(ret_op, NULL, NULL, ex, 0, yylineno);
@@ -1251,7 +1253,7 @@ void check_arith(expr *e)
         e->type == libraryfunc_e ||
         e->type == boolexpr_e)
     {
-        fprintf_red(stderr, "Illegal expression used!\n");
+        fprintf_red(stderr, "[Alpha Compiler] -- ERROR: Illegal (non arithmetic) expression used in line %u\n", yylineno);
         compileError = 1;
     }
 }
@@ -1433,8 +1435,8 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
 
     assert(ex1 && ex2);
 
-    check_arith(ex1);
-    check_arith(ex2);
+    //check_arith(ex1);
+    //check_arith(ex2);
 
     ex = newexpr(boolexpr_e);
     ex->sym = newtemp(); /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
@@ -1609,7 +1611,7 @@ expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
     //e->sym = istempexpr(ex2) ? ex2->sym : newtemp();
     e->sym = newtemp();
     patchlist(ex1->falselist, qd);
-    printf("after patch list!\n");
+    //printf("after patch list!\n");
     e->truelist = mergelist(ex1->truelist, ex2->truelist);
     e->falselist = ex2->falselist;
 
@@ -1618,7 +1620,6 @@ expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
 
 expr *valToBool(expr *ex1, int truejump, int falsejump)
 {
-
     expr *ex;
     if (ex1->type != boolexpr_e)
     {
@@ -1629,8 +1630,8 @@ expr *valToBool(expr *ex1, int truejump, int falsejump)
         ex->falselist = newlist(falsejump); //to idio thema (mipws na kanoume ena arxiko allocation?)
         emit(if_eq_op, ex1, newexpr_constbool(1), NULL, 0, yylineno);
         emit(jump_op, NULL, NULL, NULL, 0, yylineno);
-        printf("Ex truelist... %d\n", ex->truelist);
-        printf("Ex falselist... %d\n", ex->falselist);
+        //printf("Ex truelist... %d\n", ex->truelist);
+        //printf("Ex falselist... %d\n", ex->falselist);
 
         return ex;
     }

@@ -955,13 +955,12 @@ int main(int argc, char **argv){
 
     SymbolTable_add_libfun(symTab, scopeTab);
 
-    //expand();
     emit(jump_op, NULL, NULL, NULL, 0, yylineno);
 
     yyparse();
 
-    ScopeTable_print(scopeTab, ost);
     //SymbolTable_print(symTab, ost);
+    ScopeTable_print(scopeTab, ost);
 
     if(!compileError){
         printQuads(1);

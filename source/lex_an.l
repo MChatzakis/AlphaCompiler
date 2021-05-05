@@ -33,9 +33,9 @@
     #define DEFAULT_STR_SIZE 128
 
     unsigned compileError = 0;
+    //%option outfile = "scanner.c"
 %}
 
-%option outfile = "scanner.c"
 %option noyywrap
 %option yylineno
 

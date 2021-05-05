@@ -1,24 +1,24 @@
-LEX_FILE = lex_an.l
-LEX_C_FILE = scanner.c
+LEX_FILE = ../source/lex_an.l
+LEX_C_FILE = ../source/scanner.c
 
-YACC_FILE = syn_an.y
-YACC_C_FILE = parser.c
-YACC_H_FILE = parser.h
+YACC_FILE = ../source/syn_an.y
+YACC_C_FILE = ../source/parser.c
+YACC_H_FILE = ../source/parser.h
 
-STACK_FILE = lex_libs/comment_stack/comment_stack.h
-STACK_IMP_FILE = lex_libs/comment_stack/comment_stack.c
+STACK_FILE = ../source/lex_libs/comment_stack/comment_stack.h
+STACK_IMP_FILE = ../source/lex_libs/comment_stack/comment_stack.c
 
-UTIL_FILE = utils/utils.h
-UTIL_IMP_FILE = utils/utils.c
+UTIL_FILE = ../source/utils/utils.h
+UTIL_IMP_FILE = ../source/utils/utils.c
 
-STRUCTS = yacc_libs/structs.h
+STRUCTS = ../source/yacc_libs/structs.h
 
-SYMBOL_TABLE = symboltable/symboltable.h
-SYMBOL_TABLE_IMP = symboltable/symboltable.c
+SYMBOL_TABLE = ../source/symboltable/symboltable.h
+SYMBOL_TABLE_IMP = ../source/symboltable/symboltable.c
 
-YACC_API = yacc_libs/yacc_api.h
+YACC_API = ../source/yacc_libs/yacc_api.h
 
-EXEC = calc
+EXEC = acc
 
 all: yacc lex gcc
 
@@ -36,4 +36,4 @@ clean:
 	rm -f $(LEX_C_FILE)
 	rm -f $(YACC_C_FILE)
 	rm -f $(YACC_H_FILE)
-	rm -f parser.output
+	rm -f ../source/parser.output
