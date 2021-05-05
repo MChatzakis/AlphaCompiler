@@ -147,7 +147,7 @@ expr *reverseExprList(expr *elist);
 expr *ManageIndexedObjectDef(indexedPair *list);
 expr *ManageANDexpression(expr *ex1, expr *ex2, int qd);
 expr *ManageORexpression(expr *ex1, expr *ex2, int qd);
-expr *valToBool(expr *ex);
+expr *valToBool(expr *ex, int truej, int falsej);
 indexedPair *reverseIndexedPairList(indexedPair *plist);
 
 void expand()
@@ -1632,13 +1632,14 @@ expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
     e->sym = newtemp();
 
     patchlist(ex1->falselist, qd);
+    printf("after patch list!\n");
     e->truelist = mergelist(ex1->truelist, ex2->truelist);
     e->falselist = ex2->falselist;
 
     return e;
 }
 
-expr *valToBool(expr *ex1)
+expr *valToBool(expr *ex1, int truejump, int falsejump)
 {
 
     /*switch (ex->type)
@@ -1670,8 +1671,8 @@ expr *valToBool(expr *ex1)
         ex = newexpr(boolexpr_e);
         ex->sym = newtemp();
 
-        ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
-        ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
+        ex->truelist = newlist(truejump);      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
+        ex->falselist = newlist(falsejump); //to idio thema (mipws na kanoume ena arxiko allocation?)
         emit(if_eq_op, ex1, newexpr_constbool(1), NULL, 0 , yylineno);
         emit(jump_op, NULL, NULL, NULL, 0, yylineno);
         printf("Ex truelist... %d\n", ex->truelist);
