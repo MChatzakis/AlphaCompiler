@@ -174,16 +174,16 @@ expr:       lvalue ASSIGN expr          {
                                             }
 
                                             $5 = valToBool($5, nextquadlabel(), nextquadlabel()+1);
-                                            
                                             $$ = ManageORexpression($1,$5,$4);
                                         }
-            | expr AND gq expr             {
+            | expr AND { $1 = valToBool($1, nextquadlabel(),  nextquadlabel() + 1); } 
+                                        gq expr             {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>AND Expression (expr -> expr and expr)\n");
                                             }
                                             
-                                            //$5 = valToBool($5);
-                                            $$ = ManageANDexpression($1,$4,$3);
+                                            $5 = valToBool($5, nextquadlabel(), nextquadlabel()+1);
+                                            $$ = ManageANDexpression($1,$5,$4);
                                         }
             | expr NOT_EQUAL expr       {
                                             if(TRACE_PRINT){
