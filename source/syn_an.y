@@ -67,26 +67,31 @@ stmt:       expr SEMICOLON              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Expr Statement (stmt -> expr;)\n");
                                             }
-                                            $$ = newstmt();
+                                            
                                             partEvaluation($1);
                                             resettemp();
+                                            
+                                            //$$ = newstmt();
+                                            $$ = NULL;
                                         }
             | ifstmt                    {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
-                                            $$ = $1; //den eimaste sigouroi for that.......
-                                            //$$ = newstmt();
+
                                             resettemp();
+
+                                            $$ = $1; //den eimaste sigouroi
                                         }
             | whilestmt                 {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>While Statement (stmt -> whilestmt)\n");
                                             }
-                                            //$$ = newstmt();
                                             
-                                            $$ = newstmt();
                                             resettemp();
+
+                                            //$$ = newstmt();
+                                            $$ = NULL;
                                         }
             | forstmt                   {
                                             if(TRACE_PRINT){
@@ -94,7 +99,9 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-                                            $$ = newstmt();
+
+                                            //$$ = newstmt();
+                                            $$ = NULL;
                                         }
             | returnstmt                {
                                             if(TRACE_PRINT){
@@ -103,22 +110,26 @@ stmt:       expr SEMICOLON              {
 
                                             resettemp();
 
-                                            $$ = newstmt();
+                                            //$$ = newstmt();
+                                            $$ = NULL;
                                         }
             | BREAK SEMICOLON           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Break Statement (stmt -> break)\n");
                                             }
-                                            $$ = ManageBreak();
-                                            //$$ = newstmt();
+
                                             resettemp();
+                                            
+                                            $$ = ManageBreak();
                                         }
             | CONTINUE SEMICOLON        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Continue Statement (stmt -> continue;)\n");
                                             }
-                                            $$ = ManageContinue();
+                                            
                                             resettemp();
+                                            
+                                            $$ = ManageContinue();
                                         }
             | block                     {
                                             if(TRACE_PRINT){
@@ -126,6 +137,7 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
+                                            
                                             $$ = $1;
                                         }
             | funcdef                   {
@@ -134,7 +146,9 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-                                            $$ = newstmt();
+                                            
+                                            //$$ = newstmt();
+                                            $$ = NULL;
                                         }
             | SEMICOLON                 {
                                             if(TRACE_PRINT){
@@ -142,15 +156,32 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-                                            $$ = newstmt();
+                                            
+                                            //$$ = newstmt();
+                                            $$ = NULL;
                                         }
             ;
 
 stmts:      stmts stmt                  {
-                                            //$$ = newstmt();
-                                            $$->breakList = mergelist($1->breakList, $2->breakList);
-                                            $$->contList = mergelist($1->contList, $2->contList); 
-                                            //make_stmt($$);
+                                            //$$->breakList = mergelist($1->breakList, $2->breakList);
+                                            //$$->contList = mergelist($1->contList, $2->contList); 
+                                            
+                                            int breaklist1 = 0,breaklist2 = 0, contlist1 = 0, contlist2 = 0; 
+                                            
+                                                if($1 != NULL){
+                                                    breaklist1 = $1->breakList;
+                                                    contlist1 = $1->contList;
+                                                    //free stmt
+                                                }
+
+                                                if($2 != NULL){
+                                                    breaklist2 = $2->breakList;
+                                                    contlist2 = $2->contList;
+                                                }
+
+                                                $$ = newstmt();
+                                                $$->breakList = mergelist(breaklist1, breaklist2);
+                                                $$->contList = mergelist(contlist1, contlist2); 
                                         }
             | stmt                      {
                                             $$ = $1;
@@ -184,6 +215,7 @@ expr:       lvalue ASSIGN expr          {
                                             
                                             $5 = valToBool($5, nextquadlabel(), nextquadlabel()+1);
                                             $$ = ManageANDexpression($1,$5,$4);
+                                            //resettemp();
                                         }
             | expr NOT_EQUAL expr       {
                                             if(TRACE_PRINT){
@@ -768,13 +800,17 @@ whilestart: WHILE       {
             ;
 
 whilecond:  LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+                                                        partEvaluation($2);
                                                         emit(if_eq_op, $2, newexpr_constbool(1), NULL, nextquadlabel() + 2, yylineno);
                                                         $$ = nextquadlabel();
                                                         emit(jump_op, NULL, NULL, NULL, 0, yylineno);
                                                     }
             ;
 
-whilestmt:  whilestart whilecond loopstmt   {
+whilestmt:  whilestart whilecond loopstmt   
+                                        {
+                                            int bl = 0, cl = 0;
+
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>while(EXPR) (whilestmt -> while(expr) stmt)\n");
                                             }
@@ -783,8 +819,13 @@ whilestmt:  whilestart whilecond loopstmt   {
                                             
                                             patchlabel($2, nextquadlabel());
                                             
-                                            patchlist($3->breakList, nextquadlabel());
-                                            patchlist($3->contList, $1);
+                                            if($3 != NULL){
+                                                bl = $3->breakList;
+                                                cl = $3->contList;
+                                            }
+
+                                            patchlist(bl, nextquadlabel());
+                                            patchlist(cl, $1);
 
                                             //$$ = newstmt();
                                         }
@@ -801,10 +842,17 @@ M:          {
             }
     ;
 
-forprefix:  FOR LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON   {
+forprefix:  FOR LEFT_PARENTHESIS elist SEMICOLON M expr 
+
+{ 
+    //$6 = valToBool($6, nextquadlabel(), nextquadlabel()+1);
+    } 
+            SEMICOLON   {
                                                                         $$ = ManageForPrefix($6, $5);
                                                                     }
-            | FOR LEFT_PARENTHESIS SEMICOLON M expr SEMICOLON       {
+            | FOR LEFT_PARENTHESIS SEMICOLON M expr  {
+                    //$5 = valToBool($5, nextquadlabel(), nextquadlabel()+1);
+                                                        } SEMICOLON       {
                                                                         $$ = ManageForPrefix($5, $4);
                                                                     }
             ;

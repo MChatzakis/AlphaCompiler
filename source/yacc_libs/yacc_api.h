@@ -50,7 +50,7 @@ unsigned int currQuad = 0;
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -674,7 +674,7 @@ void partEvaluation(expr *rval)
     assert(rval);
     if (rval->type == boolexpr_e)
     {
-        printf("patching putch\n");
+        //printf("patching putch\n");
         patchlist(rval->truelist, nextquadlabel());
         emit(assign_op, newexpr_constbool(1), NULL, rval, 0, yylineno);
         emit(jump_op, NULL, NULL, NULL, nextquadlabel() + 2, yylineno);
@@ -1271,9 +1271,10 @@ expr *ManageUminus(expr *exVal)
 expr *ManageNot(expr *exVal)
 {
     expr *ex;
-
+    exVal = valToBool(exVal, nextquadlabel(), nextquadlabel() + 1);
     ex = newexpr(boolexpr_e);
-    ex->sym = newtemp();
+    //if(exVal->sym)
+    ex->sym = exVal->sym;
     //emit(not_op, exVal, NULL, ex, 0, 0);
     ex->truelist = exVal->falselist;
     ex->falselist = exVal->truelist;
@@ -1373,7 +1374,7 @@ expr *ManageMinusMinusLvalue(expr *exVal) //--val
 
 unsigned int istempname(const char *s)
 {
-    return s[0] == '_';
+    return s[0] == '_' && s[1] == 'v';
 }
 
 unsigned int istempexpr(expr *e)
@@ -1435,46 +1436,10 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
     check_arith(ex1);
     check_arith(ex2);
 
-    /*if (ex1->type == constnum_e && ex2->type == constnum_e)
-    {
-        ex = newexpr(constbool_e);
-        switch (op)
-        {
-        case if_greater_op: //>
-            ex->boolConst = (ex1->numConst > ex2->numConst);
-            break;
-        case if_less_op: //<
-            ex->boolConst = (ex1->numConst < ex2->numConst);
-            break;
-        case if_greatereq_op: //>=
-            ex->boolConst = (ex1->numConst >= ex2->numConst);
-            break;
-        case if_lesseq_op: //<=
-            ex->boolConst = (ex1->numConst <= ex2->numConst);
-            break;
-        case if_noteq_op: // !=
-            ex->boolConst = (ex1->numConst != ex2->numConst);
-            break;
-        case if_eq_op: // ==
-            ex->boolConst = (ex1->numConst == ex2->numConst);
-            break;
-        default:
-            assert(0);
-        }
-    }
-    else
-    {
-        ex = newexpr(boolexpr_e);
-        ex->sym = newtemp();
-        ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
-        ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
-
-        emit(op, ex1, ex2, NULL, 0, yylineno); //???
-        emit(jump_op, NULL, NULL, NULL, 0, yylineno);
-    }*/
-    //na rwtisoume!
     ex = newexpr(boolexpr_e);
-    ex->sym = newtemp();
+    ex->sym = newtemp(); /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
+
+    //ex->sym = istempexpr(ex1) ? ex1->sym : newtemp();
     ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
     ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
 
@@ -1486,6 +1451,7 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
 int ManageIfPrefix(expr *ex)
 {
     int ifprefix;
+    partEvaluation(ex);
     emit(if_eq_op, ex, newexpr_constbool(1), NULL, nextquadlabel() + 2, yylineno);
     ifprefix = nextquadlabel();
     emit(jump_op, NULL, NULL, NULL, 0, yylineno);
@@ -1494,18 +1460,29 @@ int ManageIfPrefix(expr *ex)
 
 void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3, stmt_t *st)
 {
+
+    int bl = 0, cl = 0;
+
     patchlabel(forPref->enter, N2 + 1);
     patchlabel(N1, nextquadlabel());
     patchlabel(N2, forPref->test);
     patchlabel(N3, N1 + 1);
-    patchlist(st->breakList, nextquadlabel());
-    patchlist(st->contList, N1 + 1);
+
+    if (st != NULL)
+    {
+        bl = st->breakList;
+        cl = st->contList;
+    }
+
+    patchlist(bl, nextquadlabel());
+    patchlist(cl, N1 + 1);
 }
 
 forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
 {
     forPrefixJumps *forprefix;
 
+    partEvaluation(expr);
     forprefix = newForPrefixJump(M, nextquadlabel());
     emit(if_eq_op, expr, newexpr_constbool(1), NULL, 0, yylineno);
     return forprefix;
@@ -1629,8 +1606,8 @@ expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
 {
     expr *e;
     e = newexpr(boolexpr_e);
+    //e->sym = istempexpr(ex2) ? ex2->sym : newtemp();
     e->sym = newtemp();
-
     patchlist(ex1->falselist, qd);
     printf("after patch list!\n");
     e->truelist = mergelist(ex1->truelist, ex2->truelist);
@@ -1642,38 +1619,15 @@ expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
 expr *valToBool(expr *ex1, int truejump, int falsejump)
 {
 
-    /*switch (ex->type)
-    {
-    case libraryfunc_e:
-        return newexpr_constbool(1);
-        break;
-    case programfunc_e:
-        return newexpr_constbool(1);
-        break;
-    case nil_e:
-        return newexpr_constbool(0);
-        break;
-    case constnum_e:
-        return newexpr_constbool(ex->numConst != 0);
-        break;
-    case conststring_e:
-        return newexpr_constbool(!!strcmp(ex->strConst, ""));
-        break;
-    case newtable_e:
-        return newexpr_constbool(1);
-        break;
-    default:
-        return ex;
-    }*/
     expr *ex;
     if (ex1->type != boolexpr_e)
     {
         ex = newexpr(boolexpr_e);
         ex->sym = newtemp();
 
-        ex->truelist = newlist(truejump);      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
+        ex->truelist = newlist(truejump);   //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
         ex->falselist = newlist(falsejump); //to idio thema (mipws na kanoume ena arxiko allocation?)
-        emit(if_eq_op, ex1, newexpr_constbool(1), NULL, 0 , yylineno);
+        emit(if_eq_op, ex1, newexpr_constbool(1), NULL, 0, yylineno);
         emit(jump_op, NULL, NULL, NULL, 0, yylineno);
         printf("Ex truelist... %d\n", ex->truelist);
         printf("Ex falselist... %d\n", ex->falselist);
