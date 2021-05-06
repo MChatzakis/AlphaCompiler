@@ -50,7 +50,7 @@ unsigned int currQuad = 0;
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -495,11 +495,18 @@ expr *make_call(expr *lv, expr *reversed_elist)
 {
     assert(lv); //reversed list could be NULL
     expr *func = emit_iftableitem(lv);
+
+    if (lv->sym == NULL || !CheckPrimaryForAccess(lv->sym, scope))
+    {
+        compileError = 1;
+    }
+
     while (reversed_elist)
     {
         emit(param_op, reversed_elist, NULL, NULL, 0, yylineno);
         reversed_elist = reversed_elist->next;
     }
+
     emit(call_op, func, NULL, NULL, 0, yylineno);
     expr *result = newexpr(var_e);
     result->sym = newtemp();
@@ -514,15 +521,18 @@ expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
 
     assert(lvalue && callsuffix);
     lvalue = emit_iftableitem(lvalue);
+    //printf("NAME OF LV: %s\n", ((lvalue->sym)->value).varVal->name);
+
     if (callsuffix->method)
     {
         t = lvalue;
         lvalue = emit_iftableitem(member_item(t, callsuffix->name));
 
-        if (callsuffix->elist != NULL) /* ! fix gia to seg sta palia test Grammar kai tree! */
+        if (callsuffix->elist != NULL)   /* ! fix gia to seg sta palia test Grammar kai tree! */
             callsuffix->elist->next = t; //vazei to onoma sto elist?
     }
     callFunc = make_call(lvalue, callsuffix->elist);
+    //printf("NAME OF LV: %s\n", ((lvalue->sym)->value).varVal->name);
     return callFunc;
 }
 
@@ -549,7 +559,7 @@ expr *ManageObjectDef(expr *elist)
 int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
 {
     assert(entry);
-
+    printf("YYLINENO %u\n", yylineno);
     /*
         If the refferred entry is a variable with scope between 0 and 
         current scope the accessibility might not be allowed.
@@ -557,6 +567,7 @@ int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
     */
     if ((entry->type < 3) && (entry->value).varVal->scope > 0 && (entry->value).varVal->scope < scope)
     {
+
         /*If there is a function definition currently*/
         if (!FuncStack_isEmpty(functionStack))
         {
@@ -687,6 +698,7 @@ void partEvaluation(expr *rval)
 
 int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope)
 {
+    //printf("lalalala line: %u with type %d and scope %u and name %s\n", yylineno, entry->type, (entry->value).varVal->scope, (entry->value).varVal->name);
     if (!CheckForAccess(entry, scope))
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
@@ -955,10 +967,10 @@ expr *ManagePrimaryFunction(expr *exVal)
 
     newExp = emit_iftableitem(exVal);
 
-    if (newExp->sym == NULL || !CheckPrimaryForAccess(newExp->sym, scope))
+    /*if (newExp->sym == NULL || !CheckPrimaryForAccess(newExp->sym, scope))
     {
         compileError = 1;
-    }
+    }*/
 
     return newExp;
 }
@@ -1409,7 +1421,7 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
     //check_arith(ex2);
 
     ex = newexpr(boolexpr_e);
-    ex->sym = newtemp(); /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
+    ex->sym = newtemp();                          /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
     ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
     ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
 
@@ -1440,7 +1452,7 @@ void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsig
     printf("OK3\n");
     patchlabel(N2, forPref->test);
     printf("OK4\n");
-    printf("N3 = %d, N1+1 = %d, currQuadLabel = %d\n", N3, N1+1, currQuad);
+    printf("N3 = %d, N1+1 = %d, currQuadLabel = %d\n", N3, N1 + 1, currQuad);
     patchlabel(N3, N1 + 1);
 
     if (st != NULL)
