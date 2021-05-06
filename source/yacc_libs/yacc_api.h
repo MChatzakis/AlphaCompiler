@@ -118,6 +118,7 @@ stmt_t *ManageContinue();
 call *newcall();
 call *ManageMethodCall(expr *elist, char *id);
 call *ManageNormalCall(expr *elist);
+indexedPair *reverseIndexedPairList(indexedPair *plist);
 expr *newexpr(expr_t t);
 expr *lvalue_expr(SymbolTableEntry *sym);
 expr *newexpr_constnum(double i);
@@ -148,7 +149,6 @@ expr *ManageIndexedObjectDef(indexedPair *list);
 expr *ManageANDexpression(expr *ex1, expr *ex2, int qd);
 expr *ManageORexpression(expr *ex1, expr *ex2, int qd);
 expr *valToBool(expr *ex, int truej, int falsej);
-indexedPair *reverseIndexedPairList(indexedPair *plist);
 
 void expand()
 {
@@ -165,10 +165,10 @@ void expand()
 
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line)
 {
-    if (compileError)
+    /*if (compileError)
     {
         return;
-    }
+    }*/
 
     if (currQuad == total)
     {
@@ -991,7 +991,7 @@ stmt_t *ManageBreak()
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"break\" statement outside of loop at line %lu\n", yylineno);
         compileError = 1;
-        return breakStmt;
+        //return breakStmt; /*Allagi gia emit error sto assert*/
     }
 
     emit(jump_op, NULL, NULL, NULL, 0, yylineno);
@@ -1392,36 +1392,6 @@ expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
     check_arith(expr1);
     check_arith(expr2);
 
-    /*if (expr1->type == constnum_e && expr2->type == constnum_e)
-    {
-        expr = newexpr(constnum_e);
-        switch (op)
-        {
-        case add_op:
-            expr->numConst = expr1->numConst + expr2->numConst;
-            break;
-        case sub_op:
-            expr->numConst = expr1->numConst - expr2->numConst;
-            break;
-        case mul_op:
-            expr->numConst = expr1->numConst * expr2->numConst;
-            break;
-        case div_op:
-            expr->numConst = expr1->numConst / expr2->numConst;
-            break;
-        case mod_op:
-            expr->numConst = (int)expr1->numConst % (int)expr2->numConst;
-            break;
-        default:
-            assert(0);
-        }
-    }
-    else
-    {
-        expr = newexpr(arithexpr_e);
-        expr->sym = newtemp();
-    }*/
-
     expr = newexpr(arithexpr_e);
     expr->sym = newtemp();
 
@@ -1440,12 +1410,10 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
 
     ex = newexpr(boolexpr_e);
     ex->sym = newtemp(); /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
-
-    //ex->sym = istempexpr(ex1) ? ex1->sym : newtemp();
     ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
     ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
 
-    emit(op, ex1, ex2, NULL, 0, yylineno); //???
+    emit(op, ex1, ex2, NULL, 0, yylineno);
     emit(jump_op, NULL, NULL, NULL, 0, yylineno);
     return ex;
 }
@@ -1465,9 +1433,14 @@ void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsig
 
     int bl = 0, cl = 0;
 
+    printf("OK1\n");
     patchlabel(forPref->enter, N2 + 1);
+    printf("OK2\n");
     patchlabel(N1, nextquadlabel());
+    printf("OK3\n");
     patchlabel(N2, forPref->test);
+    printf("OK4\n");
+    printf("N3 = %d, N1+1 = %d, currQuadLabel = %d\n", N3, N1+1, currQuad);
     patchlabel(N3, N1 + 1);
 
     if (st != NULL)
@@ -1476,8 +1449,11 @@ void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsig
         cl = st->contList;
     }
 
+    printf("OK5\n");
     patchlist(bl, nextquadlabel());
+    printf("OK6\n");
     patchlist(cl, N1 + 1);
+    printf("Done with For stmt fun\n");
 }
 
 forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)

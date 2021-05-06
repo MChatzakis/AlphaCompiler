@@ -18,7 +18,7 @@ SYMBOL_TABLE_IMP = ../source/symboltable/symboltable.c
 
 YACC_API = ../source/yacc_libs/yacc_api.h
 
-EXEC = acc
+EXEC = calc
 
 all: yacc lex gcc
 

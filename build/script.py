@@ -1,11 +1,11 @@
 import os
 import subprocess
 
-compilerName = "acc"
+compilerName = "calc"
 
 do1 = 0
-do2 = 1
-do3 = 1
+do2 = 0
+do3 = 0
 
 phase1_tests = []
 phase2_tests = []
@@ -27,6 +27,11 @@ for path, subdirs, files in os.walk('./../tests/phase3/'):
 #print("Phase 2:", phase2_tests)
 #print("Phase 3:", phase3_tests)
 
+command = "make"
+print(command)
+out = subprocess.getoutput(command)
+print(out)
+
 if do1:
     for i in range(len(phase1_tests)):
         command = "./" + compilerName + " -i " + phase1_tests[i]
@@ -45,7 +50,7 @@ if do2:
         out = subprocess.getoutput(command)
         print(out)
 
-        if out.find("Segmentation") > -1 or out.find("Assertion") > -1 or out.find("Aborted (core dumped)") > -1:
+        if out.find("Segmentation") > -1 or out.find("Aborted (core dumped)") > -1:
             print("The last test file failed! -- Exiting...")
             exit()
 
@@ -59,3 +64,8 @@ if do3:
         if out.find("Segmentation") > -1 or out.find("Assertion") > -1 or out.find("Aborted (core dumped)") > -1:
             print("The last test file failed! -- Exiting...")
             exit()
+
+command = "make clean"
+print(command)
+out = subprocess.getoutput(command)
+print(out)

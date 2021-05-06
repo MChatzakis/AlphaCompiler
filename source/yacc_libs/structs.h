@@ -49,7 +49,6 @@ typedef enum expr_t
 
     nil_e,
     undef_e
-
 } expr_t;
 
 typedef struct expr

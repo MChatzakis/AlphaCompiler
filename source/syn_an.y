@@ -844,21 +844,20 @@ N:          {
                 $$ = nextquadlabel();
                 emit(jump_op, NULL, NULL, NULL, 0, yylineno);
             }
-    ;
+            ;
 
 M:          {
                 $$ = nextquadlabel();
             }
-    ;
+            ;
 
 forprefix:  FOR LEFT_PARENTHESIS elist SEMICOLON M expr 
-
-{ 
-    //$6 = valToBool($6, nextquadlabel(), nextquadlabel()+1);
-    } 
+            { 
+                //$6 = valToBool($6, nextquadlabel(), nextquadlabel()+1);
+            } 
             SEMICOLON   {
-                                                                        $$ = ManageForPrefix($6, $5);
-                                                                    }
+                            $$ = ManageForPrefix($6, $5);
+                        }
             | FOR LEFT_PARENTHESIS SEMICOLON M expr  {
                     //$5 = valToBool($5, nextquadlabel(), nextquadlabel()+1);
                                                         } SEMICOLON       {
@@ -876,6 +875,7 @@ forstmt:    forprefix N elist RIGHT_PARENTHESIS N loopstmt N    {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
                                                                 }
+                                                                
                                                                 ManageForStatement($1, $2, $4, $6, $5);
                                                                 
                                                             }
