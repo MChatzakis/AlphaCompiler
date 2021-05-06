@@ -24,8 +24,8 @@ The Symboltable library contains the symboltable structure (to store every symbo
 The produced executable "calc" supports input and output filestreams, for example:
 
 ```
-./calc  -i [inputfile <string>]
-        -o [outputfile <string>]
+./calc  -i [ inputfile <string> ]
+        -o [ outputfile <string>]
 ```
 
 By default, input filestream is stdin and output filestream is stdout. Use -h for help. Errors are always printed in stderr.
