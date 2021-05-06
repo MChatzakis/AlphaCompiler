@@ -1,5 +1,5 @@
 # Alpha Compiler
-Created by Manos Chatzakis (csd4238@csd.uoc.gr) and Nikos Fanourakis (csd4237@csd.uoc.gr)\
+Created by Manos Chatzakis (csd4238@csd.uoc.gr) and Nikos Fanourakis (csd4237@csd.uoc.gr).\
 To compile:
 ```
 cd build
@@ -7,10 +7,8 @@ make
 ```
 
 ## Lexical Analysis:
-The produced executable "al" supports input and output filestreams, for example:
-./al -i "inputfile" -o "outputfile". By default, input filestream is stdin and output filestream is stdout. Use -h for help.
-
-Notes: Supported escaped characters: \ + {n,t,\\,"}
+Lexical Analysis is done using Lex program, following the rules of Alpha Programming language.\
+Supported escaped characters: \ + {n,t,\\,"}
 
 ## Syntax Analysis:
 The produced executable "calc" supports input and output filestreams, for example:
