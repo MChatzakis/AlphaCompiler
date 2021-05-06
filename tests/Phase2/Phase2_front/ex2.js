@@ -6,7 +6,7 @@ function foo(x, y) {
     local p = y; 
     ::print(p); 
     function h(a) { 
-        return a + x + y; 
+        return a + x + y; //error
     }  
     y = h(::x); 
 } 

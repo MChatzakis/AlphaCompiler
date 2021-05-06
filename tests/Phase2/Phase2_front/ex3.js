@@ -1,13 +1,13 @@
 read(a); 
 a = input(); 
 function foo(x) {
-    local print = "hello";
+    local print = "hello"; //error
     print(x + y);
     local hello = a;
     local hello = 35;
-    function hello() {
-        print(::a + ::x);
+    function hello() { //error
+        print(::a + ::x); //error
     }
-    function cos(){} 
+    function cos(){} //error
 }
-function foo(){}
+function foo(){} //error
