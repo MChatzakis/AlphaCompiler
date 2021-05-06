@@ -594,6 +594,8 @@ indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE  {
                                                             fprintf(ost, "=>{EXPR : EXPR} (indexedelem -> { expr : expr })\n");
                                                         }
                                                         /*We are not sure for this -- Check again*/
+                                                        partEvaluation($2);
+                                                        partEvaluation($4);
                                                         $$ = newIndexPair($2, $4);
                                                     }
             ;
@@ -875,7 +877,7 @@ forstmt:    forprefix N elist RIGHT_PARENTHESIS N loopstmt N    {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>FOR (forstmt -> for(elist; expr; elist))\n");
                                                                 }
-                                                                
+
                                                                 ManageForStatement($1, $2, $4, $6, $5);
                                                                 
                                                             }
