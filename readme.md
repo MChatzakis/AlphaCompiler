@@ -1,6 +1,10 @@
 # Alpha Compiler
 Created by Manos Chatzakis (csd4238@csd.uoc.gr) and Nikos Fanourakis (csd4237@csd.uoc.gr)\
-Compile using "make" or "make all" inside the corresponding folder.
+To compile:
+```
+cd build
+make
+```
 
 ## Lexical Analysis:
 The produced executable "al" supports input and output filestreams, for example:

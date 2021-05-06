@@ -12,7 +12,6 @@ import os
 import subprocess
 
 compilerName = "calc"
-
 rootDirectory = "./../tests"
 
 do1 = 0
@@ -24,16 +23,15 @@ phase1_tests = []
 phase2_tests = []
 phase3_tests = []
 
+
 def printAllTests():
     print("Tests run by the script:")
     if do1:
         for i in range(len(phase1_tests)):
             print(phase1_tests[i])
-
     if do2:
         for i in range(len(phase2_tests)):
             print(phase2_tests[i])
-
     if do3:
         for i in range(len(phase3_tests)):
             print(phase3_tests[i])
