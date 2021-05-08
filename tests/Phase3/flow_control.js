@@ -1,4 +1,4 @@
-
+//MALLON OK
 while (a=1) {
 	2-0;
 	break;

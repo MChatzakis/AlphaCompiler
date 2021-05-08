@@ -1,2 +1,4 @@
-a..f(a,a,a,a,a,a,a,a,a);
+//OK
+
+x..f(a,a,a,a,a,a,a,a,a);
 

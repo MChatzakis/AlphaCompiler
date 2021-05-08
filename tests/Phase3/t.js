@@ -1,4 +1,4 @@
-
+//OK
 function a() { return 10; }
 function b() { return (function() { return 11; }); }
 function c() { return 12; }

@@ -1,3 +1,5 @@
+//OK
+
 while (true) {
 	function () {
 		continue;

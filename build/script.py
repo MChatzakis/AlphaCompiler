@@ -10,19 +10,24 @@
 
 import os
 import subprocess
+import sys
 
 compilerName = "calc"
 rootDirectory = "./../tests"
 
-do1 = 0
-do2 = 1
-do3 = 0
-printTests = 1
+print(sys.argv[0])
+print(sys.argv[1])
+print(sys.argv[2])
+print(sys.argv[3])
+
+do1 = sys.argv[1]
+do2 = sys.argv[2]
+do3 = sys.argv[3]
+printTests = sys.argv[4]
 
 phase1_tests = []
 phase2_tests = []
 phase3_tests = []
-
 
 def printAllTests():
     print("Tests run by the script:")

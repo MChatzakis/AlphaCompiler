@@ -1,4 +1,4 @@
-
+//OK ALLA XWRIS ENA JUMP
 a=b=c=d=e=false;
 
 a..f(a);

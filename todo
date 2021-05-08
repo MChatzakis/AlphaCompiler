@@ -1,16 +1,17 @@
 =================================
-TODO: 
--Read FAQ
+For the next time:
 -Na pairnoume kathe kanona sta slides kai na kanoume tests kai check autwn p xoume grapsei
 -Na ta paroyme apo tin arxi kai na kanoyme diorthwseis kai tests
-- OPOY EXOYME EXPR NA VALOYME TO partEvaluation!
+=================================
+TODO: 
+-Read FAQ
+-Check on CSD
 ================================
-
 QA:
 1) Functors
 2) An oti vlepoume sto tool einai swsto (px x = true or true;)
 3) val to bool kai se expr sta while/if/else?
-
+4) Erwtisi gia to x == "string" / 1 == "string" kai same operand type
 ================================
 Proairetika (An vroume xrono):
 1) Na ksanadoume tis krifes metavlties sto telos tou lecture 10

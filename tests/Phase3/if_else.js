@@ -1,3 +1,5 @@
+//OK MALLON
+
 if (true)
 	a=4;
 

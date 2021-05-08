@@ -197,7 +197,7 @@ expr:       lvalue ASSIGN expr          {
                                             }
                                             $$ = ManageAssignValue($1, $3);
                                         }
-            | expr OR { $1 = valToBool($1, nextquadlabel(),  nextquadlabel() + 1);} 
+            | expr OR { $1 = valToBool($1, nextquadlabel(),  nextquadlabel() + 1); } 
                                         gq expr       { 
                                             
                                             if(TRACE_PRINT){
@@ -217,18 +217,19 @@ expr:       lvalue ASSIGN expr          {
                                             $$ = ManageANDexpression($1,$5,$4);
                                             //resettemp();
                                         }
-            | expr NOT_EQUAL expr       {
+            | expr NOT_EQUAL {partEvaluation($1);} expr       {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>NOT EQUAL Expression (expr -> expr != expr)\n");
                                             }
-
-                                            $$ = ManageRelationExpression($1, if_noteq_op, $3);
+                                            partEvaluation($4);
+                                            $$ = ManageRelationExpression($1, if_noteq_op, $4);
                                         }
-            | expr EQUAL expr           {
+            | expr EQUAL {partEvaluation($1); } expr           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>EQUAL Expression (expr -> expr == expr)\n");
                                             }
-                                            $$ = ManageRelationExpression($1, if_eq_op, $3);
+                                            partEvaluation($4);
+                                            $$ = ManageRelationExpression($1, if_eq_op, $4);
                                         }
             | expr LESS_EQUAL expr      {
                                             if(TRACE_PRINT){
@@ -416,6 +417,7 @@ member:     lvalue FULLSTOP ID                          {
                                                             }
 
                                                             $1 = emit_iftableitem($1);
+                                                            partEvaluation($3);
                                                             $$ = newexpr(tableitem_e);
                                                             $$->sym = $1->sym;
                                                             $$->index = $3;
@@ -435,6 +437,7 @@ member:     lvalue FULLSTOP ID                          {
 
                                                             //oute edw xerw ti kanoume
                                                             $1 = emit_iftableitem($1);
+                                                            partEvaluation($3);
                                                             $$ = newexpr(tableitem_e);
                                                             $$->sym = $1->sym;
                                                             $$->index = $3;
@@ -533,13 +536,15 @@ elist:      expr                {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>EXPR (elist -> expr)\n");
                                     }
+                                    partEvaluation($1);
                                     $$ = $1; //kseroume $1->next = NULL 
                                 }
             | elist COMMA expr  {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>ELIST , EXPR (elist -> elist COMMA expr)\n");
                                     }
-                                    
+
+                                    partEvaluation($3);
                                     $3->next = $1;
                                     $$ = $3;
                                 }
@@ -750,6 +755,7 @@ idlist:     ID                  {
             ;
 
 ifprefix:   IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS      {
+                                                                //partEvaluation($3); /* check again!!!!!!! */
                                                                 $$ = ManageIfPrefix($3);                                             
                                                             }
             ;
@@ -965,8 +971,9 @@ int main(int argc, char **argv){
     ScopeTable_print(scopeTab, ost);
 
     if(!compileError){
-        printQuads(1);
-        printQuads(0);
+        printQuads(1, ost);
+        printQuads(0, ost);
+        printToFile();
     }
     else{
         fprintf_red(stderr, "[Alpha Compiler] -- COMPILATION ERROR: Intermediate code generation failed.\n");

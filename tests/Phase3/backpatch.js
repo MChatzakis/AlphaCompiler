@@ -1,3 +1,5 @@
+//OK MALLON
+
 a = b = c = d = e = f = 1;
 
 x = a < b or c > d and e < f;

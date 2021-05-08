@@ -83,17 +83,18 @@ void exitscopespace();
 void resetformalargsoffset();
 void resetfunctionlocalsoffset();
 void restorecurrscopeoffset(unsigned n);
-void ManageReturnStatement();
+void ManageReturnStatement(expr *ex);
 void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3, stmt_t *st);
-void printQuads(int verbosePrint);
-void printQuadVerbose(unsigned int i);
-void printQuadFormally(unsigned int i);
-void printExprVal(expr *ex);
-void printSymTabEntry(SymbolTableEntry *entry);
+void printQuads(int verbosePrint, FILE *stream);
+void printQuadVerbose(unsigned int i, FILE *stream);
+void printQuadFormally(unsigned int i, FILE *stream);
+void printExprVal(expr *ex, FILE *stream);
+void printSymTabEntry(SymbolTableEntry *entry, FILE *stream);
 void check_arith(expr *e);
 void make_stmt(stmt_t *s);
 void patchlist(int list, int label);
 void partEvaluation(expr *rval);
+void printToFile();
 enum scopespace_t currscopespace();
 unsigned currscopeoffset();
 unsigned nextquadlabel();
@@ -149,6 +150,7 @@ expr *ManageIndexedObjectDef(indexedPair *list);
 expr *ManageANDexpression(expr *ex1, expr *ex2, int qd);
 expr *ManageORexpression(expr *ex1, expr *ex2, int qd);
 expr *valToBool(expr *ex, int truej, int falsej);
+void printToFile();
 
 void expand()
 {
@@ -518,6 +520,7 @@ expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
 {
     expr *callFunc;
     expr *t;
+    expr *curr, *prev;
 
     assert(lvalue && callsuffix);
     lvalue = emit_iftableitem(lvalue);
@@ -528,8 +531,29 @@ expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
         t = lvalue;
         lvalue = emit_iftableitem(member_item(t, callsuffix->name));
 
-        if (callsuffix->elist != NULL)   /* ! fix gia to seg sta palia test Grammar kai tree! */
+        /*if (callsuffix->elist != NULL)   
             callsuffix->elist->next = t; //vazei to onoma sto elist?
+            while()
+        else{
+            callsuffix->elist = t;
+        }*/
+
+        curr = callsuffix->elist;
+        prev = NULL;
+        while (curr)
+        {
+            prev = curr;
+            curr = curr->next;
+        }
+
+        if (prev == NULL)
+        {
+            callsuffix->elist = t;
+        }
+        else
+        {
+            prev->next = t;
+        }
     }
     callFunc = make_call(lvalue, callsuffix->elist);
     //printf("NAME OF LV: %s\n", ((lvalue->sym)->value).varVal->name);
@@ -982,6 +1006,8 @@ expr *ManagePrimaryFunction(expr *exVal)
 void ManageReturnStatement(expr *ex)
 {
     //assert(ex);
+    if (ex != NULL)
+        partEvaluation(ex);
 
     if (FuncStack_isEmpty(functionStack))
     {
@@ -1031,82 +1057,82 @@ stmt_t *ManageContinue()
     return continueStmt;
 }
 
-void printSymTabEntry(SymbolTableEntry *entry)
+void printSymTabEntry(SymbolTableEntry *entry, FILE *stream)
 {
     assert(entry);
     if (entry->type < 3)
     {
-        fprintf(ost, "%s", (entry->value).varVal->name);
+        fprintf(stream, "%s", (entry->value).varVal->name);
     }
     else
     {
-        fprintf(ost, "%s", (entry->value).funcVal->name);
+        fprintf(stream, "%s", (entry->value).funcVal->name);
     }
 }
 
-void printExprVal(expr *expr)
+void printExprVal(expr *expr, FILE *stream)
 {
     assert(expr);
 
     switch (expr->type)
     {
     case var_e:
-        printSymTabEntry(expr->sym);
+        printSymTabEntry(expr->sym,stream);
         break;
     case tableitem_e:
-        printSymTabEntry(expr->sym);
+        printSymTabEntry(expr->sym,stream);
         break;
     case programfunc_e:
-        printSymTabEntry(expr->sym);
+        printSymTabEntry(expr->sym,stream);
         break;
     case libraryfunc_e:
-        printSymTabEntry(expr->sym);
+        printSymTabEntry(expr->sym, stream);
         break;
     case arithexpr_e:
-        printSymTabEntry(expr->sym);
+        printSymTabEntry(expr->sym, stream);
         break;
     case boolexpr_e:
-        printSymTabEntry(expr->sym);
+        printSymTabEntry(expr->sym, stream);
         break;
     case assignexpr_e:
-        printSymTabEntry(expr->sym);
+        printSymTabEntry(expr->sym, stream);
         break;
     case newtable_e:
-        printSymTabEntry(expr->sym);
+        printSymTabEntry(expr->sym, stream);
         break;
     case constnum_e:
         if (is_int(expr->numConst))
         {
-            fprintf(ost, "%d", (int)expr->numConst);
+            fprintf(stream, "%d", (int)expr->numConst);
         }
         else
         {
-            fprintf(ost, "%f", expr->numConst);
+            fprintf(stream, "%f", expr->numConst);
         }
         break;
     case constbool_e:
         //fprintf(ost, "%u", expr->boolConst);
         if (expr->boolConst == 1)
         {
-            fprintf(ost, "TRUE");
+            fprintf(stream, "TRUE");
         }
         else
         {
-            fprintf(ost, "FALSE");
+            fprintf(stream, "FALSE");
         }
         break;
     case conststring_e:
-        fprintf(ost, "\"%s\"", expr->strConst);
+        fprintf(stream, "\"%s\"", expr->strConst);
         break;
     case nil_e:
-        fprintf(ost, "NIL");
+        fprintf(stream, "NIL");
         break;
     default:
         assert(0);
     }
 }
 
-void printQuadVerbose(unsigned int i)
+void printQuadVerbose(unsigned int i, FILE *stream)
 {
     char *names[26] = {
         "assign",
@@ -1136,39 +1162,39 @@ void printQuadVerbose(unsigned int i)
         "tablesetelem",
         "jump"};
 
-    fprintf(ost, "#%u: %s ", i, names[quads[i].op]);
+    fprintf(stream, "#%u: %s ", i, names[quads[i].op]);
     expr *ex;
     if (quads[i].result != NULL)
     {
-        fprintf(ost, "[result: ");
+        fprintf(stream, "[result: ");
         ex = quads[i].result;
-        printExprVal(ex);
-        fprintf(ost, "] ");
+        printExprVal(ex, stream);
+        fprintf(stream, "] ");
     }
 
     if (quads[i].arg1 != NULL)
     {
-        fprintf(ost, "[arg1: ");
+        fprintf(stream, "[arg1: ");
         ex = quads[i].arg1;
-        printExprVal(ex);
-        fprintf(ost, "] ");
+        printExprVal(ex, stream);
+        fprintf(stream, "] ");
     }
 
     if (quads[i].arg2 != NULL)
     {
-        fprintf(ost, "[arg2: ");
+        fprintf(stream, "[arg2: ");
         ex = quads[i].arg2;
-        printExprVal(ex);
-        fprintf(ost, "] ");
+        printExprVal(ex, stream);
+        fprintf(stream, "] ");
     }
 
-    fprintf(ost, "(label: %u) ", quads[i].label);
+    fprintf(stream, "(label: %u) ", quads[i].label);
 
-    fprintf(ost, "(line: %u)", quads[i].line);
-    fprintf(ost, "\n");
+    fprintf(stream, "(line: %u)", quads[i].line);
+    fprintf(stream, "\n");
 }
 
-void printQuadFormally(unsigned int i)
+void printQuadFormally(unsigned int i, FILE* stream)
 {
     char *names[26] = {
         "assign",
@@ -1198,54 +1224,54 @@ void printQuadFormally(unsigned int i)
         "tablesetelem",
         "jump"};
 
-    fprintf(ost, "%u: %s ", i, names[quads[i].op]);
+    fprintf(stream, "%u: %s ", i, names[quads[i].op]);
     expr *ex;
     if (quads[i].result != NULL)
     {
         ex = quads[i].result;
-        printExprVal(ex);
-        fprintf(ost, " ");
+        printExprVal(ex, stream);
+        fprintf(stream, " ");
     }
 
     if (quads[i].arg1 != NULL)
     {
         ex = quads[i].arg1;
-        printExprVal(ex);
-        fprintf(ost, " ");
+        printExprVal(ex, stream);
+        fprintf(stream, " ");
     }
 
     if (quads[i].arg2 != NULL)
     {
         ex = quads[i].arg2;
-        printExprVal(ex);
-        fprintf(ost, " ");
+        printExprVal(ex, stream);
+        fprintf(stream, " ");
     }
 
     if (isJumpCode(i))
-        fprintf(ost, "%u ", quads[i].label);
+        fprintf(stream, "%u ", quads[i].label);
 
     //fprintf(ost, "[%u]", quads[i].line);
-    fprintf(ost, "\n");
+    fprintf(stream, "\n");
 }
 
-void printQuads(int verbosePrint)
+void printQuads(int verbosePrint, FILE *stream)
 {
     unsigned int i;
 
-    fprintf(ost, "\n----------------------- QUADS -----------------------\n");
+    fprintf(stream, "\n----------------------- QUADS -----------------------\n");
     //fprintf(ost, "#quad,opcode,result,arg1,arg2,label,line\n");
 
     for (i = 1; i < currQuad; i++)
     {
         if (verbosePrint)
-            printQuadVerbose(i);
+            printQuadVerbose(i, stream);
         else
         {
-            printQuadFormally(i);
+            printQuadFormally(i, stream);
         }
     }
 
-    fprintf(ost, "-----------------------------------------------------\n");
+    fprintf(stream, "-----------------------------------------------------\n");
     //fprintf(ost, "#quad opcode result arg1 arg2 label line\n");
 }
 
@@ -1285,8 +1311,10 @@ expr *ManageUminus(expr *exVal)
 expr *ManageNot(expr *exVal)
 {
     expr *ex;
+
     exVal = valToBool(exVal, nextquadlabel(), nextquadlabel() + 1);
     ex = newexpr(boolexpr_e);
+
     //if(exVal->sym)
     ex->sym = exVal->sym;
     //emit(not_op, exVal, NULL, ex, 0, 0);
@@ -1417,8 +1445,19 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
 
     assert(ex1 && ex2);
 
-    //check_arith(ex1);
-    //check_arith(ex2);
+    if (op != if_eq_op && op != if_noteq_op)
+    {
+        check_arith(ex1);
+        check_arith(ex2);
+    }
+
+    /*if (op == if_eq_op || op == if_noteq_op)
+    {
+        if (ex1->type != ex2->type)
+        {
+            fprintf_red(stderr, "Comparison between different operand types\n");
+        }
+    }*/
 
     ex = newexpr(boolexpr_e);
     ex->sym = newtemp();                          /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
@@ -1625,4 +1664,16 @@ expr *valToBool(expr *ex1, int truejump, int falsejump)
     }
     else
         return ex1;
+}
+
+void printToFile()
+{
+    FILE *fp;
+    fp = fopen("quads.txt", "w+");
+    if(fp == NULL){
+        fprintf(stderr, "Couldn't open quads.txt\n");
+        return;
+    }
+    printQuads(0, fp);
+    fclose(fp);
 }
