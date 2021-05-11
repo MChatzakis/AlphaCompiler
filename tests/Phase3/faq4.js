@@ -1,4 +1,4 @@
-t.a.b = c.d.e=f.g.h 
+t.a.b = c.d.e=f.g.h; 
 /*
 0: TABLEGETELEM   t "a" _t0
 1: TABLEGETELEM   c "d" _t1

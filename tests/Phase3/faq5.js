@@ -13,7 +13,7 @@ CALL f
 */
 f(a(1), b(2, 3));
 /*
-0: PARAM 1 // Η παράμετρος της συνάρτησης a().
+0: PARAM 1 
 1: CALL a
 2: GETRETVAL _r0
 3: PARAM 3

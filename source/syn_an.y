@@ -328,7 +328,7 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue MINUS MINUS Expression (expr -> lvalue--)\n");
                                             }
-                                            ManageLvalueMinusMinus($1);
+                                            $$ = ManageLvalueMinusMinus($1);
                                         }
             | primary                   {
                                             if(TRACE_PRINT){

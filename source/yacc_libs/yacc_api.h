@@ -50,7 +50,7 @@ unsigned int currQuad = 0;
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -479,7 +479,7 @@ expr *emit_iftableitem(expr *e)
     {
         expr *result = newexpr(var_e);
         result->sym = newtemp();
-        emit(tablegetelem_op, e->index, e, result, 0, yylineno);
+        emit(tablegetelem_op, e, e->index, result, 0, yylineno);
         return result;
     }
 }
@@ -583,7 +583,7 @@ expr *ManageObjectDef(expr *elist)
 int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
 {
     assert(entry);
-    printf("YYLINENO %u\n", yylineno);
+    //printf("YYLINENO %u\n", yylineno);
     /*
         If the refferred entry is a variable with scope between 0 and 
         current scope the accessibility might not be allowed.
@@ -1077,13 +1077,13 @@ void printExprVal(expr *expr, FILE *stream)
     switch (expr->type)
     {
     case var_e:
-        printSymTabEntry(expr->sym,stream);
+        printSymTabEntry(expr->sym, stream);
         break;
     case tableitem_e:
-        printSymTabEntry(expr->sym,stream);
+        printSymTabEntry(expr->sym, stream);
         break;
     case programfunc_e:
-        printSymTabEntry(expr->sym,stream);
+        printSymTabEntry(expr->sym, stream);
         break;
     case libraryfunc_e:
         printSymTabEntry(expr->sym, stream);
@@ -1194,7 +1194,7 @@ void printQuadVerbose(unsigned int i, FILE *stream)
     fprintf(stream, "\n");
 }
 
-void printQuadFormally(unsigned int i, FILE* stream)
+void printQuadFormally(unsigned int i, FILE *stream)
 {
     char *names[26] = {
         "assign",
@@ -1277,8 +1277,8 @@ void printQuads(int verbosePrint, FILE *stream)
 
 int is_int(double d)
 {
-    double absolute = abs(d);
-    return absolute == floor(absolute);
+    //double absolute = abs(d);
+    return (int)d == d;
 }
 
 void check_arith(expr *e)
@@ -1336,7 +1336,7 @@ expr *ManageLvaluePlusPlus(expr *exVal) //lvalue ++
         expr *val = emit_iftableitem(exVal);
         emit(assign_op, val, NULL, ex, 0, yylineno);
         emit(add_op, val, newexpr_constnum(1), val, 0, yylineno);
-        emit(tablesetelem_op, exVal->index, exVal, val, 0, yylineno);
+        emit(tablesetelem_op, exVal->index, val, exVal, 0, yylineno);
     }
     else
     {
@@ -1356,7 +1356,7 @@ expr *ManagePlusPlusLvalue(expr *exVal) //++lvalue
     {
         ex = emit_iftableitem(exVal);
         emit(add_op, ex, newexpr_constnum(1), ex, 0, yylineno);
-        emit(tablesetelem_op, exVal->index, exVal, ex, 0, yylineno);
+        emit(tablesetelem_op, exVal->index, ex, exVal, 0, yylineno);
     }
     else
     {
@@ -1381,7 +1381,7 @@ expr *ManageLvalueMinusMinus(expr *exVal) //val--
         expr *val = emit_iftableitem(exVal);
         emit(assign_op, val, NULL, ex, 0, yylineno);
         emit(sub_op, val, newexpr_constnum(1), val, 0, yylineno);
-        emit(tablesetelem_op, exVal->index, exVal, val, 0, yylineno);
+        emit(tablesetelem_op, exVal->index, val, exVal, 0, yylineno);
     }
     else
     {
@@ -1401,7 +1401,7 @@ expr *ManageMinusMinusLvalue(expr *exVal) //--val
     {
         ex = emit_iftableitem(exVal);
         emit(sub_op, ex, newexpr_constnum(1), ex, 0, yylineno);
-        emit(tablesetelem_op, exVal->index, exVal, ex, 0, yylineno);
+        emit(tablesetelem_op, exVal->index, ex, exVal, 0, yylineno);
     }
     else
     {
@@ -1484,14 +1484,14 @@ void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsig
 
     int bl = 0, cl = 0;
 
-    printf("OK1\n");
+    //printf("OK1\n");
     patchlabel(forPref->enter, N2 + 1);
-    printf("OK2\n");
+    //printf("OK2\n");
     patchlabel(N1, nextquadlabel());
-    printf("OK3\n");
+    //printf("OK3\n");
     patchlabel(N2, forPref->test);
-    printf("OK4\n");
-    printf("N3 = %d, N1+1 = %d, currQuadLabel = %d\n", N3, N1 + 1, currQuad);
+    //printf("OK4\n");
+    //printf("N3 = %d, N1+1 = %d, currQuadLabel = %d\n", N3, N1 + 1, currQuad);
     patchlabel(N3, N1 + 1);
 
     if (st != NULL)
@@ -1500,11 +1500,11 @@ void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsig
         cl = st->contList;
     }
 
-    printf("OK5\n");
+    //printf("OK5\n");
     patchlist(bl, nextquadlabel());
-    printf("OK6\n");
+    //printf("OK6\n");
     patchlist(cl, N1 + 1);
-    printf("Done with For stmt fun\n");
+    //printf("Done with For stmt fun\n");
 }
 
 forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
@@ -1549,7 +1549,7 @@ void patchlist(int list, int label)
 {
     while (list)
     {
-        printf("quad[%d].label == %d\n", list, label);
+        //printf("quad[%d].label == %d\n", list, label);
         int next = quads[list].label;
         quads[list].label = label;
         list = next;
@@ -1670,7 +1670,8 @@ void printToFile()
 {
     FILE *fp;
     fp = fopen("quads.txt", "w+");
-    if(fp == NULL){
+    if (fp == NULL)
+    {
         fprintf(stderr, "Couldn't open quads.txt\n");
         return;
     }

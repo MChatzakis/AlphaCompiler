@@ -1,6 +1,6 @@
-x = function (a, b) {
+x = (function (a, b) {
   return a + b;
-};
+});
 (function () {})();
 /* 
 1: FUNCSTART _f1
