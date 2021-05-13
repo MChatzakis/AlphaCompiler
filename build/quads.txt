@@ -1,14 +1,12 @@
 
 ----------------------- QUADS -----------------------
-1: funcstart _f0 
-2: param t 
-3: call print 
-4: getretval _v0 
-5: funcend _f0 
-6: tablecreate _v0 
-7: tablesetelem _v0 "()" _f0 
-8: assign t1 _v0 
-9: assign _v1 t1 
-10: call t1 
-11: getretval _v0 
+1: if_eq a TRUE 3 
+2: jump 7 
+3: if_eq b TRUE 5 
+4: jump 7 
+5: assign _v2 TRUE 
+6: jump 8 
+7: assign _v2 FALSE 
+8: assign x _v2 
+9: assign _v3 x 
 -----------------------------------------------------
