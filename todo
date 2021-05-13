@@ -1,48 +1,8 @@
 =================================
 For the next time:
--Na pairnoume kathe kanona sta slides kai na kanoume tests kai check autwn p xoume grapsei
--Na ta paroyme apo tin arxi kai na kanoyme diorthwseis kai tests
+-Checks/Theory/Testing
 -Read FAQ
 
 ================================
 QA:
 3) val to bool kai se expr sta while/if/else?
-
-================================
-Proairetika (An vroume xrono):
-1) Na ksanadoume tis krifes metavlties sto telos tou lecture 10
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-===========================px======================================
-
-x = 1<2 and gq(3) 2;
-
-falselist_1 = 2
-truelist_1 = 1
-falselist_2 = 4
-truelist_2 = 3
-
-falselist = 2
-truelist = 3
-
-1 if_less 1 2 3
-2 Jump 7
-3 if_eq 2 true 5
-4 Jump 7
-5 Assign v0 true
-6 Jump 8
-7 Assign v0 false
-8 
