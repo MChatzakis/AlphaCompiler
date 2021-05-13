@@ -51,7 +51,7 @@
 %type <indPair> indexedelem indexed
 %type <callFunc> callsuffix normcall methodcall
 %type <string_value> funcname
-%type <un_value> gq funcbody ifprefix elseprefix whilestart whilecond M N
+%type <un_value> funcbody ifprefix elseprefix whilestart whilecond M N
 %type <symTabEntry>  funcprefix funcdef
 %type <forPrefJumps> forprefix
 %type <st> stmt stmts loopstmt block ifstmt
@@ -70,8 +70,7 @@ stmt:       expr SEMICOLON              {
                                             
                                             partEvaluation($1);
                                             resettemp();
-                                            
-                                            //$$ = newstmt();
+                                           
                                             $$ = NULL;
                                         }
             | ifstmt                    {
@@ -80,8 +79,7 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-
-                                            $$ = $1; //den eimaste sigouroi
+                                            $$ = $1;
                                         }
             | whilestmt                 {
                                             if(TRACE_PRINT){
@@ -89,8 +87,6 @@ stmt:       expr SEMICOLON              {
                                             }
                                             
                                             resettemp();
-
-                                            //$$ = newstmt();
                                             $$ = NULL;
                                         }
             | forstmt                   {
@@ -99,8 +95,6 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-
-                                            //$$ = newstmt();
                                             $$ = NULL;
                                         }
             | returnstmt                {
@@ -109,8 +103,6 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-
-                                            //$$ = newstmt();
                                             $$ = NULL;
                                         }
             | BREAK SEMICOLON           {
@@ -118,8 +110,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Break Statement (stmt -> break)\n");
                                             }
 
-                                            resettemp();
-                                            
+                                            resettemp();                                          
                                             $$ = ManageBreak();
                                         }
             | CONTINUE SEMICOLON        {
@@ -127,8 +118,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Continue Statement (stmt -> continue;)\n");
                                             }
                                             
-                                            resettemp();
-                                            
+                                            resettemp();                                            
                                             $$ = ManageContinue();
                                         }
             | block                     {
@@ -137,7 +127,6 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-                                            
                                             $$ = $1;
                                         }
             | funcdef                   {
@@ -146,8 +135,6 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-                                            
-                                            //$$ = newstmt();
                                             $$ = NULL;
                                         }
             | SEMICOLON                 {
@@ -156,39 +143,31 @@ stmt:       expr SEMICOLON              {
                                             }
 
                                             resettemp();
-                                            
-                                            //$$ = newstmt();
                                             $$ = NULL;
                                         }
             ;
 
 stmts:      stmts stmt                  {
-                                            //$$->breakList = mergelist($1->breakList, $2->breakList);
-                                            //$$->contList = mergelist($1->contList, $2->contList); 
-                                            
                                             int breaklist1 = 0,breaklist2 = 0, contlist1 = 0, contlist2 = 0; 
                                             
-                                                if($1 != NULL){
-                                                    breaklist1 = $1->breakList;
-                                                    contlist1 = $1->contList;
-                                                    //free stmt
-                                                }
+                                            if($1 != NULL){
+                                                breaklist1 = $1->breakList;
+                                                contlist1 = $1->contList;
+                                                //free stmt
+                                            }
 
-                                                if($2 != NULL){
-                                                    breaklist2 = $2->breakList;
-                                                    contlist2 = $2->contList;
-                                                }
+                                            if($2 != NULL){
+                                                breaklist2 = $2->breakList;
+                                                contlist2 = $2->contList;
+                                            }
 
-                                                $$ = newstmt();
-                                                $$->breakList = mergelist(breaklist1, breaklist2);
-                                                $$->contList = mergelist(contlist1, contlist2); 
+                                            $$ = newstmt();
+                                            $$->breakList = mergelist(breaklist1, breaklist2);
+                                            $$->contList = mergelist(contlist1, contlist2); 
                                         }
             | stmt                      {
                                             $$ = $1;
                                         }
-            ;
-
-gq:         {$$ = nextquadlabel();}
             ;
 
 expr:       lvalue ASSIGN expr          {
@@ -198,7 +177,8 @@ expr:       lvalue ASSIGN expr          {
                                             $$ = ManageAssignValue($1, $3);
                                         }
             | expr OR { $1 = valToBool($1, nextquadlabel(),  nextquadlabel() + 1); } 
-                                        gq expr       { 
+                                        M expr       
+                                        { 
                                             
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>OR Expression (expr -> expr or expr)\n");
@@ -208,26 +188,30 @@ expr:       lvalue ASSIGN expr          {
                                             $$ = ManageORexpression($1,$5,$4);
                                         }
             | expr AND { $1 = valToBool($1, nextquadlabel(),  nextquadlabel() + 1); } 
-                                        gq expr             {
+                                        M expr             
+                                        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>AND Expression (expr -> expr and expr)\n");
                                             }
                                             
                                             $5 = valToBool($5, nextquadlabel(), nextquadlabel()+1);
                                             $$ = ManageANDexpression($1,$5,$4);
-                                            //resettemp();
                                         }
-            | expr NOT_EQUAL {partEvaluation($1);} expr       {
+            | expr NOT_EQUAL { partEvaluation($1); } expr       
+                                        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>NOT EQUAL Expression (expr -> expr != expr)\n");
                                             }
+
                                             partEvaluation($4);
                                             $$ = ManageRelationExpression($1, if_noteq_op, $4);
                                         }
-            | expr EQUAL {partEvaluation($1); } expr           {
+            | expr EQUAL { partEvaluation($1); } expr           
+                                        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>EQUAL Expression (expr -> expr == expr)\n");
                                             }
+
                                             partEvaluation($4);
                                             $$ = ManageRelationExpression($1, if_eq_op, $4);
                                         }
@@ -235,54 +219,63 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>LESS EQUAL Expression (expr -> expr <= expr)\n");
                                             }
+
                                             $$ = ManageRelationExpression($1, if_lesseq_op, $3);
                                         }
             | expr LESS expr            {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>LESS Expression (expr -> expr < expr)\n");
                                             }
+
                                             $$ = ManageRelationExpression($1, if_less_op, $3);
                                         }
             | expr GREATER_EQUAL expr   {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>GREATER EQUAL Expression (expr -> expr >= expr)\n");
                                             }
+
                                             $$ = ManageRelationExpression($1, if_greatereq_op, $3);
                                         }
             | expr GREATER expr         {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>GREATER Expression (expr -> expr > expr)\n");
                                             }
+
                                             $$ = ManageRelationExpression($1, if_greater_op, $3);
                                         }
             | expr PLUS expr            {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PLUS Expression (expr -> expr + expr)\n");
                                             }
+
                                             $$ = ManageArithmeticExpression($1,add_op,$3);
                                         }
             | expr MINUS expr           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MINUS Expression (expr -> expr - expr)\n");
                                             }
+
                                             $$ = ManageArithmeticExpression($1,sub_op,$3);
                                         }
             | expr MUL expr             {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MUL Expression (expr -> expr * expr) \n");
                                             }
+
                                             $$ = ManageArithmeticExpression($1,mul_op,$3);
                                         }
             | expr DIV expr             {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>DIV Expression (expr -> expr / expr) \n");
                                             }
+
                                             $$ = ManageArithmeticExpression($1,div_op,$3);
                                         }
             | expr MODULO expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MODULO Expression (expr -> expr MOD expr)\n");
                                             }
+
                                             $$ = ManageArithmeticExpression($1,mod_op,$3);
                                         }
             | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS 
@@ -290,6 +283,7 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PARENTHESIS EXPR Expression (expr -> (expr) )\n");
                                             }
+
                                             $$ = $2;
                                         }
             | MINUS expr %prec UMINUS   {
@@ -310,30 +304,35 @@ expr:       lvalue ASSIGN expr          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PLUS PLUS lvalue Expression (expr -> ++lvalue)\n");
                                             }
+
                                             $$ = ManagePlusPlusLvalue($2);
                                         }
             | lvalue PLUS_PLUS          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue PLUS PLUS Expression (expr -> lvalue++ )\n");
                                             }
+
                                             $$ = ManageLvaluePlusPlus($1);
                                         }
             | MINUS_MINUS lvalue        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>MINUS MINUS lvalue Expression (expr -> --lvalue)\n");
                                             }
+
                                             $$ = ManageMinusMinusLvalue($2);
                                         }
             | lvalue MINUS_MINUS        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue MINUS MINUS Expression (expr -> lvalue--)\n");
                                             }
+
                                             $$ = ManageLvalueMinusMinus($1);
                                         }
             | primary                   {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>PRIMARY Expression (expr -> primary)\n");
                                             }
+
                                             $$ = $1;
                                         }
             ;
@@ -342,14 +341,15 @@ primary:    lvalue                      {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>lvalue (primary -> lvalue)\n");
                                             }
+
                                             $$ = ManagePrimaryLValue($1);    
                                         }
             | call                      {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>CALL (primary -> call)\n");
                                             }
-                                            $$ = ManagePrimaryFunction($1);
 
+                                            $$ = ManagePrimaryFunction($1);
                                         }
             | objectdef                 {
                                             if(TRACE_PRINT){
@@ -380,19 +380,21 @@ lvalue:     ID                          {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>ID %s (lvalue -> ID)\n", $1);
                                             }
+
                                             $$ = EvaluateLValue($1);
                                         }
-
             | LOCAL ID                  {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=> local ID %s (lvalue -> local ID)\n", $2);
                                             }
+
                                             $$ = EvaluateLocalLValue($2);
                                         }
             | DOUBLE_COLON ID           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>global ID %s (lvalue -> global ID)\n", $2);
                                             }
+
                                             $$ = EvaluateGlobalLValue($2);
                                         }
             | member                    {
@@ -418,6 +420,7 @@ member:     lvalue FULLSTOP ID                          {
 
                                                             $1 = emit_iftableitem($1);
                                                             partEvaluation($3);
+
                                                             $$ = newexpr(tableitem_e);
                                                             $$->sym = $1->sym;
                                                             $$->index = $3;
@@ -427,7 +430,6 @@ member:     lvalue FULLSTOP ID                          {
                                                                 fprintf(ost, "=>Call.ID %s (member -> call.ID)\n", $3);
                                                             }
 
-                                                            //ti sto kalo kanoume edw?
                                                             $$ = member_item($1, $3); 
                                                         }
             | call LEFT_BRACKET expr RIGHT_BRACKET      {
@@ -435,9 +437,9 @@ member:     lvalue FULLSTOP ID                          {
                                                                 fprintf(ost, "=>CALL [ EXPR ] (member -> call[expr])\n");
                                                             }
 
-                                                            //oute edw xerw ti kanoume
                                                             $1 = emit_iftableitem($1);
                                                             partEvaluation($3);
+
                                                             $$ = newexpr(tableitem_e);
                                                             $$->sym = $1->sym;
                                                             $$->index = $3;
@@ -462,7 +464,7 @@ call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   {
                                                                 if(TRACE_PRINT){
                                                                     fprintf(ost, "=>lvalue ( CALL SUFFIX ) (call -> lvalue callsuffix)\n");                                       
                                                                 }
-                                                                //$$ = $1;
+
                                                                 $$ = ManageLvalueCallsuffix($1, $2);
                                                             }
             | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS   
@@ -491,12 +493,14 @@ callsuffix: normcall        {
                                 if(TRACE_PRINT){
                                     fprintf(ost, "=>NORMAL CALL (callsuffix -> normcall)\n");
                                 }
+
                                 $$ = $1;
                             }
             | methodcall    {
                                 if(TRACE_PRINT){
                                     fprintf(ost, "=>METHOD CALL (callsuffix -> methodcall)\n");
                                 }
+
                                 $$ = $1;
                             }
             ;
@@ -537,7 +541,7 @@ elist:      expr                {
                                         fprintf(ost, "=>EXPR (elist -> expr)\n");
                                     }
                                     partEvaluation($1);
-                                    $$ = $1; //kseroume $1->next = NULL 
+                                    $$ = $1;
                                 }
             | elist COMMA expr  {
                                     if(TRACE_PRINT){
@@ -582,7 +586,6 @@ indexed:    indexedelem                 {
                                             }
 
                                             $$ = $1;
-
                                         }
             | indexed COMMA indexedelem {
                                             if(TRACE_PRINT){
@@ -598,9 +601,11 @@ indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE  {
                                                         if(TRACE_PRINT){
                                                             fprintf(ost, "=>{EXPR : EXPR} (indexedelem -> { expr : expr })\n");
                                                         }
+
                                                         /*We are not sure for this -- Check again*/
                                                         partEvaluation($2);
                                                         partEvaluation($4);
+
                                                         $$ = newIndexPair($2, $4);
                                                     }
             ;
@@ -608,19 +613,22 @@ indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE  {
 block:      LEFT_BRACE {scope++;} RIGHT_BRACE           {
                                                             ScopeTable_hide_scope(scopeTab, scope);
                                                             scope--;
+
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>{Empty} (block -> {})\n");
                                                             }
+
                                                             $$ = newstmt();
                                                         }
             | LEFT_BRACE {scope++;} stmts RIGHT_BRACE   {
                                                             ScopeTable_hide_scope(scopeTab, scope);
                                                             scope--;
+
                                                             if(TRACE_PRINT){
                                                                 fprintf(ost, "=>{STMTS} (block -> {stmts})\n");
                                                             }
+                                                        
                                                             $$ = $3;
-                                                            //$$ = newstmt();
                                                         }
             ;
 
@@ -635,11 +643,17 @@ funcname:   ID      {
 
 funcprefix:     FUNCTION funcname   {
                                         $$ = ManageIDFunctionDefinition($2);
+                                        
                                         if($$ != NULL){
                                             emit(funcstart_op, lvalue_expr($$), NULL, NULL, 0, yylineno);
+                                        }else{
+                                            /*...We are not sure about that...*/
+                                            emit(funcstart_op, NULL, NULL, NULL, 0, yylineno);
                                         }
+
                                         NumberStack_push(scopeoffsetstack, currscopeoffset());
                                         scope++;
+
                                         enterscopespace();
                                         resetformalargsoffset();
                                     }
@@ -675,13 +689,18 @@ funcblockend:           {
                 ;
 
 funcdef:    funcprefix funcargs funcblockstart funcbody funcblockend    {
+
                                                 if(TRACE_PRINT){
                                                     fprintf(ost, "=>FUNCDEF (funcdef -> function ID () block)\n");
                                                 }
 
                                                 exitscopespace();
+                                                
                                                 if($1 != NULL){
                                                     ($1->value).funcVal->totalLocals = $4; //check
+                                                    emit(funcend_op, lvalue_expr($1), NULL, NULL, 0, yylineno);
+                                                }else{
+                                                    /*We are not sure about that either*/
                                                     emit(funcend_op, lvalue_expr($1), NULL, NULL, 0, yylineno);
                                                 }
 
@@ -744,18 +763,19 @@ idlist:     ID                  {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>ID %s (idlist -> ID)\n", $1);
                                     }
+
                                     CheckAddFormal($1);
                                 }
             | idlist COMMA ID   {
                                     if(TRACE_PRINT){
                                         fprintf(ost, "=>IDLIST , ID %s (idlist -> idlist, ID)\n", $3);
                                     }
+
                                     CheckAddFormal($3);
                                 }
             ;
 
 ifprefix:   IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS      {
-                                                                //partEvaluation($3); /* check again!!!!!!! */
                                                                 $$ = ManageIfPrefix($3);                                             
                                                             }
             ;
@@ -770,19 +790,24 @@ ifstmt: ifprefix stmt elseprefix stmt       {
                                                 if(TRACE_PRINT){
                                                     fprintf(ost, "=>IF ELSE (ifstmt -> if(expr)stmt else stmt)\n");
                                                 }
+
                                                 int breaklist1 = 0, breaklist2 = 0, contlist1 = 0, contlist2 = 0;
 
                                                 patchlabel($1, $3 + 1);
                                                 patchlabel($3, nextquadlabel());
+
                                                 $$ = newstmt();
+
                                                 if($2 != NULL){
                                                     breaklist1 = $2->breakList;
                                                     contlist1 = $2->contList;
                                                 }
+                                                
                                                 if($4 != NULL){
                                                     breaklist2 = $4->breakList;
                                                     contlist2 = $4->contList;
                                                 }
+
                                                 $$->breakList = mergelist(breaklist1, breaklist2);
                                                 $$->contList = mergelist(contlist1, contlist2);
                                             }
@@ -792,7 +817,7 @@ ifstmt: ifprefix stmt elseprefix stmt       {
                                                 }
 
                                                 patchlabel($1, nextquadlabel());
-                                                $$ = $2;
+                                                $$ = $2; //Alert!
                                             }
         ;                          
 
@@ -819,6 +844,7 @@ whilestart: WHILE       {
 whilecond:  LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
                                                         partEvaluation($2);
                                                         emit(if_eq_op, $2, newexpr_constbool(1), NULL, nextquadlabel() + 2, yylineno);
+                                                        
                                                         $$ = nextquadlabel();
                                                         emit(jump_op, NULL, NULL, NULL, 0, yylineno);
                                                     }
@@ -843,8 +869,6 @@ whilestmt:  whilestart whilecond loopstmt
 
                                             patchlist(bl, nextquadlabel());
                                             patchlist(cl, $1);
-
-                                            //$$ = newstmt();
                                         }
             ;                                                                                               
 
@@ -893,15 +917,15 @@ returnstmt: RETURN SEMICOLON        {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret; (returnstmt -> return;)\n");
                                         }
+
                                         ManageReturnStatement(NULL);
-                                        
                                     }
             | RETURN expr SEMICOLON {
                                         if(TRACE_PRINT){
                                             fprintf(ost, "=>ret EXPR; (returnstmt -> return expr;)\n");
                                         }
+                                        
                                         ManageReturnStatement($2);
-                                       
                                     }
             ;
 
@@ -972,7 +996,7 @@ int main(int argc, char **argv){
 
     if(!compileError){
         printQuads(1, ost);
-        printQuads(0, ost);
+        //printQuads(0, ost);
         printToFile();
     }
     else{

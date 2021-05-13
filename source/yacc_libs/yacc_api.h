@@ -478,7 +478,7 @@ expr *emit_iftableitem(expr *e)
     else
     {
         expr *result = newexpr(var_e);
-        result->sym = newtemp();
+        result->sym = newtemp(); // = e[e->index]
         emit(tablegetelem_op, e, e->index, result, 0, yylineno);
         return result;
     }
@@ -488,8 +488,10 @@ expr *member_item(expr *lv, char *name)
 {
     lv = emit_iftableitem(lv);       // Emit code if r-value use of table item
     expr *ti = newexpr(tableitem_e); // Make a new expression
+
     ti->sym = lv->sym;
     ti->index = newexpr_conststring(name); // Const string index
+
     return ti;
 }
 
@@ -513,6 +515,7 @@ expr *make_call(expr *lv, expr *reversed_elist)
     expr *result = newexpr(var_e);
     result->sym = newtemp();
     emit(getretval_op, NULL, NULL, result, 0, yylineno);
+
     return result;
 }
 
@@ -524,19 +527,11 @@ expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
 
     assert(lvalue && callsuffix);
     lvalue = emit_iftableitem(lvalue);
-    //printf("NAME OF LV: %s\n", ((lvalue->sym)->value).varVal->name);
 
     if (callsuffix->method)
     {
         t = lvalue;
         lvalue = emit_iftableitem(member_item(t, callsuffix->name));
-
-        /*if (callsuffix->elist != NULL)   
-            callsuffix->elist->next = t; //vazei to onoma sto elist?
-            while()
-        else{
-            callsuffix->elist = t;
-        }*/
 
         curr = callsuffix->elist;
         prev = NULL;
@@ -564,10 +559,12 @@ expr *ManageObjectDef(expr *elist)
 {
     expr *t;
     int i;
+
     t = newexpr(newtable_e);
     t->sym = newtemp();
-    /*Elist needs to be reversed here*/
+
     emit(tablecreate_op, NULL, NULL, t, 0, yylineno);
+
     for (i = 0; elist; elist = elist->next)
         emit(tablesetelem_op, newexpr_constnum(i++), elist, t, 0, yylineno);
 
@@ -711,7 +708,6 @@ void partEvaluation(expr *rval)
     assert(rval);
     if (rval->type == boolexpr_e)
     {
-        //printf("patching putch\n");
         patchlist(rval->truelist, nextquadlabel());
         emit(assign_op, newexpr_constbool(1), NULL, rval, 0, yylineno);
         emit(jump_op, NULL, NULL, NULL, nextquadlabel() + 2, yylineno);
@@ -743,14 +739,13 @@ int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope)
 expr *ManagePrimaryLValue(expr *exVal)
 {
     expr *newExp;
-    assert(exVal);
 
+    assert(exVal);
     newExp = emit_iftableitem(exVal);
 
     if (newExp->sym == NULL || !CheckPrimaryForAccess(newExp->sym, scope))
     {
         compileError = 1;
-        //return newexpr(undef_e);
     }
 
     return newExp;
@@ -767,6 +762,7 @@ expr *EvaluateLValue(char *id)
 {
     SymbolTableEntry *entry, *insertEntry;
     expr *exVal;
+
     /*Lookup, starting from current scope and goind backwards till global scope*/
     if (!(entry = SymbolTable_lookup_general(symTab, id, scope)))
     {
@@ -787,6 +783,7 @@ expr *EvaluateLValue(char *id)
         entry->offset = currscopeoffset();
         incurrscopeoffset();
     }
+
     /*Else the id found somewhere in the symtab and its returned right after the lookup*/
     exVal = lvalue_expr(entry);
 
@@ -987,14 +984,9 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
 expr *ManagePrimaryFunction(expr *exVal)
 {
     expr *newExp;
+
     assert(exVal);
-
     newExp = emit_iftableitem(exVal);
-
-    /*if (newExp->sym == NULL || !CheckPrimaryForAccess(newExp->sym, scope))
-    {
-        compileError = 1;
-    }*/
 
     return newExp;
 }
@@ -1005,15 +997,15 @@ expr *ManagePrimaryFunction(expr *exVal)
  */
 void ManageReturnStatement(expr *ex)
 {
-    //assert(ex);
     if (ex != NULL)
+    {
         partEvaluation(ex);
+    }
 
     if (FuncStack_isEmpty(functionStack))
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"return\" statement outside of function at line %lu\n", yylineno);
         compileError = 1;
-        //return;
     }
 
     emit(ret_op, NULL, NULL, ex, 0, yylineno);
@@ -1289,7 +1281,7 @@ void check_arith(expr *e)
         e->type == newtable_e ||
         e->type == programfunc_e ||
         e->type == libraryfunc_e ||
-        e->type == boolexpr_e)
+        e->type == boolexpr_e) /*Should we include undef_expr?*/
     {
         fprintf_red(stderr, "[Alpha Compiler] -- ERROR: Illegal (non arithmetic) expression used in line %u\n", yylineno);
         compileError = 1;
@@ -1451,14 +1443,6 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
         check_arith(ex2);
     }
 
-    /*if (op == if_eq_op || op == if_noteq_op)
-    {
-        if (ex1->type != ex2->type)
-        {
-            fprintf_red(stderr, "Comparison between different operand types\n");
-        }
-    }*/
-
     ex = newexpr(boolexpr_e);
     ex->sym = newtemp();                          /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
     ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
@@ -1472,26 +1456,24 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
 int ManageIfPrefix(expr *ex)
 {
     int ifprefix;
+
     partEvaluation(ex);
     emit(if_eq_op, ex, newexpr_constbool(1), NULL, nextquadlabel() + 2, yylineno);
+
     ifprefix = nextquadlabel();
+
     emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+
     return ifprefix;
 }
 
 void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3, stmt_t *st)
 {
-
     int bl = 0, cl = 0;
 
-    //printf("OK1\n");
     patchlabel(forPref->enter, N2 + 1);
-    //printf("OK2\n");
     patchlabel(N1, nextquadlabel());
-    //printf("OK3\n");
     patchlabel(N2, forPref->test);
-    //printf("OK4\n");
-    //printf("N3 = %d, N1+1 = %d, currQuadLabel = %d\n", N3, N1 + 1, currQuad);
     patchlabel(N3, N1 + 1);
 
     if (st != NULL)
@@ -1499,12 +1481,9 @@ void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsig
         bl = st->breakList;
         cl = st->contList;
     }
-
-    //printf("OK5\n");
+    
     patchlist(bl, nextquadlabel());
-    //printf("OK6\n");
     patchlist(cl, N1 + 1);
-    //printf("Done with For stmt fun\n");
 }
 
 forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
@@ -1512,8 +1491,11 @@ forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
     forPrefixJumps *forprefix;
 
     partEvaluation(expr);
+
     forprefix = newForPrefixJump(M, nextquadlabel());
+
     emit(if_eq_op, expr, newexpr_constbool(1), NULL, 0, yylineno);
+
     return forprefix;
 }
 
@@ -1635,10 +1617,8 @@ expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
 {
     expr *e;
     e = newexpr(boolexpr_e);
-    //e->sym = istempexpr(ex2) ? ex2->sym : newtemp();
     e->sym = newtemp();
     patchlist(ex1->falselist, qd);
-    //printf("after patch list!\n");
     e->truelist = mergelist(ex1->truelist, ex2->truelist);
     e->falselist = ex2->falselist;
 

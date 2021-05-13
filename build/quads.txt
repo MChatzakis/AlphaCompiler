@@ -1,12 +1,6 @@
 
 ----------------------- QUADS -----------------------
-1: if_eq a TRUE 3 
-2: jump 7 
-3: if_eq b TRUE 5 
-4: jump 7 
-5: assign _v2 TRUE 
-6: jump 8 
-7: assign _v2 FALSE 
-8: assign x _v2 
-9: assign _v3 x 
+1: funcstart f 
+2: ret 120 
+3: funcend f 
 -----------------------------------------------------
