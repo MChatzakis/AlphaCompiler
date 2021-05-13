@@ -1,3 +1,5 @@
+//NO NEED
+
 t1 = [ {"()" : (function(t){ print(t); })}];
 
 t1();

@@ -1,3 +1,5 @@
+//OK CSD
+
 sprite..move(dx,dy); 
 /*
 1: TABLEGETELEM sprite “move” _t1

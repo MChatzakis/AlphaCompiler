@@ -1,2 +1,2 @@
-//OK MALLON
+//OK CSD
 x = a and not true;

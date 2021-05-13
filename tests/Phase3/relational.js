@@ -1,3 +1,5 @@
+//CSD OK
+
 a=b=c=d=e=f=g=h=i=j=k=l=0;
 
 a > b or c < d 

@@ -1,3 +1,5 @@
+//OK CSD
+
 test().x = 1;
 /*
 1: call test

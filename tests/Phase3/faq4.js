@@ -1,3 +1,5 @@
+//OK CSD
+
 t.a.b = c.d.e=f.g.h; 
 /*
 0: TABLEGETELEM   t "a" _t0
