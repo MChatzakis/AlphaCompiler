@@ -701,7 +701,7 @@ funcdef:    funcprefix funcargs funcblockstart funcbody funcblockend    {
                                                     emit(funcend_op, lvalue_expr($1), NULL, NULL, 0, yylineno);
                                                 }else{
                                                     /*We are not sure about that either*/
-                                                    emit(funcend_op, lvalue_expr($1), NULL, NULL, 0, yylineno);
+                                                    emit(funcend_op, NULL, NULL, NULL, 0, yylineno);
                                                 }
 
                                                 int offset = NumberStack_pop(scopeoffsetstack);
