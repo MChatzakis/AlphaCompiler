@@ -1,13 +1,3 @@
 
 ----------------------- QUADS -----------------------
-1: funcstart _f0 
-2: if_eq TRUE TRUE 4 
-3: jump 10 
-4: jump 10 
-5: funcstart _f1 
-6: funcend _f1 
-7: jump 2 
-8: jump 10 
-9: jump 2 
-10: funcend _f0 
 -----------------------------------------------------

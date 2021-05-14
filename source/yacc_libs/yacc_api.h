@@ -812,7 +812,9 @@ expr *EvaluateLocalLValue(char *id)
         {
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Library Function \"%s\" redefined as local variable at line %u\n", id, yylineno);
             compileError = 1;
-            return newexpr(undef_e);
+            exVal = newexpr(undef_e);
+            exVal->sym = newtemp();
+            return exVal; //LATHOS
         }
 
         /*At this point, insertion is valid*/
@@ -856,7 +858,9 @@ expr *EvaluateGlobalLValue(char *id)
         /*If nothing is found, error is thrown and NULL is returned*/
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined global symbol \"%s\" at line %u\n", id, yylineno);
         compileError = 1;
-        return newexpr(undef_e);
+        exVal = newexpr(undef_e);
+        exVal->sym = newtemp();
+        return exVal; //LATHOS
     }
 
     exVal = lvalue_expr(entry);

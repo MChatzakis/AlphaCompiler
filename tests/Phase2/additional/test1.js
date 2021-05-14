@@ -1,4 +1,4 @@
-
+//csd ok
 input(x);               //Αυτόματη δήλωση global x, χρήση global input library function
 
 print(typeof(x));       //χρήση global print, typeof και x
