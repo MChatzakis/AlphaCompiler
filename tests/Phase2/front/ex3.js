@@ -1,3 +1,4 @@
+//csd ok
 read(a); 
 a = input(); 
 function foo(x) {

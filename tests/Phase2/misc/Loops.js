@@ -1,3 +1,4 @@
+//csd ok
 while(1){
     function (){
         break; //error!
@@ -24,9 +25,9 @@ while(y<100){
     }
 }
 
-break;
-return;
-continue;
+break; //error
+return; //error 
+continue; //error
 
 while(1){
     while(2) break;
@@ -35,7 +36,7 @@ while(1){
         {
             {
                 function f(){
-                    while(1) continue; break;
+                    while(1) continue; break; //error
                 }
             }
         }

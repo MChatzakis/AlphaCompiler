@@ -1,3 +1,4 @@
+//csd ok
 /*{   
     x = 5; // 1
 
@@ -57,8 +58,8 @@ if(size){
     function y(){}
     x = 1;
 
-    function y(){
-        x = 10000;
+    function y(){ //error
+        x = 10000; //error
     }
 
     {

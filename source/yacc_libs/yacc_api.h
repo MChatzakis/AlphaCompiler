@@ -50,7 +50,7 @@ unsigned int currQuad = 0;
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-#define TRACE_PRINT 1 /*Set this flag to print the rule evaluation messages*/
+#define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
 
 /**
  * @brief Checks if id refers to some library function name.
@@ -813,8 +813,8 @@ expr *EvaluateLocalLValue(char *id)
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Library Function \"%s\" redefined as local variable at line %u\n", id, yylineno);
             compileError = 1;
             exVal = newexpr(undef_e);
-            exVal->sym = newtemp();
-            return exVal; //LATHOS
+            //exVal->sym = newtemp();
+            return exVal; //na to doume
         }
 
         /*At this point, insertion is valid*/
@@ -859,8 +859,8 @@ expr *EvaluateGlobalLValue(char *id)
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined global symbol \"%s\" at line %u\n", id, yylineno);
         compileError = 1;
         exVal = newexpr(undef_e);
-        exVal->sym = newtemp();
-        return exVal; //LATHOS
+        //exVal->sym = newtemp();
+        return exVal; //na to doume
     }
 
     exVal = lvalue_expr(entry);

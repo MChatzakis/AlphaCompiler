@@ -1,3 +1,4 @@
+//csd ok
 x = 2;
 function foo() {
     function foo(bar){

@@ -1,3 +1,4 @@
+//csd ok
 x = input(); 
 g = 12.4; 
 print(typeof(x)); 

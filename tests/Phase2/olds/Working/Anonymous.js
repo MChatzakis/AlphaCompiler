@@ -1,3 +1,4 @@
+//csd ok
 //insert in ST anonymous function with 
 //two formal arguments (x, AnonymousOne). scope: 0, line: 5
 //insert in ST formal argument x. scope: 1, line: 5

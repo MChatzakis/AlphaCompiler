@@ -1,3 +1,4 @@
+//csd ok
 function foo(){
    x=0;
 }

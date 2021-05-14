@@ -1,3 +1,4 @@
+//csd ok
 {
     y = 1;
     function f(){

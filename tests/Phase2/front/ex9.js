@@ -1,3 +1,4 @@
+//csd ok
 input(x);
 print(typeof(x));
 ::print(::typeof(::x));

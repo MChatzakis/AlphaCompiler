@@ -1,3 +1,4 @@
+//csd ok
 //function a(){}
 {
   a = 5;

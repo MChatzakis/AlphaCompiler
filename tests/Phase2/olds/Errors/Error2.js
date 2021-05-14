@@ -1,4 +1,4 @@
-// 
+//csd ok
 
 function G(){
        function F(){
@@ -12,15 +12,15 @@ continue;	//Use of 'continue' while not in a loop
 {
 	{
 		{
-			return G();
-			break;
-			continue;
+			return G(); //error
+			break; //error
+			continue; //error
 		}
 	}
 }
 
 function g(){
-	break;
+	break; //error
 }
 
 while(1){

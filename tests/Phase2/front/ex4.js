@@ -1,3 +1,4 @@
+//csd ok
 function f() {} 
 local f; //ok, found locally 
 local print; //ok, found in scope 0 

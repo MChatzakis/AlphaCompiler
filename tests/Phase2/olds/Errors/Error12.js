@@ -1,3 +1,4 @@
+//csd ok
 //Grammar error: Function call is not lvalue
 print()	= 2;
 function test() { }

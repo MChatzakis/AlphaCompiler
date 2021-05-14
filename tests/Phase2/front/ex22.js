@@ -1,3 +1,4 @@
+//csd ok
 function x(){
     function y(){
         function z(){

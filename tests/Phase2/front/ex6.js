@@ -1,3 +1,4 @@
+//csd ok
 x = y = 1; //new variables x, y
 { 
     x = 2; //ok, refers to global x 

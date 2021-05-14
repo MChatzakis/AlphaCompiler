@@ -1,3 +1,4 @@
+//csd ok
 function f() { // f in scope 0
   function f() {} // f in scope 1
   function f() {} //error: f exists

@@ -1,3 +1,4 @@
+//csd ok
 {
 	x = 1;	//variable x declared at scope 1
 	{

@@ -1,3 +1,4 @@
+//csd ok
 //insert in ST global variable (global). scope: 0, line: 2
 global = 1;
 

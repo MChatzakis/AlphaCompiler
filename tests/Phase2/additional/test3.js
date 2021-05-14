@@ -1,4 +1,4 @@
-//ABORT
+//csd ok
 function v(y) {
     function c(x) { 
         return x*y; 

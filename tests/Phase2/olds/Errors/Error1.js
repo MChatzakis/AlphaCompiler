@@ -1,4 +1,4 @@
-//
+//csd ok
 
 function f(){
        local f=10;
