@@ -1,3 +1,20 @@
 
 ----------------------- QUADS -----------------------
+1: if_greater x y 3 
+2: jump 5 
+3: assign _v0 TRUE 
+4: jump 6 
+5: assign _v0 FALSE 
+6: if_greater x z 8 
+7: jump 10 
+8: assign _v1 TRUE 
+9: jump 11 
+10: assign _v1 FALSE 
+11: if_eq _v0 _v1 13 
+12: jump 15 
+13: assign _v2 TRUE 
+14: jump 16 
+15: assign _v2 FALSE 
+16: assign y _v2 
+17: assign _v3 y 
 -----------------------------------------------------

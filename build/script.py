@@ -22,7 +22,7 @@ rootDirectory = "./../tests"
 
 do1 = 0  # sys.argv[1]
 do2 = 0  # sys.argv[2]
-do3 = 0  # sys.argv[3]
+do3 = 1  # sys.argv[3]
 printTests = 0  # sys.argv[4]
 
 phase1_tests = []
@@ -43,15 +43,15 @@ def printAllTests():
             print(phase3_tests[i])
 
 
-for path, subdirs, files in os.walk(rootDirectory + "/phase1/"):
+for path, subdirs, files in os.walk(rootDirectory + "/Phase1/"):
     for name in files:
         phase1_tests.append(os.path.join(path, name))
 
-for path, subdirs, files in os.walk(rootDirectory + "/phase2/"):
+for path, subdirs, files in os.walk(rootDirectory + "/Phase2/"):
     for name in files:
         phase2_tests.append(os.path.join(path, name))
 
-for path, subdirs, files in os.walk(rootDirectory + "/phase3/"):
+for path, subdirs, files in os.walk(rootDirectory + "/Phase3/"):
     for name in files:
         phase3_tests.append(os.path.join(path, name))
 
