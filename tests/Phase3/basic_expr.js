@@ -1,4 +1,4 @@
-//MALLON OK
+//CSD OK
 function f(){ return 4; x++; return;}
 
 x = 6;

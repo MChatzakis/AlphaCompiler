@@ -1,8 +1,11 @@
 =================================
 For the next time:
--Checks/Theory/Testing
+-Check code
 -Read FAQ
+
 -Ask about the difference of tmp variables on tool and us on partial evaluation
+
+-Optimization for constnum operations 
 
 ================================
 QA:

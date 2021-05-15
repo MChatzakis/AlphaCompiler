@@ -519,6 +519,7 @@ unknown_token .
 
                     if(!valid){
                         fprintf_red(stderr, "[Lexical Analysis] -- ERROR: String starting at line %u has not closed.\n", starting_line);
+                        yylval.string_value = strdup("");
                         compileError = 1;
                     }
                     else{
