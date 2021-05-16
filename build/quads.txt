@@ -1,7 +1,13 @@
 
 ----------------------- QUADS -----------------------
-1: funcstart _f0 
-2: funcend _f0 
-3: call _f0 
-4: getretval _v0 
+1: assign x 1 
+2: assign _v0 x 
+3: assign x 1 
+4: assign _v0 x 
+5: assign x 1 
+6: assign _v0 x 
+7: assign x 1 
+8: assign _v0 x 
+9: funcstart f 
+10: funcend f 
 -----------------------------------------------------

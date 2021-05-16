@@ -404,7 +404,7 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
 
     assert(st);
 
-     fprintf(stream, "----------------------- SCOPE LIST -----------------------\n");
+    fprintf(stream, "----------------------- SCOPE LIST -----------------------\n");
 
     for (i = 0; i < st->max_scope; i++)
     {
@@ -419,14 +419,22 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
         {
             entry = curr->entry;
 
-            if (entry->type < 3)
+            /*if (entry->type < 3)
             {
                 fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d) (offset %u) (space %s)\n", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->isActive, entry->offset, scopeArr[entry->space]);
+            }*/
+            if (entry->type < 3)
+            {
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (offset %u) (space %s)\n", (entry->value).varVal->name, arr[entry->type], (entry->value).varVal->line, (entry->value).varVal->scope, entry->offset, scopeArr[entry->space]);
             }
             else
             {
-                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d) (total locals %u) (iaddress %u) ",
-                        (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive, (entry->value).funcVal->totalLocals, (entry->value).funcVal->address);
+                //fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (isActive %d) (total locals %u) (iaddress %u) ",
+                // (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, entry->isActive, (entry->value).funcVal->totalLocals, (entry->value).funcVal->address);
+
+                fprintf(stream, "\"%s\" [%s] (line %u) (scope %u) (total locals %u) (iaddress %u) ",
+                        (entry->value).funcVal->name, arr[entry->type], (entry->value).funcVal->line, (entry->value).funcVal->scope, (entry->value).funcVal->totalLocals, (entry->value).funcVal->address);
+
                 if (entry->type == 3)
                 {
                     FuncArg_print(entry, stream);
@@ -446,7 +454,7 @@ void ScopeTable_print(ScopeTable *st, FILE *stream)
         }
     }
 
-    fprintf(stream, "--------------------------\n\"name\" [type] (line) (scope) (status)\n");
+    //fprintf(stream, "--------------------------\n\"name\" [type] (line) (scope) (status)\n");
 }
 
 /* ------------------------------------ FuncArg Functions ------------------------------------ */
@@ -533,7 +541,7 @@ FuncStack *FuncStack_init()
         perror("Could not allocate memory for Function Stack");
         exit(EXIT_FAILURE);
     }
-    
+
     fs->size = 0;
     fs->top = NULL;
 

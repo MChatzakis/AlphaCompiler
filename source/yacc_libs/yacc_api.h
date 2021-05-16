@@ -1422,16 +1422,52 @@ unsigned int istempexpr(expr *e)
 
 expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
 {
-    expr *expr;
+    expr *expr, *constExpr;
+    double arRes;
+
     assert(expr1 && expr2);
 
     check_arith(expr1);
     check_arith(expr2);
 
-    expr = newexpr(arithexpr_e);
-    expr->sym = newtemp();
+    /*Const arithmetic expression optimization*/
+    if (expr1->type == constnum_e && expr2->type == constnum_e)
+    {
+        expr = newexpr(assignexpr_e);
+        expr->sym = newtemp();
 
-    emit(op, expr1, expr2, expr, 0, yylineno);
+        switch (op)
+        {
+        case add_op:
+            arRes = expr1->numConst + expr2->numConst;
+            break;
+        case sub_op:
+            arRes = expr1->numConst - expr2->numConst;
+            break;
+        case mul_op:
+            arRes = expr1->numConst * expr2->numConst;
+            break;
+        case div_op:
+            arRes = expr1->numConst / expr2->numConst;
+            break;
+        case mod_op:
+            arRes = (double)((int)expr1->numConst % (int)expr2->numConst);
+            break;
+        default:
+            assert(0);
+        }
+
+        constExpr = newexpr_constnum(arRes);
+        emit(assign_op, constExpr, NULL, expr, 0, yylineno);
+    }
+    else
+    {
+        expr = newexpr(arithexpr_e);
+        expr->sym = newtemp();
+
+        emit(op, expr1, expr2, expr, 0, yylineno);
+    }
+
     return expr;
 }
 
@@ -1485,7 +1521,7 @@ void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsig
         bl = st->breakList;
         cl = st->contList;
     }
-    
+
     patchlist(bl, nextquadlabel());
     patchlist(cl, N1 + 1);
 }
