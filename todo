@@ -1,13 +1,6 @@
-=================================
-For the next time:
--Check code //OK
-
--Read FAQ
-
--Ask about the difference of tmp variables on tool and us on partial evaluation //OK??
-
--Optimization for constnum operations //OK
-
+For the next time
+-Do the tests (saved and FAQ)
 ================================
-QA:
-3) val to bool kai se expr sta while/if/else?
+Minor:
+-Ask about the difference of tmp variables on tool and us on partial evaluation
+-val to bool kai se expr sta while/if/else?
