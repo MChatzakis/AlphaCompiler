@@ -1,6 +1,7 @@
 /**
  * @file yacc_api.h
  * @author Manos Chatzakis (4238) Nikos Fanourakis (4237)
+ * 
  * @brief Functions to be used for yacc
  */
 
@@ -152,6 +153,10 @@ expr *ManageORexpression(expr *ex1, expr *ex2, int qd);
 expr *valToBool(expr *ex, int truej, int falsej);
 void printToFile();
 
+/**
+ * @brief Allocates and expands the quad array
+ * 
+ */
 void expand()
 {
     assert(total == currQuad);
@@ -165,13 +170,18 @@ void expand()
     total += EXPAND_SIZE;
 }
 
+/**
+ * @brief Creates a new quad with the corresponding attributes
+ * 
+ * @param op     Operation code
+ * @param arg1   First operand
+ * @param arg2   Second operand
+ * @param result Variable which stores the result
+ * @param label  Quad jump-to address (only for quads that change the flow)
+ * @param line   The line of the file that the quad corresponds
+ */
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line)
 {
-    /*if (compileError)
-    {
-        return;
-    }*/
-
     if (currQuad == total)
     {
         expand();
@@ -188,7 +198,7 @@ void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsi
 
 /**
  * @brief Generates names for every anonymous function
- * 
+ * The new names follow the form "_f[curr function count]"
  */
 void GenerateFuncName()
 {
@@ -197,7 +207,7 @@ void GenerateFuncName()
 }
 
 /**
- * @brief Initializes the name array
+ * @brief Initializes the function name array
  * 
  */
 void InitFuncNames()
@@ -212,12 +222,20 @@ void InitFuncNames()
     }
 }
 
+/**
+ * @brief Generates names for every anonymous variable
+ * The new names follow the form "_t[curr variable count]"
+ */
 void newtempname()
 {
     sprintf(temp_var_prefix + 2, "%u", tempcounter);
     tempcounter++;
 }
 
+/**
+ * @brief Initializes the variable name array
+ * It is invoked upon the beggining of compilation and after every statement
+ */
 void resettemp()
 {
     int i;
@@ -233,6 +251,11 @@ void resettemp()
     }
 }
 
+/**
+ * @brief Returns the current scope space
+ * 
+ * @return enum scopespace_t The current scope space
+ */
 enum scopespace_t currscopespace()
 {
     if (scopeSpaceCounter == 1)
@@ -247,6 +270,11 @@ enum scopespace_t currscopespace()
     return functionlocal;
 }
 
+/**
+ * @brief Returns the current scope offset
+ * 
+ * @return unsigned The current offset count
+ */
 unsigned currscopeoffset()
 {
     switch (currscopespace())
@@ -262,6 +290,10 @@ unsigned currscopeoffset()
     }
 }
 
+/**
+ * @brief Increases the corresponding offset
+ * 
+ */
 void incurrscopeoffset()
 {
     switch (currscopespace())
@@ -280,27 +312,47 @@ void incurrscopeoffset()
     }
 }
 
+/**
+ * @brief Increases scope space counter
+ * 
+ */
 void enterscopespace()
 {
     ++scopeSpaceCounter;
 }
 
+/**
+ * @brief Decreases scope space counter
+ * 
+ */
 void exitscopespace()
 {
     assert(scopeSpaceCounter > 1);
     --scopeSpaceCounter;
 }
 
+/**
+ * @brief Resets the formal argument offset
+ * 
+ */
 void resetformalargsoffset()
 {
     formalArgOffset = 0;
 }
 
+/**
+ * @brief Resets the function local offset
+ * 
+ */
 void resetfunctionlocalsoffset()
 {
     functionLocalOffset = 0;
 }
 
+/**
+ * @brief Restores the current scope offset, mainly upon exiting a function definition
+ * 
+ */
 void restorecurrscopeoffset(unsigned n)
 {
     switch (currscopespace())
@@ -319,25 +371,43 @@ void restorecurrscopeoffset(unsigned n)
     }
 }
 
+/**
+ * @brief Returns the next quad label
+ * 
+ * @return unsigned The index of the next (current) quad label
+ */
 unsigned nextquadlabel()
 {
     return currQuad;
 }
 
+/**
+ * @brief Sets the label field of quadNo to label
+ * 
+ * @param quadNo Number of quad
+ * @param label  The quad address to jump
+ */
 void patchlabel(unsigned quadNo, unsigned label)
 {
     assert(quadNo < currQuad);
     quads[quadNo].label = label;
 }
 
+/**
+ * @brief Generates a new expression containing the symbol sym
+ * 
+ * @param sym The symboltable entry
+ * @return expr* The new expression containing the entry
+ */
 expr *lvalue_expr(SymbolTableEntry *sym)
 {
     assert(sym);
+
     expr *e = (expr *)malloc(sizeof(expr));
     memset(e, 0, sizeof(expr));
 
     e->next = NULL;
-    e->sym = sym;
+    e->sym = sym; /*We shall never put NULL symbol to valid expressions*/
 
     switch (sym->type)
     {
@@ -359,21 +429,27 @@ expr *lvalue_expr(SymbolTableEntry *sym)
     default:
         assert(0);
     }
+
     return e;
 }
 
+/**
+ * @brief Returns an entry of a temporary variable. This variable could be an already allocated variable (optimization)
+ * or a new symboltable entry.
+ * @return SymbolTableEntry* The entry pointer to the tmp variable
+ */
 SymbolTableEntry *newtemp()
 {
     char *name;
     SymbolTableEntry *sym;
 
     newtempname();
-
     name = temp_var_prefix;
 
     sym = SymbolTable_lookup(symTab, name, scope);
     if (sym == NULL)
     {
+        /*A tmp variable could also be global*/
         if (scope > 0)
         {
             sym = SymbolTable_insert(symTab, name, scope, yylineno, LOCAL_ID);
@@ -383,35 +459,53 @@ SymbolTableEntry *newtemp()
             sym = SymbolTable_insert(symTab, name, scope, yylineno, GLOBAL_ID);
         }
 
+        /*Temporary variables participate in offset as regular variables*/
         sym->space = currscopespace();
         sym->offset = currscopeoffset();
         incurrscopeoffset();
 
         ScopeTable_insert(scopeTab, sym, scope);
-
-        //printf("Added new symtab entry\n");
     }
 
     return sym;
 }
 
+/**
+ * @brief Creates a new statement
+ * 
+ * @return stmt_t* The pointer to the memory allocated for the statement
+ */
 stmt_t *newstmt()
 {
     stmt_t *s = (stmt_t *)malloc(sizeof(stmt_t));
     memset((void *)s, 0, sizeof(stmt_t));
+
     s->breakList = 0;
     s->contList = 0;
+
     return s;
 }
 
+/**
+ * @brief Creates a new expression
+ * 
+ * @param t      Expression type
+ * @return expr* The pointer to the memory allocated for the expression
+ */
 expr *newexpr(expr_t t)
 {
     expr *e = (expr *)malloc(sizeof(expr));
     memset(e, 0, sizeof(expr));
+
     e->type = t;
     return e;
 }
 
+/**
+ * @brief Creates a new call object
+ * 
+ * @return call* The pointer to the memory allocated for the call object
+ */
 call *newcall()
 {
     call *c = (call *)malloc(sizeof(call));
@@ -419,16 +513,32 @@ call *newcall()
     return c;
 }
 
+/**
+ * @brief Creates a new indexed pair (key,value)
+ * 
+ * @param key The key expression of the pair
+ * @param value The value expression of the pair
+ * @return indexedPair* The memory allocated for the new pair
+ */
 indexedPair *newIndexPair(expr *key, expr *value)
 {
     indexedPair *pair = (indexedPair *)malloc(sizeof(indexedPair));
     memset(pair, 0, sizeof(indexedPair));
+
     pair->key = key;
     pair->val = value;
     pair->next = NULL;
+
     return pair;
 }
 
+/**
+ * @brief Creates a new forPrefixJumps object (test,enter)
+ * 
+ * @param test  The address of the condition
+ * @param enter The address of the body
+ * @return forPrefixJumps* 
+ */
 forPrefixJumps *newForPrefixJump(unsigned test, unsigned enter)
 {
     forPrefixJumps *jmp = (forPrefixJumps *)malloc(sizeof(forPrefixJumps));
@@ -440,6 +550,12 @@ forPrefixJumps *newForPrefixJump(unsigned test, unsigned enter)
     return jmp;
 }
 
+/**
+ * @brief Creates a new constnum expression, with the value i
+ * 
+ * @param i      The double value of the expression
+ * @return expr* The pointer to the memory allocated for this expression
+ */
 expr *newexpr_constnum(double i)
 {
     expr *e;
@@ -448,6 +564,12 @@ expr *newexpr_constnum(double i)
     return e;
 }
 
+/**
+ * @brief Creates a new conststring expression, with value s
+ * 
+ * @param s      The string value of the expression
+ * @return expr* The pointer to the memory allocated for this expression
+ */
 expr *newexpr_conststring(char *s)
 {
     expr *e = newexpr(conststring_e);
@@ -455,20 +577,38 @@ expr *newexpr_conststring(char *s)
     return e;
 }
 
+/**
+ * @brief Creates a new nil expression
+ * 
+ * @return expr* The pointer to the memory allocated for this expression
+ */
 expr *newexpr_nil()
 {
     expr *e = newexpr(nil_e);
     return e;
 }
 
+/**
+ * @brief Creates a new constbool expression, with value boolConst
+ * 
+ * @param boolConst The boolean value of the expression
+ * @return expr* The pointer to the memory allocated for this expression
+ */
 expr *newexpr_constbool(unsigned char boolConst)
 {
-    //expr *e = newexpr(boolexpr_e);expr *e = newexpr(boolexpr_e);
     expr *e = newexpr(constbool_e);
     e->boolConst = !!boolConst;
     return e;
 }
 
+/**
+ * @brief If the e is tableitem, creates the emits for getelement, and returns the result of the getelement expression
+ * else it returns the expression e without any change
+ * This function is invoked every time a tableitem is used as an rvalue.
+ * 
+ * @param e      The expression to be checked
+ * @return expr* The result if e is tableitem, else returns e without any change
+ */
 expr *emit_iftableitem(expr *e)
 {
     if (e->type != tableitem_e)
@@ -484,6 +624,13 @@ expr *emit_iftableitem(expr *e)
     }
 }
 
+/**
+ * @brief Creates a new tableitem expression lv["name"] or lv.name
+ * 
+ * @param lv The table expression
+ * @param name The index name
+ * @return expr* The pointer to the memory allocated for the new tableitem expression
+ */
 expr *member_item(expr *lv, char *name)
 {
     lv = emit_iftableitem(lv);       // Emit code if r-value use of table item
@@ -495,11 +642,20 @@ expr *member_item(expr *lv, char *name)
     return ti;
 }
 
+/**
+ * @brief Creates a function call and returns the variable containing the result of the call
+ * 
+ * @param lv The function call expression
+ * @param reversed_elist The argument list, reversed
+ * @return expr* The pointer to the memory allocated for the expression that holds the return result
+ */
 expr *make_call(expr *lv, expr *reversed_elist)
 {
     assert(lv); //reversed list could be NULL
+
     expr *func = emit_iftableitem(lv);
 
+    /*Access Error Check*/
     if (lv->sym == NULL || !CheckPrimaryForAccess(lv->sym, scope))
     {
         compileError = 1;
@@ -512,13 +668,22 @@ expr *make_call(expr *lv, expr *reversed_elist)
     }
 
     emit(call_op, func, NULL, NULL, 0, yylineno);
+
     expr *result = newexpr(var_e);
     result->sym = newtemp();
+
     emit(getretval_op, NULL, NULL, result, 0, yylineno);
 
     return result;
 }
 
+/**
+ * @brief Manages a classic function call
+ * 
+ * @param lvalue The name of the function
+ * @param callsuffix The call parameters
+ * @return expr* The result of the call
+ */
 expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
 {
     expr *callFunc;
@@ -528,6 +693,7 @@ expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
     assert(lvalue && callsuffix);
     lvalue = emit_iftableitem(lvalue);
 
+    /*If the function is a method, the lvalue should be added as the last parameter, representing "this"*/
     if (callsuffix->method)
     {
         t = lvalue;
@@ -550,11 +716,18 @@ expr *ManageLvalueCallsuffix(expr *lvalue, call *callsuffix)
             prev->next = t;
         }
     }
+
     callFunc = make_call(lvalue, callsuffix->elist);
-    //printf("NAME OF LV: %s\n", ((lvalue->sym)->value).varVal->name);
     return callFunc;
 }
 
+/**
+ * @brief   Creates the quads for the new table and its elements.
+            Returns the table.
+ * 
+ * @param elist  Table's elements
+ * @return expr* New table
+ */
 expr *ManageObjectDef(expr *elist)
 {
     expr *t;
@@ -580,7 +753,7 @@ expr *ManageObjectDef(expr *elist)
 int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
 {
     assert(entry);
-    //printf("YYLINENO %u\n", yylineno);
+
     /*
         If the refferred entry is a variable with scope between 0 and 
         current scope the accessibility might not be allowed.
@@ -612,6 +785,12 @@ int CheckForAccess(SymbolTableEntry *entry, unsigned int scope)
     return 1; /*Access Allowed*/
 }
 
+/**
+ * @brief Prints the error message when a wrong assignment is made.
+ * 
+ * @param entry The lvalue entry
+ * @return int Returns 1 for error, 0 for no-error
+ */
 int CheckForAssignError(SymbolTableEntry *entry)
 {
     assert(entry);
@@ -638,6 +817,13 @@ int CheckForAssignError(SymbolTableEntry *entry)
     return 0;
 }
 
+/**
+ * @brief Manages a method call
+ * 
+ * @param elist The parameter list
+ * @param id The name of the method
+ * @return call* The pointer for the memory allocated for the data of this call
+ */
 call *ManageMethodCall(expr *elist, char *id)
 {
     call *newCall = newcall();
@@ -649,6 +835,12 @@ call *ManageMethodCall(expr *elist, char *id)
     return newCall;
 }
 
+/**
+ * @brief Manages a normal call
+ * 
+ * @param elist  The parameter list
+ * @return call* The pointer for the memory allocated for the data of this call
+ */
 call *ManageNormalCall(expr *elist)
 {
     call *newCall = newcall();
@@ -664,7 +856,10 @@ call *ManageNormalCall(expr *elist)
  * @brief Manages the actions to be done at an assignment expression.
  * It corresponds to rule expr: lvalue ASSIGN expr.
  * 
- * @param entry The symboltable entry of the identifier
+ * @param lval The lvalue expression
+ * @param rval The rvalue expression
+ * 
+ * @return The assign expression
  */
 expr *ManageAssignValue(expr *lval, expr *rval)
 {
@@ -673,7 +868,7 @@ expr *ManageAssignValue(expr *lval, expr *rval)
 
     assert(lval && rval);
 
-    partEvaluation(rval);
+    partEvaluation(rval); /*Patches the true/false lists if a boolean expression is encountered*/
 
     if (lval->type == tableitem_e)
     {
@@ -689,7 +884,7 @@ expr *ManageAssignValue(expr *lval, expr *rval)
         if (entry == NULL || CheckForAssignError(entry))
         {
             compileError = 1;
-            return newexpr(undef_e);
+            return newexpr(undef_e); //dummy expression for not using null expression
         }
 
         emit(assign_op, rval, NULL, lval, 0, yylineno);
@@ -703,6 +898,11 @@ expr *ManageAssignValue(expr *lval, expr *rval)
     }
 }
 
+/**
+ * @brief For every boolean expression encountered, it fixes its true/false lists with current quad
+ * 
+ * @param rval The input expression
+ */
 void partEvaluation(expr *rval)
 {
     assert(rval);
@@ -711,14 +911,21 @@ void partEvaluation(expr *rval)
         patchlist(rval->truelist, nextquadlabel());
         emit(assign_op, newexpr_constbool(1), NULL, rval, 0, yylineno);
         emit(jump_op, NULL, NULL, NULL, nextquadlabel() + 2, yylineno);
+
         patchlist(rval->falselist, nextquadlabel());
         emit(assign_op, newexpr_constbool(0), NULL, rval, 0, yylineno);
     }
 }
 
+/**
+ * @brief Checks if the rvalue entry has proper access for the current scope
+ * 
+ * @param entry The rvalue expression symbol
+ * @param scope The current scope
+ * @return int Return 0 for error, 1 for non-error
+ */
 int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope)
 {
-    //printf("lalalala line: %u with type %d and scope %u and name %s\n", yylineno, entry->type, (entry->value).varVal->scope, (entry->value).varVal->name);
     if (!CheckForAccess(entry, scope))
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used not accessible variable \"%s\" as primary value at line %u\n", (entry->value).varVal->name, yylineno);
@@ -734,7 +941,9 @@ int CheckPrimaryForAccess(SymbolTableEntry *entry, unsigned int scope)
  * It corresponds to rule primary:   lvalue x
  *                                  |call
  * 
- * @param entry The symboltable entry of the identifier
+ * @param exVal The expression containing the symboltable entry of the identifier
+ * 
+ * @return The expression result
  */
 expr *ManagePrimaryLValue(expr *exVal)
 {
@@ -756,14 +965,14 @@ expr *ManagePrimaryLValue(expr *exVal)
  * Corresponds to rule expr: lvalue: ID
  * 
  * @param id The name of the variable
- * @return SymbolTableEntry * The entry of the identifier
+ * @return expr* Pointer to the memory allocated containing the symboltable entry
  */
 expr *EvaluateLValue(char *id)
 {
     SymbolTableEntry *entry, *insertEntry;
     expr *exVal;
 
-    /*Lookup, starting from current scope and goind backwards till global scope*/
+    /*Lookup, starting from current scope and going backwards till global scope*/
     if (!(entry = SymbolTable_lookup_general(symTab, id, scope)))
     {
         /*If we get here, it means lookup failed so the identifier ID is inserted to the symtab*/
@@ -795,7 +1004,7 @@ expr *EvaluateLValue(char *id)
  * It corresponds to yacc rule lvalue: local id
  * 
  * @param id The name of the local variable 
- * @return SymbolTableEntry* The entry of the variable if no error occurs, otherwise NULL
+ * @return expr* The expression entry of the variable if no error occurs, otherwise undef expression
  */
 expr *EvaluateLocalLValue(char *id)
 {
@@ -813,8 +1022,7 @@ expr *EvaluateLocalLValue(char *id)
             fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Library Function \"%s\" redefined as local variable at line %u\n", id, yylineno);
             compileError = 1;
             exVal = newexpr(undef_e);
-            //exVal->sym = newtemp();
-            return exVal; //na to doume
+            return exVal;
         }
 
         /*At this point, insertion is valid*/
@@ -844,7 +1052,7 @@ expr *EvaluateLocalLValue(char *id)
  * It corresponds to yacc rule lvalue: global id
  * 
  * @param id The name of the global variable 
- * @return SymbolTableEntry* The entry of the variable if no error occurs, otherwise NULL 
+ * @return expr * The expression entry of the variable if no error occurs, otherwise throws error and returns dummy expr 
  */
 expr *EvaluateGlobalLValue(char *id)
 {
@@ -859,8 +1067,7 @@ expr *EvaluateGlobalLValue(char *id)
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Undefined global symbol \"%s\" at line %u\n", id, yylineno);
         compileError = 1;
         exVal = newexpr(undef_e);
-        //exVal->sym = newtemp();
-        return exVal; //na to doume
+        return exVal;
     }
 
     exVal = lvalue_expr(entry);
@@ -981,9 +1188,10 @@ SymbolTableEntry *ManageIDFunctionDefinition(char *id)
 
 /**
  * @brief Manages the actions to be done when a function is called (rule primary: call)
- * If the id called is a variable it checks the accessibility and throws an error message.
  * 
- * @param entry The ID's entry on symboltable
+ * @param exVal The result of the function call
+ * 
+ * @return The result or the table item
  */
 expr *ManagePrimaryFunction(expr *exVal)
 {
@@ -996,8 +1204,10 @@ expr *ManagePrimaryFunction(expr *exVal)
 }
 
 /**
- * @brief Check is the use of return statement is valid
+ * @brief Check if the use of return statement is valid
+          and create the ret quad
  * 
+ * @param ex The expression to return
  */
 void ManageReturnStatement(expr *ex)
 {
@@ -1015,17 +1225,23 @@ void ManageReturnStatement(expr *ex)
     emit(ret_op, NULL, NULL, ex, 0, yylineno);
 }
 
+/**
+ * @brief Creates a new break statement with unpatched break list
+ * Throws error if this stmt is not inside a loop
+ * 
+ * @return stmt_t* The pointer to the memory allocated for this stmt
+ */
 stmt_t *ManageBreak()
 {
     stmt_t *breakStmt;
 
     breakStmt = newstmt();
-    make_stmt(breakStmt); //auto gia kapoio logo to deinxei by reference
+    make_stmt(breakStmt);
+
     if (loopcounter == 0)
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"break\" statement outside of loop at line %lu\n", yylineno);
         compileError = 1;
-        //return breakStmt; /*Allagi gia emit error sto assert*/
     }
 
     emit(jump_op, NULL, NULL, NULL, 0, yylineno);
@@ -1034,13 +1250,18 @@ stmt_t *ManageBreak()
     return breakStmt;
 }
 
+/**
+ * @brief Creates a new continue statement with unpatched continue list
+ * Throws error if this stmt is not inside a loop
+ * 
+ * @return stmt_t* The pointer to the memory allocated for this stmt
+ */
 stmt_t *ManageContinue()
 {
     stmt_t *continueStmt;
 
     continueStmt = newstmt();
-
-    make_stmt(continueStmt); //auto gia kapoio logo to deinxei by reference
+    make_stmt(continueStmt);
     if (loopcounter == 0)
     {
         fprintf_red(stderr, "[Syntax Analysis] -- ERROR: Used \"continue\" statement outside of loop at line %lu\n", yylineno);
@@ -1053,6 +1274,12 @@ stmt_t *ManageContinue()
     return continueStmt;
 }
 
+/**
+ * @brief Prints the entry to stream
+ * 
+ * @param entry 
+ * @param stream 
+ */
 void printSymTabEntry(SymbolTableEntry *entry, FILE *stream)
 {
     assert(entry);
@@ -1066,6 +1293,12 @@ void printSymTabEntry(SymbolTableEntry *entry, FILE *stream)
     }
 }
 
+/**
+ * @brief Prints the expression to stream
+ * 
+ * @param expr 
+ * @param stream 
+ */
 void printExprVal(expr *expr, FILE *stream)
 {
     assert(expr);
@@ -1128,6 +1361,12 @@ void printExprVal(expr *expr, FILE *stream)
     }
 }
 
+/**
+ * @brief Prints the quads with analytical field description
+ * 
+ * @param i 
+ * @param stream 
+ */
 void printQuadVerbose(unsigned int i, FILE *stream)
 {
     char *names[26] = {
@@ -1190,6 +1429,12 @@ void printQuadVerbose(unsigned int i, FILE *stream)
     fprintf(stream, "\n");
 }
 
+/**
+ * @brief Prints the quads in a simplified way
+ * 
+ * @param i 
+ * @param stream 
+ */
 void printQuadFormally(unsigned int i, FILE *stream)
 {
     char *names[26] = {
@@ -1250,6 +1495,12 @@ void printQuadFormally(unsigned int i, FILE *stream)
     fprintf(stream, "\n");
 }
 
+/**
+ * @brief Prints the quads to the stream
+ * 
+ * @param verbosePrint 
+ * @param stream 
+ */
 void printQuads(int verbosePrint, FILE *stream)
 {
     unsigned int i;
@@ -1271,12 +1522,22 @@ void printQuads(int verbosePrint, FILE *stream)
     //fprintf(ost, "#quad opcode result arg1 arg2 label line\n");
 }
 
+/**
+ * @brief Checks whether or not a number is an int
+ * 
+ * @param d Number d
+ * @return int 0 if the number is double, 1 if its int
+ */
 int is_int(double d)
 {
-    //double absolute = abs(d);
     return (int)d == d;
 }
 
+/**
+ * @brief Checks if the expression e is valid for arithmetic expressions
+ * 
+ * @param e The input expression
+ */
 void check_arith(expr *e)
 {
     if (e->type == constbool_e ||
@@ -1292,18 +1553,32 @@ void check_arith(expr *e)
     }
 }
 
+/**
+ * @brief Manages uminus expressions
+ * 
+ * @param exVal The input expression
+ * @return expr* The pointer to the arithmetic expression created
+ */
 expr *ManageUminus(expr *exVal)
 {
     expr *ex;
 
     check_arith(exVal);
+
     ex = newexpr(arithexpr_e);
     ex->sym = newtemp();
+
     emit(uminus_op, exVal, NULL, ex, 0, yylineno);
 
     return ex;
 }
 
+/**
+ * @brief Manages not expressions
+ * 
+ * @param exVal  The input expression
+ * @return expr* The pointer to the boolean expression created
+ */
 expr *ManageNot(expr *exVal)
 {
     expr *ex;
@@ -1311,19 +1586,25 @@ expr *ManageNot(expr *exVal)
     exVal = valToBool(exVal, nextquadlabel(), nextquadlabel() + 1);
     ex = newexpr(boolexpr_e);
 
-    //if(exVal->sym)
     ex->sym = exVal->sym;
-    //emit(not_op, exVal, NULL, ex, 0, 0);
+
     ex->truelist = exVal->falselist;
     ex->falselist = exVal->truelist;
 
     return ex;
 }
 
+/**
+ * @brief Manages lval++ expressions
+ * 
+ * @param exVal  The input expression
+ * @return expr* The pointer to the expression created
+ */
 expr *ManageLvaluePlusPlus(expr *exVal) //lvalue ++
 {
     expr *ex;
     check_arith(exVal);
+
     ex = newexpr(var_e);
     ex->sym = newtemp();
 
@@ -1343,6 +1624,12 @@ expr *ManageLvaluePlusPlus(expr *exVal) //lvalue ++
     return ex;
 }
 
+/**
+ * @brief Manages ++lvalue expressions
+ * 
+ * @param exVal The input expression
+ * @return expr* The new expression created
+ */
 expr *ManagePlusPlusLvalue(expr *exVal) //++lvalue
 {
     expr *ex;
@@ -1365,6 +1652,12 @@ expr *ManagePlusPlusLvalue(expr *exVal) //++lvalue
     return ex;
 }
 
+/**
+ * @brief Manages lvalue-- expressions
+ * 
+ * @param exVal  The input expression
+ * @return expr* The new expression
+ */
 expr *ManageLvalueMinusMinus(expr *exVal) //val--
 {
     expr *ex;
@@ -1388,6 +1681,12 @@ expr *ManageLvalueMinusMinus(expr *exVal) //val--
     return ex;
 }
 
+/**
+ * @brief Manages --lvalue expressions
+ * 
+ * @param exVal  The input expression
+ * @return expr* The new expression created
+ */
 expr *ManageMinusMinusLvalue(expr *exVal) //--val
 {
     expr *ex;
@@ -1410,20 +1709,40 @@ expr *ManageMinusMinusLvalue(expr *exVal) //--val
     return ex;
 }
 
+/**
+ * @brief Checks if id matches to a temporary variable
+ * 
+ * @param s Id
+ * @return unsigned int 1 if matches a temporary variable else 0
+ */
 unsigned int istempname(const char *s)
 {
     return s[0] == '_' && s[1] == 'v';
 }
 
+/**
+ * @brief Checks if an expression is a tmp expression
+ * 
+ * @param e The input expression
+ * @return unsigned int 1 on success 0 on failure
+ */
 unsigned int istempexpr(expr *e)
 {
     return e->sym && istempname((e->sym->value).varVal->name);
 }
 
+/**
+ * @brief Manages arithmetic expressions
+ * 
+ * @param expr1 First operand
+ * @param op    Operation code
+ * @param expr2 Second operand
+ * @return expr* Result expression
+ */
 expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
 {
-    expr *expr, *constExpr;
-    double arRes;
+    //expr *constExpr;
+    expr *expr;
 
     assert(expr1 && expr2);
 
@@ -1431,8 +1750,9 @@ expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
     check_arith(expr2);
 
     /*Const arithmetic expression optimization*/
-    if (expr1->type == constnum_e && expr2->type == constnum_e)
+    /*if (expr1->type == constnum_e && expr2->type == constnum_e)
     {
+        double arRes;
         expr = newexpr(assignexpr_e);
         expr->sym = newtemp();
 
@@ -1461,16 +1781,24 @@ expr *ManageArithmeticExpression(expr *expr1, iopcode op, expr *expr2)
         emit(assign_op, constExpr, NULL, expr, 0, yylineno);
     }
     else
-    {
-        expr = newexpr(arithexpr_e);
-        expr->sym = newtemp();
+    {*/
+    expr = newexpr(arithexpr_e);
+    expr->sym = newtemp();
 
-        emit(op, expr1, expr2, expr, 0, yylineno);
-    }
+    emit(op, expr1, expr2, expr, 0, yylineno);
+    //}
 
     return expr;
 }
 
+/**
+ * @brief Manages relation expressions
+ * 
+ * @param ex1 First operand
+ * @param op    Operation code
+ * @param ex2 Second operand
+ * @return expr* Result expression
+ */
 expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
 {
     expr *ex;
@@ -1484,15 +1812,21 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
     }
 
     ex = newexpr(boolexpr_e);
-    ex->sym = newtemp();                          /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
-    ex->truelist = newlist(nextquadlabel());      //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
-    ex->falselist = newlist(nextquadlabel() + 1); //to idio thema (mipws na kanoume ena arxiko allocation?)
+    ex->sym = newtemp(); /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
+    ex->truelist = newlist(nextquadlabel());
+    ex->falselist = newlist(nextquadlabel() + 1);
 
     emit(op, ex1, ex2, NULL, 0, yylineno);
     emit(jump_op, NULL, NULL, NULL, 0, yylineno);
     return ex;
 }
 
+/**
+ * @brief Manages the actions to be done for if prefix
+ * 
+ * @param ex The prefix expression
+ * @return int The quadlabel of the unfinished jump (fail jump)
+ */
 int ManageIfPrefix(expr *ex)
 {
     int ifprefix;
@@ -1507,6 +1841,15 @@ int ManageIfPrefix(expr *ex)
     return ifprefix;
 }
 
+/**
+ * @brief Manages the actions to be done after a for stmt is complete
+ * 
+ * @param forPref For prefix labels for the jumps
+ * @param N1 Before Elist label
+ * @param N2 Before Body label 
+ * @param N3 After Body label
+ * @param st The loopstmt
+ */
 void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsigned N3, stmt_t *st)
 {
     int bl = 0, cl = 0;
@@ -1526,6 +1869,13 @@ void ManageForStatement(forPrefixJumps *forPref, unsigned N1, unsigned N2, unsig
     patchlist(cl, N1 + 1);
 }
 
+/**
+ * @brief Manages for prefix actions
+ * 
+ * @param expr The input expression
+ * @param M The elist label
+ * @return forPrefixJumps* The test and enter labels 
+ */
 forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
 {
     forPrefixJumps *forprefix;
@@ -1539,18 +1889,36 @@ forPrefixJumps *ManageForPrefix(expr *expr, unsigned M)
     return forprefix;
 }
 
+/**
+ * @brief Initializes stmt lists
+ * 
+ * @param s The input statement
+ */
 void make_stmt(stmt_t *s)
 {
     s->breakList = 0;
     s->contList = 0;
 }
 
+/**
+ * @brief Initializes a new quad list
+ * 
+ * @param i The quad index
+ * @return int The quad index
+ */
 int newlist(int i)
 {
     quads[i].label = 0;
     return i;
 }
 
+/**
+ * @brief Merges two quad lists, by attaching the second to the first one
+ * 
+ * @param l1 The first list
+ * @param l2 The second list
+ * @return int The head quad index of the list
+ */
 int mergelist(int l1, int l2)
 {
     if (!l1)
@@ -1567,17 +1935,28 @@ int mergelist(int l1, int l2)
     }
 }
 
+/**
+ * @brief Traverses a quad list and patches the labels
+ * 
+ * @param list The head quad index
+ * @param label The label to patch the quads of the list
+ */
 void patchlist(int list, int label)
 {
     while (list)
     {
-        //printf("quad[%d].label == %d\n", list, label);
         int next = quads[list].label;
         quads[list].label = label;
         list = next;
     }
 }
 
+/**
+ * @brief Reverses the expression list
+ * 
+ * @param elist  The expression list
+ * @return expr* The reversed expression list
+ */
 expr *reverseExprList(expr *elist)
 {
     expr *tmp = NULL, *curr = elist, *prev = NULL;
@@ -1595,6 +1974,12 @@ expr *reverseExprList(expr *elist)
     return prev;
 }
 
+/**
+ * @brief Reverses an indexed pair list
+ * 
+ * @param plist The list head
+ * @return indexedPair* The reversed list head
+ */
 indexedPair *reverseIndexedPairList(indexedPair *plist)
 {
     indexedPair *tmp = NULL, *curr = plist, *prev = NULL;
@@ -1612,6 +1997,13 @@ indexedPair *reverseIndexedPairList(indexedPair *plist)
     return prev;
 }
 
+/**
+ * @brief Manages indexed object definition
+ *        with elements with the format {key : value}
+ * 
+ * @param list The pairs list
+ * @return expr* The result of the definition
+ */
 expr *ManageIndexedObjectDef(indexedPair *list)
 {
     expr *t = newexpr(newtable_e);
@@ -1630,6 +2022,12 @@ expr *ManageIndexedObjectDef(indexedPair *list)
     return t;
 }
 
+/**
+ * @brief Returns whether or not an opcode is jumpcode for the prints
+ * 
+ * @param i 
+ * @return int 
+ */
 int isJumpCode(int i)
 {
     quad q = quads[i];
@@ -1640,9 +2038,18 @@ int isJumpCode(int i)
     return 0;
 }
 
+/**
+ * @brief Manages AND expressions using partial evaluation
+ * 
+ * @param ex1 The first operand
+ * @param ex2 The second operant
+ * @param qd The patch label
+ * @return expr* The result of the AND expression
+ */
 expr *ManageANDexpression(expr *ex1, expr *ex2, int qd)
 {
     expr *e;
+
     e = newexpr(boolexpr_e);
     e->sym = newtemp();
 
@@ -1650,35 +2057,55 @@ expr *ManageANDexpression(expr *ex1, expr *ex2, int qd)
 
     e->truelist = ex2->truelist;
     e->falselist = mergelist(ex1->falselist, ex2->falselist);
+
     return e;
 }
 
+/**
+ * @brief Manages OR expressions using partial evaluation
+ * 
+ * @param ex1 The first operand
+ * @param ex2 The second operant
+ * @param qd The patch label
+ * @return expr* The result of the OR expression
+ */
 expr *ManageORexpression(expr *ex1, expr *ex2, int qd)
 {
     expr *e;
     e = newexpr(boolexpr_e);
     e->sym = newtemp();
+
     patchlist(ex1->falselist, qd);
+
     e->truelist = mergelist(ex1->truelist, ex2->truelist);
     e->falselist = ex2->falselist;
 
     return e;
 }
 
+/**
+ * @brief Converts every non boolean expression to boolean.
+          It is used only for logical operations.
+ * 
+ * @param ex1       Expression operand
+ * @param truejump  Truelist of the expression
+ * @param falsejump Falselist of the expression
+ * @return expr*    The boolean expression
+ */
 expr *valToBool(expr *ex1, int truejump, int falsejump)
 {
     expr *ex;
+
     if (ex1->type != boolexpr_e)
     {
         ex = newexpr(boolexpr_e);
         ex->sym = newtemp();
 
-        ex->truelist = newlist(truejump);   //exei thema giati den exei ginei akoma to prwto emit an einai stin arxi.
-        ex->falselist = newlist(falsejump); //to idio thema (mipws na kanoume ena arxiko allocation?)
+        ex->truelist = newlist(truejump);
+        ex->falselist = newlist(falsejump);
+
         emit(if_eq_op, ex1, newexpr_constbool(1), NULL, 0, yylineno);
         emit(jump_op, NULL, NULL, NULL, 0, yylineno);
-        //printf("Ex truelist... %d\n", ex->truelist);
-        //printf("Ex falselist... %d\n", ex->falselist);
 
         return ex;
     }
@@ -1686,15 +2113,24 @@ expr *valToBool(expr *ex1, int truejump, int falsejump)
         return ex1;
 }
 
+/**
+ * @brief Prints the quads to "quads.txt file"
+ * 
+ */
 void printToFile()
 {
     FILE *fp;
+
     fp = fopen("quads.txt", "w+");
+
     if (fp == NULL)
     {
         fprintf(stderr, "Couldn't open quads.txt\n");
         return;
     }
-    printQuads(0, fp);
+
+    //printQuads(0, fp);
+    printQuads(1, fp);
+
     fclose(fp);
 }

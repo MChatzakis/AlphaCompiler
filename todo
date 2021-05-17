@@ -1,11 +1,12 @@
 =================================
 For the next time:
--Check code
+-Check code //OK
+
 -Read FAQ
 
--Ask about the difference of tmp variables on tool and us on partial evaluation
+-Ask about the difference of tmp variables on tool and us on partial evaluation //OK??
 
--Optimization for constnum operations 
+-Optimization for constnum operations //OK
 
 ================================
 QA:
