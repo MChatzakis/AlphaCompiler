@@ -1,4 +1,4 @@
-//OK CSD
+//DONE
 
 while (true) {
 	function () {

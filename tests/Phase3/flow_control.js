@@ -1,4 +1,4 @@
-//OK CSD
+//DONE
 while (a=1) {
 	2-0;
 	break;

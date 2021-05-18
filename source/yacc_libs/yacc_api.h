@@ -668,6 +668,7 @@ expr *make_call(expr *lv, expr *reversed_elist)
     }
 
     emit(call_op, func, NULL, NULL, 0, yylineno);
+    //emit(call_op, NULL, NULL, func, 0, yylineno);
 
     expr *result = newexpr(var_e);
     result->sym = newtemp();

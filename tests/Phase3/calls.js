@@ -1,4 +1,4 @@
-//OK CSD
+//DONE
 a=b=c=d=e=false;
 
 a..f(a);

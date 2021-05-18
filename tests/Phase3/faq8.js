@@ -1,4 +1,4 @@
-//OK CSD
+//DONE
 
 while (1) {
   x = 1;
