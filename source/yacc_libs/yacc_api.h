@@ -1505,8 +1505,7 @@ void printQuads(int verbosePrint, FILE *stream)
 {
     unsigned int i;
 
-    fprintf(stream, "\n----------------------- QUADS -----------------------\n");
-    //fprintf(ost, "#quad,opcode,result,arg1,arg2,label,line\n");
+    fprintf(stream, "----------------------- QUADS -----------------------\n");
 
     for (i = 1; i < currQuad; i++)
     {
@@ -1519,7 +1518,6 @@ void printQuads(int verbosePrint, FILE *stream)
     }
 
     fprintf(stream, "-----------------------------------------------------\n");
-    //fprintf(ost, "#quad opcode result arg1 arg2 label line\n");
 }
 
 /**
