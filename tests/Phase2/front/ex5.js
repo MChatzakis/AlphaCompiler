@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 x; //new global var x 
 print(::x); //ok, x found 
 print(::y); //error: no y 

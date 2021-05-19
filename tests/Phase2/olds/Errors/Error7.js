@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 function foo(){
    x=0;
 }

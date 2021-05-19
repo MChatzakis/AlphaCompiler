@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 for(i=0, j=0; i<5; i++, k++ ){
     x =0 ;
 }

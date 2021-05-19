@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 a1 = a2 = a3 = a4 = nil;
 
 global_var = 0;

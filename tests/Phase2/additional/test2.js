@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 input(x); //Αυτόματη δήλωση global x, χρήση global input library function
 
 read(a); //FIXME:error undefined func

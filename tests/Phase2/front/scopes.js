@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 /*function f(y) { 
     function g(x) { return x*y; } // error: var f::y not accessible in g
     return g(x); 

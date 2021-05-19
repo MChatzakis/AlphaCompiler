@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 function foo(print,input){	//Collision with 'print' library function, 
 //Collision with 'input' library function
    print(geia);

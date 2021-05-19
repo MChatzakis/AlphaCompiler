@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 x = input(); 
 function g(x, y) { 
     local z = x + y; 

@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 //function a(){}
 {
   a = 5;
@@ -6,7 +6,7 @@
   function a(x, y) {
     //...
     //...
-    z = 1; 
+    z = 1;  //err
   }
 }
 

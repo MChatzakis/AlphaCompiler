@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 while(1){
     x = 1;
     if(x) continue;

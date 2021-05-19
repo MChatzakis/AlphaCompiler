@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 x = 10;
 function x(){} // error: var redefined as a function
 

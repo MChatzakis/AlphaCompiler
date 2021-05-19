@@ -1,4 +1,4 @@
-//csd ok
+//DONE
 /* Checked and its the same with tool */
 
 for(i = 0; i<N; i++){
