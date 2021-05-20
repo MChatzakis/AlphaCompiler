@@ -37,4 +37,7 @@ The produced executable "calc" supports input and output filestreams, for exampl
 
 By default, input filestream is stdin and output filestream is stdout. Use -h for help. Errors are always printed in stderr.
 
-We provide two ways to print the quads (verbose and formal). By defaults the quads are printed using the verbose method, but the formal method can be invoked by setting the printQuad(int flag, FILE* stream) flag to 0 manually.
+The quads are printed by default to output filestream and additionally to the file "quads.txt", only when the input has not compilation errors.
+
+We provide two ways to print the quads (verbose and formal). By defaults the quads are printed using the verbose method, but the formal method can be invoked by setting the printQuad(int flag, FILE* stream) flag to 0, manually.
+
