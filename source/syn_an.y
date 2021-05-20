@@ -933,6 +933,7 @@ returnstmt: RETURN SEMICOLON        {
 
 int yyerror(char *message){
     fprintf_red(stderr, "[Syntax Analysis] -- ERROR: %s: at line %d, on token: %s\n", message, yylineno, yytext);
+    //fprintf_red(stderr, "[Syntax Analysis] -- ERROR: %s: at line %d.\n", message, yylineno);
     compileError = 1;
     return 0;
 }
