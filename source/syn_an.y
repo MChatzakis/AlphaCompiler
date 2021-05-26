@@ -999,10 +999,13 @@ int main(int argc, char **argv){
         printQuads(1, ost);
         //printQuads(0, ost);
         printToFile();
+        //quads->target code
     }
     else{
         fprintf_red(stderr, "[Alpha Compiler] -- COMPILATION ERROR: Intermediate code generation failed.\n");
     }
+
+
 
     fclose(ost);
     fclose(yyin);
