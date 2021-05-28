@@ -1,9 +1,0 @@
------------------------ QUADS -----------------------
-#1: if_eq [arg1: y] [arg2: TRUE] (label: 5) (line: 1)
-#2: jump (label: 3) (line: 1)
-#3: assign [result: _v0] [arg1: TRUE] (label: 0) (line: 1)
-#4: jump (label: 6) (line: 1)
-#5: assign [result: _v0] [arg1: FALSE] (label: 0) (line: 1)
-#6: tablecreate [result: _v1] (label: 0) (line: 1)
-#7: tablesetelem [result: _v1] [arg1: _v0] [arg2: "x"] (label: 0) (line: 1)
------------------------------------------------------

@@ -120,8 +120,8 @@ static void avm_initstack()
 struct avm_table;
 struct avm_table *avm_tablenew();
 void avm_tabledestroy(struct avm_table *t);
-avm_memcell *avm_tablegetelem(avm_memcell *key);
-void avm_tablesetelem(avm_memcell *key, avm_memcell *value);
+//avm_memcell *avm_tablegetelem(avm_memcell *key);
+//void avm_tablesetelem(avm_memcell *key, avm_memcell *value);
 
 #define AVM_TABLE_HASHSIZE 211
 
@@ -179,8 +179,41 @@ avm_table *avm_tablenew(void)
     return t;
 }
 
+void avm_memcellclear(avm_memcell *m);
+typedef void (*memclear_func_t)(avm_memcell *);
+
+extern void memclear_string(avm_memcell *m)
+{
+    assert(m->data.strVal);
+    free(m->data.strVal);
+}
+
+extern void memclear_table(avm_memcell *m)
+{
+    assert(m->data.tableVal);
+    avm_tabledecrefcounter(m->data.tableVal);
+}
+
+memclear_func_t memclearFuncs[] = {
+    0, //number
+    memclear_string,
+    0, //bool
+    memclear_table,
+    0, //userfunc
+    0, //libfunc
+    0, //nil
+    0  //undef
+};
+
 void avm_memcellclear(avm_memcell *m)
 {
+    if (m->type != undef_m)
+    {
+        memclear_func_t f = memclearFuncs[m->type];
+        if (f)
+            (*f)(m);
+        m->type = undef_m;
+    }
 }
 
 void avm_tablebucketsdestroy(avm_table_bucket **p)

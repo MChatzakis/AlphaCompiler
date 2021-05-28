@@ -1,4 +1,5 @@
 #include "avm.h"
+#include <stdio.h>
 
 #define AVM_STACKENV_SIZE 4
 avm_memcell ax, bx, cx;
@@ -10,6 +11,8 @@ char *consts_getstring(unsigned index);
 char *libfuncs_getused(unsigned index);
 
 typedef void (*execute_func_t)(instruction *);
+
+int N = 0; //find what this is
 
 #define AVM_MAX_INSTRUCTIONS (unsigned)nop_v
 
@@ -43,6 +46,8 @@ extern void execute_newtable(instruction *instr);
 extern void execute_tablegetelem(instruction *instr);
 extern void execute_tablesetelem(instruction *instr);
 extern void execute_nop(instruction *instr);
+
+void avm_calllibfunc(char *id);
 
 execute_func_t executeFuncs[] = {
     execute_assign,
@@ -157,41 +162,8 @@ void execute_cycle(void)
     }
 }
 
-typedef void (*memclear_func_t)(avm_memcell *);
 
-extern void memclear_string(avm_memcell *m)
-{
-    assert(m->data.strVal);
-    free(m->data.strVal);
-}
 
-extern void memclear_table(avm_memcell *m)
-{
-    assert(m->data.tableVal);
-    avm_tabledecrefcounter(m->data.tableVal);
-}
-
-memclear_func_t memclearFuncs[] = {
-    0, //number
-    memclear_string,
-    0, //bool
-    memclear_table,
-    0, //userfunc
-    0, //libfunc
-    0, //nil
-    0  //undef
-};
-
-void avm_memcellclear(avm_memcell *m)
-{
-    if (m->type != undef_m)
-    {
-        memclear_func_t f = memclearFuncs[m->type];
-        if (f)
-            (*f)(m);
-        m->type = undef_m;
-    }
-}
 
 extern void avm_warning(char *format, ...);
 extern void avm_assign(avm_memcell *lv, avm_memcell *rv);
@@ -246,10 +218,10 @@ void execute_call(instruction *instr)
         break;
     }
     case string_m:
-        avm_calllibfunc(func->data.strVal);
+        avm_calllibfunc((func->data).strVal);
         break;
     case libfunc_m:
-        avn_calllibfunc(func->data.libfuncVal);
+        avm_calllibfunc((func->data).libfuncVal);
         break;
     default:
     {
@@ -523,7 +495,7 @@ void execute_jeq(instruction *instr)
     else if (rv1->type = bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) == avm_tobool(rv2));
     else if (rv1->type != rv2->type)
-        avm_error("%s == %s is illegal!", typeStrings[rv1->type], typeString[rv2->type]);
+        avm_error("%s == %s is illegal!", typeStrings[rv1->type], typeStrings[rv2->type]);
     else
     {
         //eq chech with disp
@@ -549,30 +521,104 @@ void libfunc_typeof()
 void execute_newtable(instruction *instr)
 {
     avm_memcell *lv = avm_translate_operand(&instr->result, (avm_memcell *)0);
-    assert(lv && (&stack[N - 1]>= lv && lv > &stack[top] || lv == &retval));
+    assert(lv && (&stack[N - 1] >= lv && lv > &stack[top] || lv == &retval));
     avm_memcellclear(lv);
     lv->type = table_m;
     lv->data.tableVal = avm_tablenew();
     avm_tableincrefcounter(lv->data.tableVal);
 }
 
-avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index);
-void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content);
+avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index);
+void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content);
 
+void execute_tablegetelem(instruction *instr)
+{
+    avm_memcell *lv = avm_translate_operand(&instr->result, (avm_memcell *)0);
+    avm_memcell *t = avm_translate_operand(&instr->arg1, (avm_memcell *)0);
+    avm_memcell *i = avm_translate_operand(&instr->arg2, &ax);
 
+    assert(lv && &stack[N - 1] >= lv && lv > &stack[top] || lv == &retval);
+    assert(t && &stack[N - 1] >= t && t > &stack[top]);
+    assert(i);
 
+    avm_memcellclear(lv);
+    lv->type = nil_m;
 
+    if (t->type != table_m)
+    {
+        avm_error("illegal use of type %s as table!", typeStrings[t->type]);
+    }
+    else
+    {
+        avm_memcell *content = avm_tablegetelem(t->data.tableVal, i);
+        if (content)
+            avm_assign(lv, content);
+        else
+        {
+            char *ts = avm_tostring(t);
+            char *is = avm_tostring(i);
+            avm_warning("%s[%s] not found!", ts, ts);
+            free(ts);
+            free(is);
+        }
+    }
+}
 
+void execute_tablesetelem(instruction *instr)
+{
+    avm_memcell *t = avm_translate_operand(&instr->result, (avm_memcell *)0);
+    avm_memcell *i = avm_translate_operand(&instr->arg1, &ax);
+    avm_memcell *c = avm_translate_operand(&instr->arg2, &bx);
 
+    assert(t && &stack[N - 1] >= t && t > &stack[top]);
+    assert(i && c);
 
+    if (t->type != table_m)
+        avm_error("illegal use of type %s as table!", typeStrings[t->type]);
+    else
+        avm_tablesetelem(t->data.tableVal, i, c);
+}
 
+void libfunc_input() {}
+void libfunc_objectmemberkeys() {}
+void libfunc_objecttotalmembers() {}
+void libfunc_objectcopy() {}
+void libfunc_argument() {}
+void libfunc_strtonum() {}
+void libfunc_sqrt() {}
+void libfunc_cos() {}
+void libfunc_sin() {}
 
+void libfunc_totalarguments(void)
+{
+    unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
+    avm_memcellclear(&retval);
 
+    if (p_topsp)
+    {
+        avm_error("'total arguments' called outse");
+        retval.type = nil_m;
+    }
+    else
+    {
+        retval.type = number_m;
+        retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
+    }
+}
 
-
-
-
-
-void execute_tablegetelem(instruction *instr){
-    avm_memcell* lv = avm_translate_operand(&instr->result)
+void avm_initialize()
+{
+    avm_initstack();
+    avm_registerlibfunc("print", libfunc_print);
+    avm_registerlibfunc("typeof", libfunc_typeof);
+    avm_registerlibfunc("input", libfunc_input);
+    avm_registerlibfunc("objectmemberkeys", libfunc_objectmemberkeys);
+    avm_registerlibfunc("objecttotalmembers", libfunc_objecttotalmembers);
+    avm_registerlibfunc("objectcopy", libfunc_objectcopy);
+    avm_registerlibfunc("totalarguments", libfunc_totalarguments);
+    avm_registerlibfunc("argument", libfunc_argument);
+    avm_registerlibfunc("strtonum", libfunc_strtonum);
+    avm_registerlibfunc("sqrt", libfunc_sqrt);
+    avm_registerlibfunc("cos", libfunc_cos);
+    avm_registerlibfunc("sin", libfunc_sin);
 }
