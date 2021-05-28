@@ -29,7 +29,7 @@ lex: $(LEX_FILE)
 	lex -o $(LEX_C_FILE) $(LEX_FILE)
 
 gcc: $(LEX_C_FILE) $(YACC_C_FILE) $(YACC_H_FILE) $(SYMBOL_TABLE) $(SYMBOL_TABLE_IMP) $(UTIL_FILE) $(UTIL_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE) $(YACC_API) $(STRUCTS)
-	gcc $(LEX_C_FILE) $(YACC_C_FILE) $(STACK_IMP_FILE) $(UTIL_IMP_FILE) $(SYMBOL_TABLE_IMP) -Werror -Wall -lm -o $(EXEC)
+	gcc $(LEX_C_FILE) $(YACC_C_FILE) $(STACK_IMP_FILE) $(UTIL_IMP_FILE) $(SYMBOL_TABLE_IMP) -lm -o $(EXEC)
 
 test: script.py
 	python3 script.py

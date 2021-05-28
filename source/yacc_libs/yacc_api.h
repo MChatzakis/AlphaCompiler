@@ -12,6 +12,7 @@
 #include <math.h>
 
 #include "../utils/utils.h"
+#include "../avm/avm.h"
 #include "structs.h"
 
 int yyerror(char *message);
@@ -71,6 +72,7 @@ unsigned int currQuad = 0;
      !strcmp(id, "cos") ||                \
      !strcmp(id, "sin"))
 
+/* ------------------------------------- ICG -------------------------------------*/
 void expand();
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line);
 void GenerateFuncName();
@@ -152,6 +154,14 @@ expr *ManageANDexpression(expr *ex1, expr *ex2, int qd);
 expr *ManageORexpression(expr *ex1, expr *ex2, int qd);
 expr *valToBool(expr *ex, int truej, int falsej);
 void printToFile();
+
+/* ------------------------------------- TCG -------------------------------------*/
+unsigned consts_newstring(char *s);
+unsigned consts_newnumber(double n);
+unsigned libfuncs_newused(const char *s);
+unsigned userfuncs_newfunc(SymbolTableEntry *sym);
+
+void make_operand(expr *e, vmarg *arg);
 
 /**
  * @brief Allocates and expands the quad array
@@ -2133,3 +2143,379 @@ void printToFile()
 
     fclose(fp);
 }
+
+/* ------------------------------------- TCG -------------------------------------*/
+unsigned consts_newstring(char *s)
+{
+    return 0;
+}
+
+unsigned consts_newnumber(double n)
+{
+    return 0;
+}
+
+unsigned libfuncs_newused(const char *s)
+{
+    return 0;
+}
+
+unsigned userfuncs_newfunc(SymbolTableEntry *sym)
+{
+    return 0;
+}
+
+void make_operand(expr *e, vmarg *arg)
+{
+    switch (e->type)
+    {
+    case var_e:
+    case tableitem_e:
+    case arithexpr_e:
+    case boolexpr_e:
+    case newtable_e:
+    {
+        assert(e->sym);
+        arg->val = e->sym->offset;
+        switch (e->sym->space)
+        {
+        case programvar:
+        {
+            arg->type = global_a;
+            break;
+        }
+        case functionlocal:
+        {
+            arg->type = local_a;
+            break;
+        }
+        case formalarg:
+        {
+            arg->type = formal_a;
+            break;
+        }
+        default:
+            assert(0);
+        }
+
+        break;
+    }
+    case constbool_e:
+    {
+        arg->val = e->boolConst;
+        arg->type = bool_a;
+        break;
+    }
+    case conststring_e:
+    {
+        arg->val = consts_newstring(e->strConst);
+        arg->type = string_a;
+        break;
+    }
+    case constnum_e:
+    {
+        arg->val = consts_newnumber(e->numConst);
+        arg->type = number_a;
+        break;
+    }
+    case nil_e:
+    {
+        arg->type = nil_a;
+        break;
+    }
+    case programfunc_e:
+    {
+        arg->type = userfunc_a;
+        //arg->val = e->sym->taddress;
+        arg->val = userfuncs_newfunc(e->sym);
+        break;
+    }
+    case libraryfunc_e:
+    {
+        arg->type = libfunc_a;
+        arg->val = libfuncs_newused((e->sym->value).funcVal->name);//e->sym->name);
+        break;
+    }
+    default:
+        assert(0);
+    }
+}
+
+void make_numberoperand(vmarg *arg, double val)
+{
+    arg->val = consts_newnumber(val);
+    arg->type = number_a;
+}
+
+void make_booloperand(vmarg *arg, unsigned val)
+{
+    arg->val = val;
+    arg->type = bool_a;
+}
+
+void make_retvaloperand(vmarg *arg)
+{
+    arg->type = retval_a;
+}
+/* Prepei na ftiaksoume tis akolouthes */
+void reset_operand(vmarg *arg)
+{
+}
+
+void emitInstruction(instruction i)
+{
+}
+
+unsigned nextinstructionlabel()
+{
+    return 0;
+}
+
+unsigned currprocessedquad()
+{
+    return 0;
+}
+
+void generate(enum vmopcode op, quad *q)
+{
+    /*instruction t;
+    t.opcode = op;
+    make_operand(q->arg1, &t.arg1);
+    make_operand(q->arg2, &t.arg2);
+    make_operand(q->result, &t.result);
+
+    q->label*/
+}
+
+void generate_relational(enum vmopcode op, quad *q)
+{
+    /*instruction t;
+    t.opcode = op;
+    make_operand(q.arg1, &t.arg1);
+    make_operand(q.arg2, &t.arg2);
+    t.result.type = label_a;
+    if (quad.label jump target < currprocessedquad())
+        t.result.value = quads[quad.label].taddress;
+    else
+        add_incomplete_jump(nextinstructionlabel(), quad.label);
+    quad.taddress = nextinstructionlabel();
+    emitInstruction(t);*/
+}
+
+void generate_ADD(quad *q) { generate(add_v, q); }
+void generate_SUB(quad *q) { generate(sub_v, q); }
+void generate_MUL(quad *q) { generate(mul_v, q); }
+void generate_DIV(quad *q) { generate(div_v, q); }
+void generate_MOD(quad *q) { generate(mod_v, q); }
+
+void generate_NEWTABLE(quad *q) { generate(newtable_v, q); }
+void generate_TABLEGETELEM(quad *q) { generate(tablegetelem_v, q); }
+void generate_TABLESETELEM(quad *q) { generate(tablesetelem_v, q); }
+void generate_ASSIGN(quad *q) { generate(assign_v, q); }
+void generate_NOP()
+{
+    instruction t;
+    t.opcode = nop_v;
+    emitInstruction(t);
+}
+
+void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
+void generate_IF_EQ(quad *q) { generate_relational(jeq_v, q); }
+void generate_IF_NOTEQ(quad *q) { generate_relational(jne_v, q); }
+void generate_IF_GREATER(quad *q) { generate_relational(jgt_v, q); }
+void generate_IF_GREATEREQ(quad *q) { generate_relational(jge_v, q); }
+void generate_IF_LESS(quad *q) { generate_relational(jlt_v, q); }
+void generate_IF_LESSEQ(quad *q) { generate_relational(jle_v, q); }
+
+void generate_NOT(quad *q)
+{
+    q->label = nextinstructionlabel();
+    instruction t;
+    t.opcode = jeq_v;
+    make_operand(q->arg1, &t.arg1);
+    make_booloperand(&t.arg2, 0);
+    t.result.type = label_a;
+    t.result.val = nextinstructionlabel() + 3;
+    emitInstruction(t);
+    t.opcode = assign_v;
+    make_booloperand(&t.arg1, 0);
+    reset_operand(&t.arg2);
+    make_operand(q->result, &t.result);
+    emitInstruction(t);
+
+    t.opcode = jump_v;
+    reset_operand(&t.arg1);
+    reset_operand(&t.arg2);
+    t.result.type = label_a;
+    t.result.val = nextinstructionlabel() + 2;
+    emitInstruction(t);
+    t.opcode = assign_v;
+    make_booloperand(&t.arg1, 1);
+    reset_operand(&t.arg2);
+    make_operand(q->result, &t.result);
+    emitInstruction(t);
+}
+
+void generate_OR(quad *q)
+{
+    q->label = nextinstructionlabel();
+    instruction t;
+
+    t.opcode = jeq_v;
+
+    make_operand(q->arg1, &t.arg1);
+    make_booloperand(&t.arg2, 1);
+
+    t.result.type = label_a;
+    t.result.val = nextinstructionlabel() + 4;
+
+    emitInstruction(t);
+
+    make_operand(q->arg2, &t.arg1);
+
+    t.result.val = nextinstructionlabel() + 3;
+
+    emitInstruction(t);
+
+    t.opcode = assign_v;
+
+    make_booloperand(&t.arg1, 0);
+    reset_operand(&t.arg2);
+    make_operand(q->result, &t.result);
+    emitInstruction(t);
+
+    t.opcode = jump_v;
+
+    reset_operand(&t.arg1);
+    reset_operand(&t.arg2);
+
+    t.result.type = label_a;
+    t.result.val = nextinstructionlabel() + 2;
+
+    emitInstruction(t);
+
+    t.opcode = assign_v;
+    make_booloperand(&t.arg1, 1);
+    reset_operand(&t.arg2);
+    make_operand(q->result, &t.result);
+    emitInstruction(t);
+}
+
+void generate_PARAM(quad *q)
+{
+    q->label = nextinstructionlabel();
+    instruction t;
+    t.opcode = pusharg_v;
+    make_operand(q->arg1, &t.arg1);
+    emitInstruction(t);
+}
+
+void generate_CALL(quad *q)
+{
+    q->label = nextinstructionlabel();
+    instruction t;
+    t.opcode = call_v;
+    make_operand(q->arg1, &t.arg1);
+    emitInstruction(t);
+}
+
+void generate_GETRETVAL(quad *q)
+{
+    q->label = nextinstructionlabel();
+    instruction t;
+    t.opcode = assign_v;
+    make_operand(q->result, &t.result);
+    make_retvaloperand(&t.arg1);
+    emitInstruction(t);
+}
+
+void generate_FUNCSTART(quad *q){
+    SymbolTableEntry *f;
+    f = q->result->sym;
+    (f->value).funcVal->address = nextinstructionlabel();
+
+    //userfunctions.add(f->id, f->taddress, f->totallocals);
+    //!gia activation record: push(funcstack,f);
+    instruction t;
+    t.opcode = funcenter_v;
+    make_operand(q->result, &t.result);
+    emitInstruction(t);
+}
+
+
+void generate_RETURN(quad *q){
+    q->label = nextinstructionlabel();
+    instruction t;
+    t.opcode = assign_v;
+    make_retvaloperand(&t.result);
+    make_operand(q->arg1, &t.arg1);
+    emitInstruction(t);
+
+    
+    // !SymbolTableEntry *f = top(funcstack);
+    // !append(f.returnList, nextinstructionlabel());
+
+    t.opcode = jump_v;
+    reset_operand(&t.arg1);
+    reset_operand(&t.arg2);
+    t.result.type = label_a;
+    emitInstruction(t);
+}
+
+void generate_FUNCEND(quad *q){
+    SymbolTableEntry *f;
+    // !f = pop(funcstack);
+    //backpatch(f.returnList, nextinstuctionlabel());
+    q->label = nextinstructionlabel();
+
+    instruction t;
+    t.opcode = funcexit_v;
+    make_operand(q->result, &t.result);
+    emitInstruction(t);
+}
+
+void generate_UMINUS(quad *q){
+
+}
+
+void generate_AND(quad *q){
+
+}
+
+typedef void (*generator_func_t)(quad *);
+
+generator_func_t generators[] = {
+    generate_ASSIGN,
+    generate_ADD,
+    generate_SUB,
+    generate_MUL,
+    generate_DIV,
+    generate_MOD,
+    generate_UMINUS,
+    generate_AND,
+    generate_OR,
+    generate_NOT,
+    generate_IF_EQ,
+    generate_IF_NOTEQ,
+    generate_IF_LESSEQ,
+    generate_IF_GREATEREQ,
+    generate_IF_LESS,
+    generate_IF_GREATER,
+    generate_CALL,
+    generate_PARAM,
+    generate_RETURN,
+    generate_GETRETVAL,
+    generate_FUNCSTART,
+    generate_FUNCEND,
+    generate_NEWTABLE,
+    generate_TABLEGETELEM,
+    generate_TABLESETELEM,
+    generate_JUMP
+};
+
+void generateInstructions(){
+    for(unsigned i = 0; i < total; ++i)
+        (*generators[quads[i].op])(quads+i);
+}
+
+
