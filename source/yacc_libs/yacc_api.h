@@ -23,6 +23,7 @@ extern int yylineno;
 extern char *yytext;
 extern FILE *yyin;
 
+/* ------------------------------------- ICG -------------------------------------*/
 unsigned int scope = 0;
 unsigned int loopcounter = 0;
 unsigned int unamed_functions = 0;
@@ -72,7 +73,6 @@ unsigned int currQuad = 0;
      !strcmp(id, "cos") ||                \
      !strcmp(id, "sin"))
 
-/* ------------------------------------- ICG -------------------------------------*/
 void expand();
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line);
 void GenerateFuncName();
@@ -153,15 +153,132 @@ expr *ManageIndexedObjectDef(indexedPair *list);
 expr *ManageANDexpression(expr *ex1, expr *ex2, int qd);
 expr *ManageORexpression(expr *ex1, expr *ex2, int qd);
 expr *valToBool(expr *ex, int truej, int falsej);
-void printToFile();
 
 /* ------------------------------------- TCG -------------------------------------*/
+instruction *instructions = NULL;
+unsigned totalInstructions = 0;
+unsigned currInstruction = 0;
+
+#define CURR_INSTRUCTIONS_SIZE (totalInstructions * sizeof(instruction))
+#define NEW_INSTRUCTIONS_SIZE (EXPAND_SIZE * sizeof(instruction) + CURR_INSTRUCTIONS_SIZE)
+
+incomplete_jump *ij_head = (incomplete_jump *)0;
+unsigned ij_total = 0;
+
+FuncStack *targetFuncStack;
+
+typedef void (*generator_func_t)(quad *);
+
+double *numConsts = NULL;
+unsigned totalNumConsts = 0;
+unsigned currNumConst = 0;
+
+#define CURR_NUMCONSTS_SIZE (totalNumConsts * sizeof(double))
+#define NEW_NUMCONSTS_SIZE (EXPAND_SIZE * sizeof(double) + CURR_NUMCONSTS_SIZE)
+
+char **stringConsts = NULL;
+unsigned totalStringConsts = 0;
+unsigned currStringConst = 0;
+
+#define CURR_STRINGCONSTS_SIZE (totalStringConsts * sizeof(char *))
+#define NEW_STRINGCONSTS_SIZE (EXPAND_SIZE * sizeof(char *) + CURR_STRINGCONSTS_SIZE)
+
+char **namedLibfuncs = NULL;
+unsigned totalNamedLibfuncs = 0;
+unsigned currNamedLibfunc = 0;
+
+#define CURR_LIBFUNCS_SIZE (totalNamedLibfuncs * sizeof(char *))
+#define NEW_LIBFUNCS_SIZE (EXPAND_SIZE * sizeof(char *) + CURR_LIBFUNCS_SIZE)
+
+userfunc *userFuncs = NULL;
+unsigned totalUserFuncs = 0;
+unsigned currUserFuncs = 0;
+
+#define CURR_USERFUNCS_SIZE (totalUserFuncs * sizeof(userfunc))
+#define NEW_USERFUNCS_SIZE (EXPAND_SIZE * sizeof(userfunc) + CURR_USERFUNCS_SIZE)
+
 unsigned consts_newstring(char *s);
 unsigned consts_newnumber(double n);
 unsigned libfuncs_newused(const char *s);
 unsigned userfuncs_newfunc(SymbolTableEntry *sym);
 
+void expandConstStrings();
+void expandConstNums();
+void expandLibFuncs();
+void expandUserFuncs();
+
+void emitInstruction(instruction i);
+void expandInstructions();
 void make_operand(expr *e, vmarg *arg);
+void make_numberoperand(vmarg *arg, double val);
+void make_booloperand(vmarg *arg, unsigned val);
+void make_retvaloperand(vmarg *arg);
+void reset_operand(vmarg *arg);
+void backpatchInstructions(SymbolTableEntry *func, unsigned label);
+
+unsigned nextinstructionlabel();
+unsigned currprocessedquad();
+
+void add_incomplete_jump(unsigned instrNo, unsigned iaddress);
+void patch_incomplete_jumps();
+void generate(enum vmopcode op, quad *q);
+void generateInstructions();
+void generate_ADD(quad *q);
+void generate_SUB(quad *q);
+void generate_MUL(quad *q);
+void generate_DIV(quad *q);
+void generate_MOD(quad *q);
+void generate_NEWTABLE(quad *q);
+void generate_TABLEGETELEM(quad *q);
+void generate_TABLESETELEM(quad *q);
+void generate_ASSIGN(quad *q);
+void generate_NOP();
+void generate_JUMP(quad *q);
+void generate_IF_EQ(quad *q);
+void generate_IF_NOTEQ(quad *q);
+void generate_IF_GREATER(quad *q);
+void generate_IF_GREATEREQ(quad *q);
+void generate_IF_LESS(quad *q);
+void generate_IF_LESSEQ(quad *q);
+void generate_NOT(quad *q);
+void generate_OR(quad *q);
+void generate_PARAM(quad *q);
+void generate_CALL(quad *q);
+void generate_GETRETVAL(quad *q);
+void generate_FUNCSTART(quad *q);
+void generate_RETURN(quad *q);
+void generate_FUNCEND(quad *q);
+void generate_UMINUS(quad *q);
+void generate_AND(quad *q);
+void generate_relational(enum vmopcode op, quad *q);
+
+generator_func_t generators[] = {
+    generate_ASSIGN,
+    generate_ADD,
+    generate_SUB,
+    generate_MUL,
+    generate_DIV,
+    generate_MOD,
+    generate_UMINUS,
+    generate_AND,
+    generate_OR,
+    generate_NOT,
+    generate_IF_EQ,
+    generate_IF_NOTEQ,
+    generate_IF_LESSEQ,
+    generate_IF_GREATEREQ,
+    generate_IF_LESS,
+    generate_IF_GREATER,
+    generate_CALL,
+    generate_PARAM,
+    generate_RETURN,
+    generate_GETRETVAL,
+    generate_FUNCSTART,
+    generate_FUNCEND,
+    generate_NEWTABLE,
+    generate_TABLEGETELEM,
+    generate_TABLESETELEM,
+    generate_JUMP};
 
 /**
  * @brief Allocates and expands the quad array
@@ -204,6 +321,7 @@ void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsi
     p->result = result;
     p->label = label;
     p->line = line;
+    p->taddress = 0;
 }
 
 /**
@@ -2145,25 +2263,6 @@ void printToFile()
 }
 
 /* ------------------------------------- TCG -------------------------------------*/
-unsigned consts_newstring(char *s)
-{
-    return 0;
-}
-
-unsigned consts_newnumber(double n)
-{
-    return 0;
-}
-
-unsigned libfuncs_newused(const char *s)
-{
-    return 0;
-}
-
-unsigned userfuncs_newfunc(SymbolTableEntry *sym)
-{
-    return 0;
-}
 
 void make_operand(expr *e, vmarg *arg)
 {
@@ -2233,7 +2332,7 @@ void make_operand(expr *e, vmarg *arg)
     case libraryfunc_e:
     {
         arg->type = libfunc_a;
-        arg->val = libfuncs_newused((e->sym->value).funcVal->name);//e->sym->name);
+        arg->val = libfuncs_newused((e->sym->value).funcVal->name); //e->sym->name);
         break;
     }
     default:
@@ -2257,49 +2356,251 @@ void make_retvaloperand(vmarg *arg)
 {
     arg->type = retval_a;
 }
-/* Prepei na ftiaksoume tis akolouthes */
-void reset_operand(vmarg *arg)
+
+void add_incomplete_jump(unsigned instrNo, unsigned iaddress)
 {
+    incomplete_jump *curr, *prev, *jmp;
+
+    curr = ij_head;
+    prev = NULL;
+
+    while (curr)
+    {
+        prev = curr;
+        curr = curr->next;
+    }
+
+    jmp = (incomplete_jump *)malloc(sizeof(incomplete_jump));
+    jmp->instrNo = instrNo;
+    jmp->iaddress = iaddress;
+    jmp->next = 0;
+
+    if (prev == NULL)
+    {
+        ij_head = jmp;
+    }
+    else
+    {
+        prev->next = jmp;
+    }
+
+    ij_total++;
+}
+
+void patch_incomplete_jumps()
+{
+    incomplete_jump *curr, *prev, *jmp;
+    curr = ij_head;
+
+    while (curr)
+    {
+        if (curr->iaddress == currQuad)
+        {
+            //instructions[curr->instrNo].result = totalInstructions;
+            //make_numberoperand(instructions[curr->instrNo].result, totalInstructions);
+            //make_numberoperand(&((instructions + curr->instrNo)->result), currInstruction); //to ekana etsi giati eimai kathisterimenos
+            instructions[curr->instrNo].result.type = label_a;
+            instructions[curr->instrNo].result.val = currInstruction;
+        }
+        else
+        {
+            //instructions[curr->instrNo].result = quads[curr->iaddress].label;
+            //make_numberoperand(&((instructions + curr->instrNo)->result), quads[curr->iaddress].taddress);
+            instructions[curr->instrNo].result.type = label_a;
+            instructions[curr->instrNo].result.val = quads[curr->iaddress].taddress;
+        }
+    }
+}
+
+void expandInstructions()
+{
+    assert(totalInstructions == currInstruction);
+
+    instruction *i = (instruction *)malloc(NEW_INSTRUCTIONS_SIZE);
+
+    if (instructions)
+    {
+        memcpy(i, instructions, CURR_INSTRUCTIONS_SIZE);
+        free(instructions);
+    }
+    instructions = i;
+    totalInstructions += EXPAND_SIZE;
 }
 
 void emitInstruction(instruction i)
 {
+    if (currInstruction == totalInstructions)
+    {
+        expandInstructions();
+    }
+
+    instruction *in = instructions + currInstruction++;
+    in->arg1 = i.arg1;
+    in->arg2 = i.arg2;
+    in->result = i.result;
+    in->opcode = i.opcode;
+    in->srcLine = i.srcLine;
 }
 
 unsigned nextinstructionlabel()
 {
-    return 0;
+    return currInstruction;
 }
 
-unsigned currprocessedquad()
+void expandConstStrings()
 {
-    return 0;
+    assert(totalStringConsts == currStringConst);
+
+    char **strs = (char **)malloc(NEW_STRINGCONSTS_SIZE);
+
+    if (stringConsts)
+    {
+        memcpy(strs, stringConsts, CURR_STRINGCONSTS_SIZE);
+        free(stringConsts);
+    }
+
+    stringConsts = strs;
+    totalStringConsts += EXPAND_SIZE;
+}
+
+void expandConstNums()
+{
+    assert(totalNumConsts == currNumConst);
+
+    double *dArray = (double *)malloc(NEW_NUMCONSTS_SIZE);
+
+    if (numConsts)
+    {
+        memcpy(dArray, numConsts, CURR_NUMCONSTS_SIZE);
+        free(numConsts);
+    }
+
+    numConsts = dArray;
+    totalNumConsts += EXPAND_SIZE;
+}
+
+void expandLibFuncs()
+{
+    assert(totalNamedLibfuncs == currNamedLibfunc);
+
+    char **libArray = (char **)malloc(NEW_LIBFUNCS_SIZE);
+
+    if (namedLibfuncs)
+    {
+        memcpy(libArray, namedLibfuncs, CURR_LIBFUNCS_SIZE);
+        free(namedLibfuncs);
+    }
+
+    namedLibfuncs = libArray;
+    totalNamedLibfuncs += EXPAND_SIZE;
+}
+
+void expandUserFuncs()
+{
+    assert(totalUserFuncs == currUserFuncs);
+
+    userfunc *usf = (userfunc *)malloc(NEW_USERFUNCS_SIZE);
+
+    if (userFuncs)
+    {
+        memcpy(usf, stringConsts, CURR_USERFUNCS_SIZE);
+        free(userFuncs);
+    }
+
+    userFuncs = usf;
+    totalStringConsts += EXPAND_SIZE;
+}
+
+unsigned consts_newstring(char *s)
+{
+    unsigned currIndex = currStringConst;
+    if (currStringConst == totalStringConsts)
+    {
+        expandConstStrings();
+    }
+
+    stringConsts[currStringConst++] = strdup(s);
+    return currIndex;
+}
+
+unsigned consts_newnumber(double n)
+{
+    unsigned currIndex = currNumConst;
+    if (currNumConst == totalNumConsts)
+    {
+        expandConstNums();
+    }
+
+    numConsts[currNumConst++] = n;
+    return currIndex;
+}
+
+unsigned libfuncs_newused(const char *s)
+{
+    unsigned currIndex = currNamedLibfunc;
+    if (currNamedLibfunc == totalNamedLibfuncs)
+    {
+        expandLibFuncs();
+    }
+
+    namedLibfuncs[currNamedLibfunc++] = strdup(s);
+    return currIndex;
+}
+
+unsigned userfuncs_newfunc(SymbolTableEntry *sym)
+{
+    unsigned currIndex = currUserFuncs;
+
+    if (currUserFuncs == totalUserFuncs)
+    {
+        expandUserFuncs();
+    }
+
+    userFuncs[currUserFuncs].address = (sym->value).funcVal->address;
+    userFuncs[currUserFuncs].id = (char *)(sym->value).funcVal->name; //should strdup here?..
+    userFuncs[currUserFuncs++].localSize = (sym->value).funcVal->totalLocals;
+
+    return currIndex;
+}
+
+/* Prepei na ftiaksoume tis akolouthes */
+void reset_operand(vmarg *arg)
+{
+    //arg->type = label_a; //!see this again
+    arg->val = 0;
+}
+
+unsigned currprocessedquad(quad *q)
+{
+    return (q - quads); //see again
 }
 
 void generate(enum vmopcode op, quad *q)
 {
-    /*instruction t;
+    instruction t;
     t.opcode = op;
     make_operand(q->arg1, &t.arg1);
     make_operand(q->arg2, &t.arg2);
     make_operand(q->result, &t.result);
-
-    q->label*/
+    q->taddress = nextinstructionlabel();
+    emitInstruction(t);
 }
 
 void generate_relational(enum vmopcode op, quad *q)
 {
-    /*instruction t;
+    instruction t;
     t.opcode = op;
-    make_operand(q.arg1, &t.arg1);
-    make_operand(q.arg2, &t.arg2);
+    make_operand(q->arg1, &t.arg1);
+    make_operand(q->arg2, &t.arg2);
+
     t.result.type = label_a;
-    if (quad.label jump target < currprocessedquad())
-        t.result.value = quads[quad.label].taddress;
+    if (q->label < currprocessedquad(q)) //quad->x q->y => y-x = ?
+        t.result.val = quads[q->label].taddress;
     else
-        add_incomplete_jump(nextinstructionlabel(), quad.label);
-    quad.taddress = nextinstructionlabel();
-    emitInstruction(t);*/
+        add_incomplete_jump(nextinstructionlabel(), q->label);
+
+    q->taddress = nextinstructionlabel();
+    emitInstruction(t);
 }
 
 void generate_ADD(quad *q) { generate(add_v, q); }
@@ -2329,14 +2630,17 @@ void generate_IF_LESSEQ(quad *q) { generate_relational(jle_v, q); }
 
 void generate_NOT(quad *q)
 {
-    q->label = nextinstructionlabel();
+    q->taddress = nextinstructionlabel();
     instruction t;
+
     t.opcode = jeq_v;
     make_operand(q->arg1, &t.arg1);
     make_booloperand(&t.arg2, 0);
+
     t.result.type = label_a;
     t.result.val = nextinstructionlabel() + 3;
     emitInstruction(t);
+
     t.opcode = assign_v;
     make_booloperand(&t.arg1, 0);
     reset_operand(&t.arg2);
@@ -2349,6 +2653,7 @@ void generate_NOT(quad *q)
     t.result.type = label_a;
     t.result.val = nextinstructionlabel() + 2;
     emitInstruction(t);
+
     t.opcode = assign_v;
     make_booloperand(&t.arg1, 1);
     reset_operand(&t.arg2);
@@ -2358,7 +2663,7 @@ void generate_NOT(quad *q)
 
 void generate_OR(quad *q)
 {
-    q->label = nextinstructionlabel();
+    q->taddress = nextinstructionlabel();
     instruction t;
 
     t.opcode = jeq_v;
@@ -2368,30 +2673,24 @@ void generate_OR(quad *q)
 
     t.result.type = label_a;
     t.result.val = nextinstructionlabel() + 4;
-
     emitInstruction(t);
 
     make_operand(q->arg2, &t.arg1);
-
     t.result.val = nextinstructionlabel() + 3;
 
     emitInstruction(t);
 
     t.opcode = assign_v;
-
     make_booloperand(&t.arg1, 0);
     reset_operand(&t.arg2);
     make_operand(q->result, &t.result);
     emitInstruction(t);
 
     t.opcode = jump_v;
-
     reset_operand(&t.arg1);
     reset_operand(&t.arg2);
-
     t.result.type = label_a;
     t.result.val = nextinstructionlabel() + 2;
-
     emitInstruction(t);
 
     t.opcode = assign_v;
@@ -2401,9 +2700,13 @@ void generate_OR(quad *q)
     emitInstruction(t);
 }
 
+void generate_AND(quad *q)
+{
+}
+
 void generate_PARAM(quad *q)
 {
-    q->label = nextinstructionlabel();
+    q->taddress = nextinstructionlabel();
     instruction t;
     t.opcode = pusharg_v;
     make_operand(q->arg1, &t.arg1);
@@ -2412,7 +2715,7 @@ void generate_PARAM(quad *q)
 
 void generate_CALL(quad *q)
 {
-    q->label = nextinstructionlabel();
+    q->taddress = nextinstructionlabel();
     instruction t;
     t.opcode = call_v;
     make_operand(q->arg1, &t.arg1);
@@ -2421,39 +2724,47 @@ void generate_CALL(quad *q)
 
 void generate_GETRETVAL(quad *q)
 {
-    q->label = nextinstructionlabel();
+    q->taddress = nextinstructionlabel();
     instruction t;
+
     t.opcode = assign_v;
     make_operand(q->result, &t.result);
     make_retvaloperand(&t.arg1);
     emitInstruction(t);
 }
 
-void generate_FUNCSTART(quad *q){
+void generate_FUNCSTART(quad *q)
+{
     SymbolTableEntry *f;
+
     f = q->result->sym;
     (f->value).funcVal->address = nextinstructionlabel();
+    q->taddress = nextinstructionlabel();
 
     //userfunctions.add(f->id, f->taddress, f->totallocals);
-    //!gia activation record: push(funcstack,f);
+    userfuncs_newfunc(f);
+    //push(funcstack,f);
+    FuncStack_push(targetFuncStack, f, 0);
+
     instruction t;
     t.opcode = funcenter_v;
-    make_operand(q->result, &t.result);
+    //make_operand(q->result, &t.result);
+    make_operand(q->arg1, &t.result);
     emitInstruction(t);
 }
 
-
-void generate_RETURN(quad *q){
-    q->label = nextinstructionlabel();
+void generate_RETURN(quad *q)
+{
+    q->taddress = nextinstructionlabel();
     instruction t;
     t.opcode = assign_v;
     make_retvaloperand(&t.result);
     make_operand(q->arg1, &t.arg1);
     emitInstruction(t);
 
-    
-    // !SymbolTableEntry *f = top(funcstack);
+    SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack); //top(funcstack);
     // !append(f.returnList, nextinstructionlabel());
+    RetList_append(f, nextinstructionlabel());
 
     t.opcode = jump_v;
     reset_operand(&t.arg1);
@@ -2462,60 +2773,55 @@ void generate_RETURN(quad *q){
     emitInstruction(t);
 }
 
-void generate_FUNCEND(quad *q){
-    SymbolTableEntry *f;
-    // !f = pop(funcstack);
-    //backpatch(f.returnList, nextinstuctionlabel());
-    q->label = nextinstructionlabel();
+void backpatchInstructions(SymbolTableEntry *func, unsigned label)
+{
+    returnList *curr;
 
+    assert(func->type == USERFUNC_ID);
+
+    curr = (func->value.funcVal)->retList;
+
+    while (curr)
+    {
+        //instructions[curr->label] = label;
+        //make_numberoperand(&instructions[curr->label].result, label);
+        instructions[curr->label].result.type = label_a;
+        instructions[curr->label].result.val = label;
+        curr = curr->next;
+    }
+}
+
+void generate_FUNCEND(quad *q)
+{
+    SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack);
+
+    FuncStack_pop(targetFuncStack);
+    backpatchInstructions(f, nextinstructionlabel());
+
+    q->taddress = nextinstructionlabel();
     instruction t;
     t.opcode = funcexit_v;
     make_operand(q->result, &t.result);
     emitInstruction(t);
 }
 
-void generate_UMINUS(quad *q){
+void generate_UMINUS(quad *q)
+{
+    //generate(uminus_v, q);
+    instruction t; //arg1
+    t.opcode = mul_op;
 
+    make_operand(q->arg1, &t.arg1);
+    make_numberoperand(&t.arg2, -1);
+    make_operand(q->result, &t.result);
+
+    emitInstruction(t);
 }
 
-void generate_AND(quad *q){
+void generateInstructions()
+{
+    for (unsigned i = 0; i < total; ++i)
+        (*generators[quads[i].op])(quads + i); //q = quads + i | index = q - quads = i
 
+    patch_incomplete_jumps();
 }
-
-typedef void (*generator_func_t)(quad *);
-
-generator_func_t generators[] = {
-    generate_ASSIGN,
-    generate_ADD,
-    generate_SUB,
-    generate_MUL,
-    generate_DIV,
-    generate_MOD,
-    generate_UMINUS,
-    generate_AND,
-    generate_OR,
-    generate_NOT,
-    generate_IF_EQ,
-    generate_IF_NOTEQ,
-    generate_IF_LESSEQ,
-    generate_IF_GREATEREQ,
-    generate_IF_LESS,
-    generate_IF_GREATER,
-    generate_CALL,
-    generate_PARAM,
-    generate_RETURN,
-    generate_GETRETVAL,
-    generate_FUNCSTART,
-    generate_FUNCEND,
-    generate_NEWTABLE,
-    generate_TABLEGETELEM,
-    generate_TABLESETELEM,
-    generate_JUMP
-};
-
-void generateInstructions(){
-    for(unsigned i = 0; i < total; ++i)
-        (*generators[quads[i].op])(quads+i);
-}
-
-

@@ -62,6 +62,31 @@ typedef struct instruction
     unsigned srcLine;
 } instruction;
 
+typedef struct incomplete_jump
+{
+    unsigned instrNo;
+    unsigned iaddress;
+    struct incomplete_jump *next;
+} incomplete_jump;
+
+//incomplete_jump *ij_head = (incomplete_jump *)0;
+//unsigned ij_total = 0;
+
+//void add_incomplete_jump(unsigned instrNo, unsigned iaddress)
+//{
+//}
+
+/*
+patch_incomplete_jumps() {
+    for each incomplete jump x do {
+        if x.iaddress = intermediate code size then
+            instructions[x.instrNo].result = target code size;
+        else
+            instructions[x.instrNo].result = quads[x.iaddress].taddress;
+    }
+}
+*/
+
 typedef struct userfunc
 {
     unsigned address;
@@ -69,14 +94,6 @@ typedef struct userfunc
     char *id;
 } userfunc;
 
-double *numConsts;
-unsigned totalNumConsts;
-char **stringConsts;
-unsigned totalStringConsts;
-char **namedLibfuncs;
-unsigned totalNamedLibfuncs;
-userfunc *userFuncs;
-unsigned totalUserFuncs;
 
 typedef enum avm_memcell_t
 {
@@ -238,28 +255,3 @@ void avm_tabledestroy(avm_table *t)
     avm_tablebucketsdestroy(t->numIndexed);
     free(t);
 }
-
-typedef struct incomplete_jump
-{
-    unsigned instrNo;
-    unsigned iaddress;
-    struct incomplete_jump *next;
-} incomplete_jump;
-
-incomplete_jump *ij_head = (incomplete_jump *)0;
-unsigned ij_total = 0;
-
-void add_incomplete_jump(unsigned instrNo, unsigned iaddress)
-{
-}
-
-/*
-patch_incomplete_jumps() {
-    for each incomplete jump x do {
-        if x.iaddress = intermediate code size then
-            instructions[x.instrNo].result = target code size;
-        else
-            instructions[x.instrNo].result = quads[x.iaddress].taddress;
-    }
-}
-*/

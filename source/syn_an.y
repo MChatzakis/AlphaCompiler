@@ -644,6 +644,8 @@ funcname:   ID      {
 funcprefix:     FUNCTION funcname   {
                                         $$ = ManageIDFunctionDefinition($2);
                                         
+                                        emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+
                                         if($$ != NULL){
                                             emit(funcstart_op, lvalue_expr($$), NULL, NULL, 0, yylineno);
                                         }else{
@@ -688,7 +690,7 @@ funcblockend:           {
                         }
                 ;
 
-funcdef:    funcprefix funcargs funcblockstart funcbody funcblockend    {
+funcdef:    funcprefix M funcargs funcblockstart funcbody funcblockend    {
 
                                                 if(TRACE_PRINT){
                                                     fprintf(ost, "=>FUNCDEF (funcdef -> function ID () block)\n");
@@ -697,7 +699,7 @@ funcdef:    funcprefix funcargs funcblockstart funcbody funcblockend    {
                                                 exitscopespace();
                                                 
                                                 if($1 != NULL){
-                                                    ($1->value).funcVal->totalLocals = $4; //check
+                                                    ($1->value).funcVal->totalLocals = $5; //check
                                                     emit(funcend_op, lvalue_expr($1), NULL, NULL, 0, yylineno);
                                                 }else{
                                                     /*We are not sure about that either*/
@@ -709,6 +711,10 @@ funcdef:    funcprefix funcargs funcblockstart funcbody funcblockend    {
                                                 
                                                 //FuncStack_print(functionStack);
                                                 FuncStack_pop(functionStack);
+
+                                                //patchlist($1->returnList, nextquadlabel()-1);
+                                                
+                                                patchlabel($2-2, nextquadlabel());
                                                 
                                                 $$ = $1;
                                             }
@@ -995,10 +1001,12 @@ int main(int argc, char **argv){
     //SymbolTable_print(symTab, ost);
     ScopeTable_print(scopeTab, ost);
 
+    
     if(!compileError){
         printQuads(1, ost);
         //printQuads(0, ost);
         printToFile();
+        targetFuncStack = FuncStack_init();
         //quads->target code
     }
     else{

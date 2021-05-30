@@ -32,6 +32,12 @@ typedef struct Variable
     unsigned int line;
 } Variable;
 
+typedef struct returnList
+{
+    unsigned label;
+    struct returnList *next;
+}returnList;
+
 struct FuncArg;
 typedef struct Function
 {
@@ -41,6 +47,9 @@ typedef struct Function
     unsigned int line;
     unsigned int address;
     unsigned int totalLocals;
+
+    returnList *retList;
+
 } Function;
 
 typedef struct SymbolTableEntry
@@ -133,3 +142,6 @@ SymbolTableEntry *FuncStack_topEntry(FuncStack *fs);
 unsigned int FuncStack_topScope(FuncStack *fs);
 unsigned int FuncStack_pop(FuncStack *fs);
 void FuncStack_print(FuncStack *fs);
+
+/* ------------------------------------ ReturnList Functions ------------------------------------ */
+void RetList_append(SymbolTableEntry *f, unsigned label);

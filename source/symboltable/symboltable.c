@@ -107,6 +107,7 @@ SymbolTableEntry *SymbolTable_insert(SymbolTable *s, const char *id, unsigned in
         (entry->value).funcVal->address = 0;
         (entry->value).funcVal->totalLocals = 0;
         (entry->value).funcVal->args = NULL;
+        (entry->value).funcVal->retList = NULL;
     }
 
     if (prev == NULL)
@@ -674,4 +675,35 @@ void FuncStack_print(FuncStack *fs)
         printf("Func Scope: %u\n", curr->scope);
         curr = curr->next;
     }
+}
+
+void RetList_append(SymbolTableEntry *f, unsigned label)
+{
+    returnList *curr, *prev, *newNode;
+
+    assert(f->type == USERFUNC_ID);
+
+    curr = (f->value.funcVal)->retList;
+    prev = NULL;
+
+    while (curr)
+    {
+        prev = curr;
+        curr = curr->next;
+    }
+
+    newNode = (returnList *)malloc(sizeof(returnList));
+    newNode->next = NULL;
+    newNode->label = label;
+
+    if (prev == NULL)
+    {
+        (f->value.funcVal)->retList = newNode;
+    }
+    else
+    {
+        prev->next = newNode;
+    }
+
+    return;
 }
