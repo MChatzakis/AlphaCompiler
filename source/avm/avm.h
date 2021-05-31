@@ -41,10 +41,11 @@ typedef enum vmarg_t
     number_a = 4,
     string_a = 5,
     bool_a = 6,
-    nil_a = 7,
+    nil_a = 7, 
     userfunc_a = 8,
     libfunc_a = 9,
-    retval_a = 10
+    retval_a = 10,
+    unused_a = 11
 } vmarg_t;
 
 typedef struct vmarg

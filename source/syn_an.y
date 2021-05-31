@@ -994,26 +994,26 @@ int main(int argc, char **argv){
 
     SymbolTable_add_libfun(symTab, scopeTab);
 
-    emit(jump_op, NULL, NULL, NULL, 0, yylineno);
+    emit(jump_op, NULL, NULL, NULL, 1, yylineno); //jump stin epomeni?
 
     yyparse();
 
     //SymbolTable_print(symTab, ost);
     ScopeTable_print(scopeTab, ost);
 
-    
     if(!compileError){
         printQuads(1, ost);
-        //printQuads(0, ost);
-        printToFile();
+        //printToFile();
+
         targetFuncStack = FuncStack_init();
-        //quads->target code
+
+        generateInstructions();
+        printTCodeData(ost);
+        createAVMfile("binaryCode.abc");
     }
     else{
         fprintf_red(stderr, "[Alpha Compiler] -- COMPILATION ERROR: Intermediate code generation failed.\n");
     }
-
-
 
     fclose(ost);
     fclose(yyin);

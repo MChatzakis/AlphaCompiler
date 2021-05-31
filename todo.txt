@@ -1,3 +1,3 @@
-1)AND OR NOT kai oti alli den exoume dei
-2)Prints tou tcode
-3)--Oloklirwsi target code generation
+1) Erwtisi gia ton parser
+2) Oloklirwsi kai check target code
+3) Ksekinima parser gia vm

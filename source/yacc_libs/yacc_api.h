@@ -207,6 +207,14 @@ void expandConstNums();
 void expandLibFuncs();
 void expandUserFuncs();
 
+void printConstStrings(FILE *stream);
+void printConstNums(FILE *stream);
+void printLibFuncs(FILE *stream);
+void printUserFuncs(FILE *stream);
+void printInstruction(int i, instruction in, FILE *stream);
+
+void printInstructions(FILE *stream);
+
 void emitInstruction(instruction i);
 void expandInstructions();
 void make_operand(expr *e, vmarg *arg);
@@ -2266,12 +2274,21 @@ void printToFile()
 
 void make_operand(expr *e, vmarg *arg)
 {
+
+    if (e == NULL)
+    {
+        arg->type = unused_a;
+        arg->val = 0;
+        return;
+    }
+
     switch (e->type)
     {
     case var_e:
     case tableitem_e:
     case arithexpr_e:
     case boolexpr_e:
+    case assignexpr_e:
     case newtable_e:
     {
         assert(e->sym);
@@ -2336,6 +2353,7 @@ void make_operand(expr *e, vmarg *arg)
         break;
     }
     default:
+        printf("TYPE: %d\n", e->type);
         assert(0);
     }
 }
@@ -2396,19 +2414,16 @@ void patch_incomplete_jumps()
     {
         if (curr->iaddress == currQuad)
         {
-            //instructions[curr->instrNo].result = totalInstructions;
-            //make_numberoperand(instructions[curr->instrNo].result, totalInstructions);
-            //make_numberoperand(&((instructions + curr->instrNo)->result), currInstruction); //to ekana etsi giati eimai kathisterimenos
             instructions[curr->instrNo].result.type = label_a;
             instructions[curr->instrNo].result.val = currInstruction;
         }
         else
         {
-            //instructions[curr->instrNo].result = quads[curr->iaddress].label;
-            //make_numberoperand(&((instructions + curr->instrNo)->result), quads[curr->iaddress].taddress);
             instructions[curr->instrNo].result.type = label_a;
             instructions[curr->instrNo].result.val = quads[curr->iaddress].taddress;
         }
+
+        curr = curr->next;
     }
 }
 
@@ -2433,6 +2448,8 @@ void emitInstruction(instruction i)
     {
         expandInstructions();
     }
+
+    printf("\nemit\n");
 
     instruction *in = instructions + currInstruction++;
     in->arg1 = i.arg1;
@@ -2566,8 +2583,7 @@ unsigned userfuncs_newfunc(SymbolTableEntry *sym)
 /* Prepei na ftiaksoume tis akolouthes */
 void reset_operand(vmarg *arg)
 {
-    //arg->type = label_a; //!see this again
-    arg->val = 0;
+    arg->val = 0; //mipws prepei na ginei kati na min deixnei se pinaka? px -1?
 }
 
 unsigned currprocessedquad(quad *q)
@@ -2579,10 +2595,14 @@ void generate(enum vmopcode op, quad *q)
 {
     instruction t;
     t.opcode = op;
+    t.srcLine = q->line;
+
     make_operand(q->arg1, &t.arg1);
     make_operand(q->arg2, &t.arg2);
     make_operand(q->result, &t.result);
+
     q->taddress = nextinstructionlabel();
+
     emitInstruction(t);
 }
 
@@ -2590,6 +2610,8 @@ void generate_relational(enum vmopcode op, quad *q)
 {
     instruction t;
     t.opcode = op;
+    t.srcLine = q->line;
+
     make_operand(q->arg1, &t.arg1);
     make_operand(q->arg2, &t.arg2);
 
@@ -2612,10 +2634,14 @@ void generate_MOD(quad *q) { generate(mod_v, q); }
 void generate_NEWTABLE(quad *q) { generate(newtable_v, q); }
 void generate_TABLEGETELEM(quad *q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELEM(quad *q) { generate(tablesetelem_v, q); }
-void generate_ASSIGN(quad *q) { generate(assign_v, q); }
+void generate_ASSIGN(quad *q)
+{
+    generate(assign_v, q);
+}
 void generate_NOP()
 {
     instruction t;
+    t.srcLine = 0;
     t.opcode = nop_v;
     emitInstruction(t);
 }
@@ -2632,7 +2658,7 @@ void generate_NOT(quad *q)
 {
     q->taddress = nextinstructionlabel();
     instruction t;
-
+    t.srcLine = q->line;
     t.opcode = jeq_v;
     make_operand(q->arg1, &t.arg1);
     make_booloperand(&t.arg2, 0);
@@ -2709,7 +2735,10 @@ void generate_PARAM(quad *q)
     q->taddress = nextinstructionlabel();
     instruction t;
     t.opcode = pusharg_v;
+    t.srcLine = q->line;
     make_operand(q->arg1, &t.arg1);
+    t.arg2.type = unused_a;
+    t.result.type = unused_a;
     emitInstruction(t);
 }
 
@@ -2718,7 +2747,10 @@ void generate_CALL(quad *q)
     q->taddress = nextinstructionlabel();
     instruction t;
     t.opcode = call_v;
+    t.srcLine = q->line;
     make_operand(q->arg1, &t.arg1);
+    t.arg2.type = unused_a;
+    t.result.type = unused_a;
     emitInstruction(t);
 }
 
@@ -2728,28 +2760,36 @@ void generate_GETRETVAL(quad *q)
     instruction t;
 
     t.opcode = assign_v;
+    t.srcLine = q->line;
+
     make_operand(q->result, &t.result);
     make_retvaloperand(&t.arg1);
+    t.arg2.type = unused_a;
+
     emitInstruction(t);
 }
 
 void generate_FUNCSTART(quad *q)
 {
-    SymbolTableEntry *f;
+    SymbolTableEntry *f = NULL;
 
-    f = q->result->sym;
+    f = q->arg1->sym;
     (f->value).funcVal->address = nextinstructionlabel();
     q->taddress = nextinstructionlabel();
 
     //userfunctions.add(f->id, f->taddress, f->totallocals);
-    userfuncs_newfunc(f);
+    //userfuncs_newfunc(f);
     //push(funcstack,f);
-    FuncStack_push(targetFuncStack, f, 0);
+    FuncStack_push(targetFuncStack, f, currUserFuncs);
 
     instruction t;
     t.opcode = funcenter_v;
+    t.srcLine = q->line;
     //make_operand(q->result, &t.result);
     make_operand(q->arg1, &t.result);
+    t.arg1.type = unused_a;
+    t.arg2.type = unused_a;
+
     emitInstruction(t);
 }
 
@@ -2758,8 +2798,13 @@ void generate_RETURN(quad *q)
     q->taddress = nextinstructionlabel();
     instruction t;
     t.opcode = assign_v;
+    t.srcLine = q->line;
     make_retvaloperand(&t.result);
-    make_operand(q->arg1, &t.arg1);
+    t.result.val = 10; //vlepoyme
+    make_operand(q->result, &t.arg1);
+    //make_operand(q->arg1, &t.result);
+
+    t.arg2.type = unused_a;
     emitInstruction(t);
 
     SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack); //top(funcstack);
@@ -2770,6 +2815,8 @@ void generate_RETURN(quad *q)
     reset_operand(&t.arg1);
     reset_operand(&t.arg2);
     t.result.type = label_a;
+    t.arg1.type = unused_a;
+    t.arg2.type = unused_a;
     emitInstruction(t);
 }
 
@@ -2793,15 +2840,26 @@ void backpatchInstructions(SymbolTableEntry *func, unsigned label)
 
 void generate_FUNCEND(quad *q)
 {
-    SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack);
+    SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack); //sto target code scope == index sto function table
+    unsigned index = FuncStack_topScope(targetFuncStack);
+
+    printf("Name of func %s, %d\n", (f->value.funcVal)->name, index);
 
     FuncStack_pop(targetFuncStack);
     backpatchInstructions(f, nextinstructionlabel());
 
     q->taddress = nextinstructionlabel();
+
     instruction t;
+    t.srcLine = q->line;
     t.opcode = funcexit_v;
-    make_operand(q->result, &t.result);
+
+    //make_operand(q->arg1, &t.result);
+    t.result.type = userfunc_a;
+    //arg->val = e->sym->taddress;
+    t.result.val = index;
+    t.arg1.type = unused_a;
+    t.arg2.type = unused_a;
     emitInstruction(t);
 }
 
@@ -2810,6 +2868,7 @@ void generate_UMINUS(quad *q)
     //generate(uminus_v, q);
     instruction t; //arg1
     t.opcode = mul_op;
+    t.srcLine = q->line;
 
     make_operand(q->arg1, &t.arg1);
     make_numberoperand(&t.arg2, -1);
@@ -2820,8 +2879,205 @@ void generate_UMINUS(quad *q)
 
 void generateInstructions()
 {
-    for (unsigned i = 0; i < total; ++i)
+    for (unsigned i = 1; i < currQuad; ++i)
+    {
+        //printf("aa\n"); //currQuad is total quad number at the end
+        printf("went to %d\n", quads[i].op);
+        quad *q = quads + i;
         (*generators[quads[i].op])(quads + i); //q = quads + i | index = q - quads = i
+    }
 
     patch_incomplete_jumps();
+}
+
+void printConstStrings(FILE *stream)
+{
+    int i;
+    fprintf(stream, "-- String Consts --\n");
+
+    for (i = 0; i < currStringConst; i++)
+    {
+        fprintf(stream, "[%u] : %s\n", i, stringConsts[i]);
+    }
+}
+
+void printConstNums(FILE *stream)
+{
+    int i;
+    fprintf(stream, "-- Num Consts --\n");
+
+    for (i = 0; i < currNumConst; i++)
+    {
+        fprintf(stream, "[%u] : %f\n", i, numConsts[i]);
+    }
+}
+
+void printLibFuncs(FILE *stream)
+{
+    int i;
+    fprintf(stream, "-- Used Lib Funcs --\n");
+
+    for (i = 0; i < currNamedLibfunc; i++)
+    {
+        fprintf(stream, "[%u] : %s\n", i, namedLibfuncs[i]);
+    }
+}
+
+void printUserFuncs(FILE *stream)
+{
+    int i;
+    fprintf(stream, "-- User Funcs --\n");
+    userfunc curr;
+    for (i = 0; i < currUserFuncs; i++)
+    {
+        curr = userFuncs[i];
+        fprintf(stream, "[%u] : (id:%s) (add: %u) (ls: %u)\n", i, curr.id, curr.address, curr.localSize);
+    }
+}
+
+void printInstruction(int i, instruction in, FILE *stream)
+{
+    char *opcodes_v[] = {
+        "assign_v",
+        "add_v",
+        "sub_v",
+        "mul_v",
+        "div_v",
+        "mod_v",
+        "uminus_v",
+        "and_v",
+        "or_v",
+        "not_v",
+        "jump_v",
+        "jeq_v",
+        "jne_v",
+        "jle_v",
+        "jge_v",
+        "jlt_v",
+        "jgt_v",
+        "call_v",
+        "pusharg_v",
+        "ret_v",
+        "funcenter_v",
+        "funcexit_v",
+        "newtable_v",
+        "tablegetelem_v",
+        "tablesetelem_v",
+        "nop_v"};
+
+    char *types[12] = {
+        "label_a",
+        "global_a",
+        "formal_a",
+        "local_a",
+        "number_a",
+        "string_a",
+        "bool_a",
+        "nil_a",
+        "userfunc_a",
+        "libfunc_a",
+        "retval_a",
+        "unused_a"};
+
+    fprintf(stream, "#%d: ", i);
+
+    fprintf(stream, "%s ", opcodes_v[in.opcode]);
+
+    if (in.result.type != unused_a)
+    {
+        fprintf(stream, "[result: %s, %u] ", types[in.result.type], in.result.val);
+    }
+
+    if (in.arg1.type != unused_a)
+    {
+        fprintf(stream, "[arg1: %s, %u] ", types[in.arg1.type], in.arg1.val);
+    }
+
+    if (in.arg2.type != unused_a)
+    {
+        fprintf(stream, "[arg2: %s, %u] ", types[in.arg2.type], in.arg2.val);
+    }
+
+    fprintf(stream, "(line: %u)\n", in.srcLine);
+}
+
+void printInstructions(FILE *stream)
+{
+    int i;
+    fprintf(stream, "----- INSTRUCTIONS -----\n");
+    for (i = 0; i < currInstruction; i++)
+    {
+        //printf("%d\n", i);
+        printInstruction(i, instructions[i], stream);
+    }
+}
+
+void printTCodeData(FILE *stream)
+{
+    printConstStrings(stream);
+    printConstNums(stream);
+    printLibFuncs(stream);
+    printUserFuncs(stream);
+    printInstructions(stream);
+}
+
+void createAVMfile(char *filename)
+{
+    unsigned magicNumber = 12345678;
+    int i;
+
+    FILE *stream = fopen(filename, "w+");
+    if (!stream)
+    {
+        perror("Could not open file to write");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(stream, "%u\n", magicNumber);
+
+    //print nums
+    fprintf(stream, "%u", currNumConst);
+    for (i = 0; i < currNumConst; i++)
+    {
+        fprintf(stream, " %f", numConsts[i]);
+    }
+    fprintf(stream, "\n");
+    //prints strings
+    fprintf(stream, "%u", currStringConst);
+    for (i = 0; i < currStringConst; i++)
+    {
+        fprintf(stream, " %lu %s", strlen(stringConsts[i]), stringConsts[i]);
+    }
+    fprintf(stream, "\n");
+    //prints lib funcs
+    fprintf(stream, "%u", currNamedLibfunc);
+    for (i = 0; i < currNamedLibfunc; i++)
+    {
+        //fprintf(stream, "[%u] : %s\n", i, namedLibfuncs[i]);
+        fprintf(stream, " %lu %s", strlen(namedLibfuncs[i]), namedLibfuncs[i]);
+    }
+    fprintf(stream, "\n");
+    //print user funcs
+    fprintf(stream, "%u", currUserFuncs);
+    userfunc curr;
+
+    for (i = 0; i < currUserFuncs; i++)
+    {
+        curr = userFuncs[i];
+        fprintf(stream, " %u %u %lu %s", curr.address, curr.localSize, strlen(curr.id), curr.id);
+    }
+    fprintf(stream, "\n");
+
+    //print instructions
+    fprintf(stream, "%u\n", currInstruction);
+    for (i = 0; i < currInstruction; i++)
+    {
+        //printf("%d\n", i);
+        //printInstruction(i, instructions[i], stream);
+        fprintf(stream, "%d %d %u %d %u %d %u", instructions[i].opcode, instructions[i].result.type, instructions[i].result.val,
+                instructions[i].arg1.type, instructions[i].arg1.val, instructions[i].arg2.type, instructions[i].arg2.val);
+        fprintf(stream, "\n");
+    }
+
+    fclose(stream);
 }
