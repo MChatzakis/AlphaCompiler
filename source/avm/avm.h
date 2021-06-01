@@ -70,31 +70,12 @@ typedef struct incomplete_jump
     struct incomplete_jump *next;
 } incomplete_jump;
 
-//incomplete_jump *ij_head = (incomplete_jump *)0;
-//unsigned ij_total = 0;
-
-//void add_incomplete_jump(unsigned instrNo, unsigned iaddress)
-//{
-//}
-
-/*
-patch_incomplete_jumps() {
-    for each incomplete jump x do {
-        if x.iaddress = intermediate code size then
-            instructions[x.instrNo].result = target code size;
-        else
-            instructions[x.instrNo].result = quads[x.iaddress].taddress;
-    }
-}
-*/
-
 typedef struct userfunc
 {
     unsigned address;
     unsigned localSize;
     char *id;
 } userfunc;
-
 
 typedef enum avm_memcell_t
 {
@@ -127,17 +108,17 @@ typedef struct avm_memcell
 #define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
 
 avm_memcell stack[AVM_STACKSIZE];
-static void avm_initstack()
+/*static void avm_initstack()
 {
     for (unsigned i = 0; i < AVM_STACKSIZE; ++i)
     {
         AVM_WIPEOUT(stack[i]);
         stack[i].type = undef_m;
     }
-}
+}*/
 struct avm_table;
-struct avm_table *avm_tablenew();
-void avm_tabledestroy(struct avm_table *t);
+//struct avm_table *avm_tablenew();
+//void avm_tabledestroy(struct avm_table *t);
 //avm_memcell *avm_tablegetelem(avm_memcell *key);
 //void avm_tablesetelem(avm_memcell *key, avm_memcell *value);
 
@@ -164,7 +145,9 @@ typedef struct avm_table
     unsigned total;
 } avm_table;
 
-void avm_tableincrefcounter(avm_table *t)
+
+
+/*void avm_tableincrefcounter(avm_table *t)
 {
     ++t->refCounter;
 }
@@ -181,8 +164,8 @@ void avm_tablebucketsinit(avm_table_bucket **p)
     for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i)
         p[i] = (avm_table_bucket *)0;
 }
-
-avm_table *avm_tablenew(void)
+*/
+/*avm_table *avm_tablenew(void)
 {
     avm_table *t = (avm_table *)malloc(sizeof(avm_table));
     AVM_WIPEOUT(*t);
@@ -196,10 +179,9 @@ avm_table *avm_tablenew(void)
 
     return t;
 }
-
-void avm_memcellclear(avm_memcell *m);
-typedef void (*memclear_func_t)(avm_memcell *);
-
+*/
+//void avm_memcellclear(avm_memcell *m);
+/*
 extern void memclear_string(avm_memcell *m)
 {
     assert(m->data.strVal);
@@ -211,19 +193,9 @@ extern void memclear_table(avm_memcell *m)
     assert(m->data.tableVal);
     avm_tabledecrefcounter(m->data.tableVal);
 }
+*/
 
-memclear_func_t memclearFuncs[] = {
-    0, //number
-    memclear_string,
-    0, //bool
-    memclear_table,
-    0, //userfunc
-    0, //libfunc
-    0, //nil
-    0  //undef
-};
-
-void avm_memcellclear(avm_memcell *m)
+/*void avm_memcellclear(avm_memcell *m)
 {
     if (m->type != undef_m)
     {
@@ -256,3 +228,4 @@ void avm_tabledestroy(avm_table *t)
     avm_tablebucketsdestroy(t->numIndexed);
     free(t);
 }
+*/

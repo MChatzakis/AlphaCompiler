@@ -3081,3 +3081,68 @@ void createAVMfile(char *filename)
 
     fclose(stream);
 }
+
+void createAVMBinaryFile(char *filename)
+{
+    unsigned magicNumber = 12345678;
+    unsigned total;
+    int i;
+    size_t len;
+
+    FILE *stream = fopen(filename, "wb");
+    if (!stream)
+    {
+        perror("Could not open file to write");
+        exit(EXIT_FAILURE);
+    }
+
+    fwrite(&magicNumber, sizeof(magicNumber), 1, stream);
+    //write nums
+    fwrite(&currNumConst, sizeof(currNumConst), 1, stream);
+    for (i = 0; i < currNumConst; i++)
+    {
+        fwrite(&numConsts[i], sizeof(numConsts[i]), 1, stream);
+    }
+    //write strings
+    fwrite(&currStringConst, sizeof(currStringConst), 1, stream);
+    for (i = 0; i < currStringConst; i++)
+    {
+        len = strlen(stringConsts[i]);
+        fwrite(&len, sizeof(len), 1, stream);
+        fwrite(stringConsts[i], len, 1, stream);
+    }
+    //write lib funcs
+    fwrite(&currNamedLibfunc, sizeof(currNamedLibfunc), 1, stream);
+    for (i = 0; i < currNamedLibfunc; i++)
+    {
+        len = strlen(namedLibfuncs[i]);
+        fwrite(&len, sizeof(len), 1, stream);
+        fwrite(namedLibfuncs[i], len, 1, stream);
+    }
+    //write user funcs
+    fwrite(&currUserFuncs, sizeof(currUserFuncs), 1, stream);
+    userfunc curr;
+    for (i = 0; i < currUserFuncs; i++)
+    {
+        curr = userFuncs[i];
+        len = strlen(curr.id);
+        fwrite(&(curr.address), sizeof(curr.address), 1, stream);
+        fwrite(&(curr.localSize), sizeof(curr.localSize), 1, stream);
+        fwrite(&len, sizeof(len), 1, stream);
+        fwrite(curr.id, len, 1, stream);
+    }
+    //write instructions
+    fwrite(&currInstruction, sizeof(currInstruction), 1, stream);
+    for (i = 0; i < currInstruction; i++)
+    {
+        fwrite(&(instructions[i].opcode), sizeof(instructions[i].opcode), 1, stream);
+        fwrite(&(instructions[i].result.type), sizeof(instructions[i].result.type), 1, stream);
+        fwrite(&(instructions[i].result.val), sizeof(instructions[i].result.val), 1, stream);
+        fwrite(&(instructions[i].arg1.type), sizeof(instructions[i].arg1.type), 1, stream);
+        fwrite(&(instructions[i].arg1.val), sizeof(instructions[i].arg1.val), 1, stream);
+        fwrite(&(instructions[i].arg2.type), sizeof(instructions[i].arg2.type), 1, stream);
+        fwrite(&(instructions[i].arg2.val), sizeof(instructions[i].arg2.val), 1, stream);
+    }
+
+    fclose(stream);
+}

@@ -2,17 +2,20 @@
 #include <stdio.h>
 
 #define AVM_STACKENV_SIZE 4
+
 avm_memcell ax, bx, cx;
 avm_memcell retval;
 unsigned top, topsp;
 
-double consts_getnumber(unsigned index);
-char *consts_getstring(unsigned index);
-char *libfuncs_getused(unsigned index);
+unsigned char executionFinished = 0;
+unsigned pc = 0;
+unsigned currLine = 0;
+unsigned codeSize = 0;
+instruction *code = (instruction *)0;
+int N = 0; //find what this is
+unsigned totalActuals = 0;
 
 typedef void (*execute_func_t)(instruction *);
-
-int N = 0; //find what this is
 
 #define AVM_MAX_INSTRUCTIONS (unsigned)nop_v
 
@@ -21,6 +24,9 @@ int N = 0; //find what this is
 #define AVM_SAVEDTOP_OFFSET +2
 #define AVM_SAVEDTOPSP_OFFSET +1
 
+#define AVM_ENDING_PC codeSize
+
+/* ---------------------- Executors ---------------------- */
 extern void execute_assign(instruction *instr);
 extern void execute_add(instruction *instr);
 extern void execute_sub(instruction *instr);
@@ -47,7 +53,148 @@ extern void execute_tablegetelem(instruction *instr);
 extern void execute_tablesetelem(instruction *instr);
 extern void execute_nop(instruction *instr);
 
+double consts_getnumber(unsigned index);
+char *consts_getstring(unsigned index);
+char *libfuncs_getused(unsigned index);
+
+void execute_cycle(void);
+avm_memcell *avm_translate_operand(vmarg *arg, avm_memcell *reg);
 void avm_calllibfunc(char *id);
+extern void avm_warning(char *format, ...);
+extern void avm_assign(avm_memcell *lv, avm_memcell *rv);
+void execute_assign(instruction *instr);
+
+extern void avm_error(char *format, ...);
+extern char *avm_tostring(avm_memcell *);
+extern void avm_callsaveenvironment(void);
+void avm_dec_top();
+void avm_push_envvalue(unsigned val);
+void avm_callsaveenvironment();
+unsigned avm_get_envvalue(unsigned i);
+
+extern userfunc *avm_getfuncinfo(unsigned address);
+typedef void (*library_func_t)();
+library_func_t avm_getlibraryfunc(char *id);
+void avm_calllibfunc(char *id);
+unsigned avm_totalactuals();
+avm_memcell *avm_getactual(unsigned i);
+void libfunc_print();
+void avm_registerlibfunc(char *id, library_func_t addr);
+
+typedef char *(*tostring_func_t)(avm_memcell *);
+
+extern char *number_tostring(avm_memcell *);
+extern char *string_tostring(avm_memcell *);
+extern char *bool_tostring(avm_memcell *);
+extern char *table_tostring(avm_memcell *);
+extern char *userfunc_tostring(avm_memcell *);
+extern char *nil_tostring(avm_memcell *);
+extern char *undef_tostring(avm_memcell *);
+
+tostring_func_t tostringFuncs[] = {
+    number_tostring,
+    string_tostring,
+    bool_tostring,
+    table_tostring,
+    userfunc_tostring,
+    nil_tostring,
+    undef_tostring};
+
+char *avm_tostring(avm_memcell *m);
+
+#define execute_add execute_arithmetic
+#define execute_sub execute_arithmetic
+#define execute_mul execute_arithmetic
+#define execute_div execute_arithmetic
+#define execute_mod execute_arithmetic
+
+typedef double (*arithmetic_func_t)(double x, double y);
+
+double add_impl(double x, double y);
+double sub_impl(double x, double y);
+double mul_impl(double x, double y);
+double div_impl(double x, double y);
+double mod_impl(double x, double y);
+
+arithmetic_func_t arithmeticFuncs[] = {
+    add_impl,
+    sub_impl,
+    mul_impl,
+    div_impl,
+    mod_impl};
+
+void execute_arithmetic(instruction *instr);
+typedef unsigned char (*tobool_func_t)(avm_memcell *);
+unsigned char number_tobool(avm_memcell *m);
+unsigned char string_tobool(avm_memcell *m);
+unsigned char bool_tobool(avm_memcell *m);
+unsigned char table_tobool(avm_memcell *m);
+unsigned char userfunc_tobool(avm_memcell *m);
+unsigned char libfunc_tobool(avm_memcell *m);
+unsigned char nil_tobool(avm_memcell *m);
+unsigned char undef_tobool(avm_memcell *m);
+
+tobool_func_t toboolFuncs[] = {
+    number_tobool,
+    string_tobool,
+    bool_tobool,
+    table_tobool,
+    userfunc_tobool,
+    libfunc_tobool,
+    nil_tobool,
+    undef_tobool};
+
+unsigned char avm_tobool(avm_memcell *m);
+
+char *typeStrings[8] = {
+    "number",
+    "string",
+    "bool",
+    "table",
+    "userfunc",
+    "libfunc",
+    "nil",
+    "undef"};
+
+avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index);
+void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content);
+
+void libfunc_input();
+void libfunc_objectmemberkeys();
+void libfunc_objecttotalmembers();
+void libfunc_objectcopy();
+void libfunc_argument();
+void libfunc_strtonum();
+void libfunc_sqrt();
+void libfunc_cos();
+void libfunc_sin();
+
+void libfunc_typeof();
+
+//header
+static void avm_initstack();
+void avm_tableincrefcounter(avm_table *t);
+void avm_tabledecrefcounter(avm_table *t);
+void avm_tablebucketsinit(avm_table_bucket **p);
+avm_table *avm_tablenew(void);
+extern void memclear_string(avm_memcell *m);
+extern void memclear_table(avm_memcell *m);
+void avm_memcellclear(avm_memcell *m);
+void avm_tablebucketsdestroy(avm_table_bucket **p);
+void avm_tabledestroy(avm_table *t);
+
+typedef void (*memclear_func_t)(avm_memcell *);
+
+memclear_func_t memclearFuncs[] = {
+    0, //number
+    memclear_string,
+    0, //bool
+    memclear_table,
+    0, //userfunc
+    0, //libfunc
+    0, //nil
+    0  //undef
+};
 
 execute_func_t executeFuncs[] = {
     execute_assign,
@@ -75,14 +222,6 @@ execute_func_t executeFuncs[] = {
     execute_tablegetelem,
     execute_tablesetelem,
     execute_nop};
-
-unsigned char executionFinished = 0;
-unsigned pc = 0;
-unsigned currLine = 0;
-unsigned codeSize = 0;
-instruction *code = (instruction *)0;
-
-#define AVM_ENDING_PC codeSize
 
 avm_memcell *avm_translate_operand(vmarg *arg, avm_memcell *reg)
 {
@@ -162,12 +301,6 @@ void execute_cycle(void)
     }
 }
 
-
-
-
-extern void avm_warning(char *format, ...);
-extern void avm_assign(avm_memcell *lv, avm_memcell *rv);
-
 void execute_assign(instruction *instr)
 {
     avm_memcell *lv = avm_translate_operand(&instr->result, (avm_memcell *)0);
@@ -199,10 +332,6 @@ void avm_assign(avm_memcell *lv, avm_memcell *rv)
         avm_tableincrefcounter(lv->data.tableVal);
 }
 
-extern void avm_error(char *format, ...);
-extern char *avm_tostring(avm_memcell *);
-extern void avm_callsaveenvironment(void);
-
 void execute_call(instruction *instr)
 {
     avm_memcell *func = avm_translate_operand(&instr->result, &ax);
@@ -233,8 +362,6 @@ void execute_call(instruction *instr)
     }
 }
 
-unsigned totalActuals = 0;
-
 void avm_dec_top()
 {
     if (!top)
@@ -260,8 +387,6 @@ void avm_callsaveenvironment()
     avm_push_envvalue(top + totalActuals + 2);
     avm_push_envvalue(topsp);
 }
-
-extern userfunc *avm_getfuncinfo(unsigned address);
 
 void execute_funcenter(instruction *instr)
 {
@@ -294,9 +419,6 @@ void execute_funcexit(instruction *unused)
     while (++oldTop <= top)
         avm_memcellclear(&stack[oldTop]);
 }
-
-typedef void (*library_func_t)();
-library_func_t avm_getlibraryfunc(char *id);
 
 void avm_calllibfunc(char *id)
 {
@@ -338,8 +460,6 @@ void libfunc_print()
     }
 }
 
-void avm_registerlibfunc(char *id, library_func_t addr);
-
 void execute_pusharg(instruction *instr)
 {
     avm_memcell *arg = avm_translate_operand(&instr->arg1, &ax);
@@ -350,38 +470,11 @@ void execute_pusharg(instruction *instr)
     avm_dec_top();
 }
 
-typedef char *(*tostring_func_t)(avm_memcell *);
-
-extern char *number_tostring(avm_memcell *);
-extern char *string_tostring(avm_memcell *);
-extern char *bool_tostring(avm_memcell *);
-extern char *table_tostring(avm_memcell *);
-extern char *userfunc_tostring(avm_memcell *);
-extern char *nil_tostring(avm_memcell *);
-extern char *undef_tostring(avm_memcell *);
-
-tostring_func_t tostringFuncs[] = {
-    number_tostring,
-    string_tostring,
-    bool_tostring,
-    table_tostring,
-    userfunc_tostring,
-    nil_tostring,
-    undef_tostring};
-
 char *avm_tostring(avm_memcell *m)
 {
     assert(m->type >= 0 && m->type <= undef_m); ///!!! leei <= i =?
     return (*tostringFuncs[m->type])(m);
 }
-
-#define execute_add execute_arithmetic
-#define execute_sub execute_arithmetic
-#define execute_mul execute_arithmetic
-#define execute_div execute_arithmetic
-#define execute_mod execute_arithmetic
-
-typedef double (*arithmetic_func_t)(double x, double y);
 
 double add_impl(double x, double y)
 {
@@ -407,13 +500,6 @@ double mod_impl(double x, double y)
 {
     return ((unsigned)x) % ((unsigned)y);
 }
-
-arithmetic_func_t arithmeticFuncs[] = {
-    add_impl,
-    sub_impl,
-    mul_impl,
-    div_impl,
-    mod_impl};
 
 void execute_arithmetic(instruction *instr)
 {
@@ -453,31 +539,11 @@ unsigned char undef_tobool(avm_memcell *m)
     return 0;
 }
 
-tobool_func_t toboolFuncs[] = {
-    number_tobool,
-    string_tobool,
-    bool_tobool,
-    table_tobool,
-    userfunc_tobool,
-    libfunc_tobool,
-    nil_tobool,
-    undef_tobool};
-
 unsigned char avm_tobool(avm_memcell *m)
 {
     assert(m->type >= 0 && m->type < undef_m);
     return (*toboolFuncs[m->type])(m);
 }
-
-char *typeStrings[8] = {
-    "number",
-    "string",
-    "bool",
-    "table",
-    "userfunc",
-    "libfunc",
-    "nil",
-    "undef"};
 
 void execute_jeq(instruction *instr)
 {
@@ -527,9 +593,6 @@ void execute_newtable(instruction *instr)
     lv->data.tableVal = avm_tablenew();
     avm_tableincrefcounter(lv->data.tableVal);
 }
-
-avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index);
-void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content);
 
 void execute_tablegetelem(instruction *instr)
 {
@@ -621,4 +684,96 @@ void avm_initialize()
     avm_registerlibfunc("sqrt", libfunc_sqrt);
     avm_registerlibfunc("cos", libfunc_cos);
     avm_registerlibfunc("sin", libfunc_sin);
+}
+
+static void avm_initstack()
+{
+    for (unsigned i = 0; i < AVM_STACKSIZE; ++i)
+    {
+        AVM_WIPEOUT(stack[i]);
+        stack[i].type = undef_m;
+    }
+}
+
+void avm_tableincrefcounter(avm_table *t)
+{
+    ++t->refCounter;
+}
+
+void avm_tabledecrefcounter(avm_table *t)
+{
+    assert(t->refCounter > 0);
+    if (!--t->refCounter)
+        avm_tabledestroy(t);
+}
+
+void avm_tablebucketsinit(avm_table_bucket **p)
+{
+    for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i)
+        p[i] = (avm_table_bucket *)0;
+}
+
+avm_table *avm_tablenew(void)
+{
+    avm_table *t = (avm_table *)malloc(sizeof(avm_table));
+    AVM_WIPEOUT(*t);
+    t->refCounter = t->total = 0;
+    avm_tablebucketsinit(t->numIndexed);
+    avm_tablebucketsinit(t->strIndexed);
+
+    avm_tablebucketsinit(t->userfuncIndexed);
+    avm_tablebucketsinit(t->libFuncIndexed);
+    avm_tablebucketsinit(t->boolIndexed);
+
+    return t;
+}
+
+extern void memclear_string(avm_memcell *m)
+{
+    assert(m->data.strVal);
+    free(m->data.strVal);
+}
+
+extern void memclear_table(avm_memcell *m)
+{
+    assert(m->data.tableVal);
+    avm_tabledecrefcounter(m->data.tableVal);
+}
+
+void avm_memcellclear(avm_memcell *m)
+{
+    if (m->type != undef_m)
+    {
+        memclear_func_t f = memclearFuncs[m->type];
+        if (f)
+            (*f)(m);
+        m->type = undef_m;
+    }
+}
+
+void avm_tablebucketsdestroy(avm_table_bucket **p)
+{
+    for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i, ++p)
+    {
+        for (avm_table_bucket *b = *p; b;)
+        {
+            avm_table_bucket *del = b;
+            b = b->next;
+            avm_memcellclear(&del->key);
+            avm_memcellclear(&del->value);
+            free(del);
+        }
+        p[i] = (avm_table_bucket *)0;
+    }
+}
+
+void avm_tabledestroy(avm_table *t)
+{
+    avm_tablebucketsdestroy(t->strIndexed);
+    avm_tablebucketsdestroy(t->numIndexed);
+    free(t);
+}
+
+int main(){
+
 }

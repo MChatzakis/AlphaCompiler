@@ -1010,6 +1010,7 @@ int main(int argc, char **argv){
         generateInstructions();
         printTCodeData(ost);
         createAVMfile("binaryCode.abc");
+        createAVMBinaryFile("bin.abc");
     }
     else{
         fprintf_red(stderr, "[Alpha Compiler] -- COMPILATION ERROR: Intermediate code generation failed.\n");
