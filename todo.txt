@@ -1,7 +1,5 @@
-1) Na valoume ton decoder sto AVM
 2) Ksekinima vm (na ksanadoume dialexeis kai na arxisoume na ilopoioume sunartiseis)
 3) Check gia ton tcode (ton kwdika klp) + palia tests oti den trwne kana assert
-4) Ston tcode, opou arg.type = unused na to kanoume arg.val = 0;
 
 
 ===ask===

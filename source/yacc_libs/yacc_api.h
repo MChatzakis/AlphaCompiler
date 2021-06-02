@@ -2521,12 +2521,12 @@ void expandUserFuncs()
 
     if (userFuncs)
     {
-        memcpy(usf, stringConsts, CURR_USERFUNCS_SIZE);
+        memcpy(usf, userFuncs, CURR_USERFUNCS_SIZE);
         free(userFuncs);
     }
 
     userFuncs = usf;
-    totalStringConsts += EXPAND_SIZE;
+    totalUserFuncs += EXPAND_SIZE;
 }
 
 unsigned consts_newstring(char *s)
@@ -2567,6 +2567,7 @@ unsigned libfuncs_newused(const char *s)
 
 unsigned userfuncs_newfunc(SymbolTableEntry *sym)
 {
+    assert(sym);
     unsigned currIndex = currUserFuncs;
 
     if (currUserFuncs == totalUserFuncs)
@@ -2576,6 +2577,7 @@ unsigned userfuncs_newfunc(SymbolTableEntry *sym)
 
     userFuncs[currUserFuncs].address = (sym->value).funcVal->address;
     userFuncs[currUserFuncs].id = (char *)(sym->value).funcVal->name; //should strdup here?..
+    //userFuncs[currUserFuncs].id = strdup((sym->value).funcVal->name);
     userFuncs[currUserFuncs++].localSize = (sym->value).funcVal->totalLocals;
 
     return currIndex;
@@ -2585,6 +2587,7 @@ unsigned userfuncs_newfunc(SymbolTableEntry *sym)
 void reset_operand(vmarg *arg)
 {
     arg->val = 0; //mipws prepei na ginei kati na min deixnei se pinaka? px -1?
+    //arg->type = unused_a;
 }
 
 unsigned currprocessedquad(quad *q)
@@ -2739,7 +2742,9 @@ void generate_PARAM(quad *q)
     t.srcLine = q->line;
     make_operand(q->arg1, &t.arg1);
     t.arg2.type = unused_a;
+    t.arg2.val = 0;
     t.result.type = unused_a;
+    t.result.val = 0;
     emitInstruction(t);
 }
 
@@ -2751,7 +2756,9 @@ void generate_CALL(quad *q)
     t.srcLine = q->line;
     make_operand(q->arg1, &t.arg1);
     t.arg2.type = unused_a;
+    t.arg2.val = 0;
     t.result.type = unused_a;
+    t.result.val = 0;
     emitInstruction(t);
 }
 
@@ -2766,6 +2773,7 @@ void generate_GETRETVAL(quad *q)
     make_operand(q->result, &t.result);
     make_retvaloperand(&t.arg1);
     t.arg2.type = unused_a;
+    t.arg2.val = 0;
 
     emitInstruction(t);
 }
@@ -2789,7 +2797,9 @@ void generate_FUNCSTART(quad *q)
     //make_operand(q->result, &t.result);
     make_operand(q->arg1, &t.result);
     t.arg1.type = unused_a;
+    t.arg1.val = 0;
     t.arg2.type = unused_a;
+    t.arg2.val = 0;
 
     emitInstruction(t);
 }
@@ -2806,6 +2816,7 @@ void generate_RETURN(quad *q)
     //make_operand(q->arg1, &t.result);
 
     t.arg2.type = unused_a;
+    t.arg2.val = 0;
     emitInstruction(t);
 
     SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack); //top(funcstack);
@@ -2817,7 +2828,9 @@ void generate_RETURN(quad *q)
     reset_operand(&t.arg2);
     t.result.type = label_a;
     t.arg1.type = unused_a;
+    t.arg1.val = 0;
     t.arg2.type = unused_a;
+    t.arg2.val = 0;
     emitInstruction(t);
 }
 
@@ -2860,7 +2873,9 @@ void generate_FUNCEND(quad *q)
     //arg->val = e->sym->taddress;
     t.result.val = index;
     t.arg1.type = unused_a;
+    t.arg1.val = 0;
     t.arg2.type = unused_a;
+    t.arg2.val = 0;
     emitInstruction(t);
 }
 

@@ -12,8 +12,21 @@ unsigned pc = 0;
 unsigned currLine = 0;
 unsigned codeSize = 0;
 instruction *code = (instruction *)0;
+
 int N = 0; //find what this is
 unsigned totalActuals = 0;
+
+unsigned totalNumConsts = 0;
+double *numConsts = NULL;
+
+unsigned totalStringConsts = 0;
+char **stringConsts = NULL;
+
+unsigned totalNamedLibfuncs = 0;
+char **namedLibfuncs = NULL;
+
+unsigned totalUserFuncs = 0;
+userfunc *userFuncs = NULL;
 
 typedef void (*execute_func_t)(instruction *);
 
@@ -27,31 +40,56 @@ typedef void (*execute_func_t)(instruction *);
 #define AVM_ENDING_PC codeSize
 
 /* ---------------------- Executors ---------------------- */
-extern void execute_assign(instruction *instr);
-extern void execute_add(instruction *instr);
-extern void execute_sub(instruction *instr);
-extern void execute_mul(instruction *instr);
-extern void execute_div(instruction *instr);
-extern void execute_mod(instruction *instr);
-extern void execute_uminus(instruction *instr);
-extern void execute_and(instruction *instr);
-extern void execute_or(instruction *instr);
-extern void execute_not(instruction *instr);
-extern void execute_jump(instruction *instr);
-extern void execute_jeq(instruction *instr);
-extern void execute_jne(instruction *instr);
-extern void execute_jle(instruction *instr);
-extern void execute_jge(instruction *instr);
-extern void execute_jlt(instruction *instr);
-extern void execute_jgt(instruction *instr);
-extern void execute_call(instruction *instr);
-extern void execute_pusharg(instruction *instr);
-extern void execute_funcenter(instruction *instr);
-extern void execute_funcexit(instruction *instr);
-extern void execute_newtable(instruction *instr);
-extern void execute_tablegetelem(instruction *instr);
-extern void execute_tablesetelem(instruction *instr);
-extern void execute_nop(instruction *instr);
+//extern
+void execute_assign(instruction *instr);
+//extern
+void execute_add(instruction *instr);
+//extern
+void execute_sub(instruction *instr);
+//extern
+void execute_mul(instruction *instr);
+//extern
+void execute_div(instruction *instr);
+//extern
+void execute_mod(instruction *instr);
+//extern
+void execute_uminus(instruction *instr);
+//extern
+void execute_and(instruction *instr);
+//extern
+void execute_or(instruction *instr);
+//extern
+void execute_not(instruction *instr);
+//extern
+void execute_jump(instruction *instr);
+//extern
+void execute_jeq(instruction *instr);
+//extern
+void execute_jne(instruction *instr);
+//extern
+void execute_jle(instruction *instr);
+//extern
+void execute_jge(instruction *instr);
+//extern
+void execute_jlt(instruction *instr);
+//extern
+void execute_jgt(instruction *instr);
+//extern
+void execute_call(instruction *instr);
+//extern
+void execute_pusharg(instruction *instr);
+//extern
+void execute_funcenter(instruction *instr);
+//extern
+void execute_funcexit(instruction *instr);
+//extern
+void execute_newtable(instruction *instr);
+//extern
+void execute_tablegetelem(instruction *instr);
+//extern
+void execute_tablesetelem(instruction *instr);
+//extern
+void execute_nop(instruction *instr);
 
 double consts_getnumber(unsigned index);
 char *consts_getstring(unsigned index);
@@ -60,19 +98,29 @@ char *libfuncs_getused(unsigned index);
 void execute_cycle(void);
 avm_memcell *avm_translate_operand(vmarg *arg, avm_memcell *reg);
 void avm_calllibfunc(char *id);
-extern void avm_warning(char *format, ...);
-extern void avm_assign(avm_memcell *lv, avm_memcell *rv);
+
+//extern
+void avm_warning(char *format, ...);
+//extern
+void avm_assign(avm_memcell *lv, avm_memcell *rv);
+
 void execute_assign(instruction *instr);
 
-extern void avm_error(char *format, ...);
-extern char *avm_tostring(avm_memcell *);
-extern void avm_callsaveenvironment(void);
+//extern
+void avm_error(char *format, ...);
+//extern
+char *avm_tostring(avm_memcell *);
+//extern
+void avm_callsaveenvironment(void);
+
 void avm_dec_top();
 void avm_push_envvalue(unsigned val);
 void avm_callsaveenvironment();
 unsigned avm_get_envvalue(unsigned i);
 
-extern userfunc *avm_getfuncinfo(unsigned address);
+//extern
+userfunc *avm_getfuncinfo(unsigned address);
+
 typedef void (*library_func_t)();
 library_func_t avm_getlibraryfunc(char *id);
 void avm_calllibfunc(char *id);
@@ -83,13 +131,20 @@ void avm_registerlibfunc(char *id, library_func_t addr);
 
 typedef char *(*tostring_func_t)(avm_memcell *);
 
-extern char *number_tostring(avm_memcell *);
-extern char *string_tostring(avm_memcell *);
-extern char *bool_tostring(avm_memcell *);
-extern char *table_tostring(avm_memcell *);
-extern char *userfunc_tostring(avm_memcell *);
-extern char *nil_tostring(avm_memcell *);
-extern char *undef_tostring(avm_memcell *);
+//extern
+char *number_tostring(avm_memcell *);
+//extern
+char *string_tostring(avm_memcell *);
+//extern
+char *bool_tostring(avm_memcell *);
+//extern
+char *table_tostring(avm_memcell *);
+//extern
+char *userfunc_tostring(avm_memcell *);
+//extern
+char *nil_tostring(avm_memcell *);
+//extern
+char *undef_tostring(avm_memcell *);
 
 tostring_func_t tostringFuncs[] = {
     number_tostring,
@@ -177,11 +232,17 @@ void avm_tableincrefcounter(avm_table *t);
 void avm_tabledecrefcounter(avm_table *t);
 void avm_tablebucketsinit(avm_table_bucket **p);
 avm_table *avm_tablenew(void);
-extern void memclear_string(avm_memcell *m);
-extern void memclear_table(avm_memcell *m);
+
+//extern
+void memclear_string(avm_memcell *m);
+//extern
+void memclear_table(avm_memcell *m);
+
 void avm_memcellclear(avm_memcell *m);
 void avm_tablebucketsdestroy(avm_table_bucket **p);
 void avm_tabledestroy(avm_table *t);
+
+void decoder(char *filename); //decodes the binary file created by compiler
 
 typedef void (*memclear_func_t)(avm_memcell *);
 
@@ -526,13 +587,41 @@ void execute_arithmetic(instruction *instr)
 
 typedef unsigned char (*tobool_func_t)(avm_memcell *);
 
-unsigned char number_tobool(avm_memcell *m) { return m->data.numVal != 0; }
-unsigned char string_tobool(avm_memcell *m) { return m->data.strVal[0] != 0; }
-unsigned char bool_tobool(avm_memcell *m) { return m->data.boolVal; }
-unsigned char table_tobool(avm_memcell *m) { return 1; }
-unsigned char userfunc_tobool(avm_memcell *m) { return 1; }
-unsigned char libfunc_tobool(avm_memcell *m) { return 1; }
-unsigned char nil_tobool(avm_memcell *m) { return 0; }
+unsigned char number_tobool(avm_memcell *m)
+{
+    assert(m);
+    return m->data.numVal != 0;
+}
+unsigned char string_tobool(avm_memcell *m)
+{
+    assert(m);
+    return m->data.strVal[0] != 0;
+}
+unsigned char bool_tobool(avm_memcell *m)
+{
+    assert(m);
+    return m->data.boolVal;
+}
+unsigned char table_tobool(avm_memcell *m)
+{
+    //assert(m);
+    return 1;
+}
+unsigned char userfunc_tobool(avm_memcell *m)
+{
+    //assert(m);
+    return 1;
+}
+unsigned char libfunc_tobool(avm_memcell *m)
+{
+    //assert(m);
+    return 1;
+}
+unsigned char nil_tobool(avm_memcell *m)
+{
+    //assert(m);
+    return 0;
+}
 unsigned char undef_tobool(avm_memcell *m)
 {
     assert(0);
@@ -641,7 +730,89 @@ void execute_tablesetelem(instruction *instr)
     else
         avm_tablesetelem(t->data.tableVal, i, c);
 }
+//TODO: Implementations of these. We drop them here only for the compile
+double consts_getnumber(unsigned index){
+    return numConsts[index];
+}
+char *consts_getstring(unsigned index){
+    return stringConsts[index];
+}
+char *libfuncs_getused(unsigned index){
+    return namedLibfuncs[index];
+}
 
+//Mallon thelei allo edw !!!!!!!!!!!!!!
+userfunc *avm_getfuncinfo(unsigned address){
+    return &userFuncs[address];
+}
+
+void execute_uminus(instruction *instr){}
+
+void execute_and(instruction *instr){}
+
+void execute_or(instruction *instr){}
+
+void execute_not(instruction *instr){}
+
+void execute_jump(instruction *instr){}
+
+void execute_jne(instruction *instr){}
+
+void execute_jle(instruction *instr){}
+
+void execute_jge(instruction *instr){}
+
+void execute_jlt(instruction *instr){}
+
+void execute_jgt(instruction *instr){}
+
+void execute_nop(instruction *instr){}
+
+char *number_tostring(avm_memcell *m){
+    return "";
+}
+
+char *string_tostring(avm_memcell *m){
+    return "";
+}
+
+char *bool_tostring(avm_memcell *m){
+    return "";
+}
+
+char *table_tostring(avm_memcell *m){
+    return "";
+}
+
+char *userfunc_tostring(avm_memcell *m){
+    return "";
+}
+
+char *nil_tostring(avm_memcell *m){
+    return "";
+}
+
+char *undef_tostring(avm_memcell *m){
+    return "";
+}
+
+void avm_registerlibfunc(char *id, library_func_t addr){}
+
+void avm_error(char *format, ...){}
+
+void avm_warning(char *format, ...){}
+
+library_func_t avm_getlibraryfunc(char *id){}
+
+avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index){
+    avm_memcell *m;
+    return m;
+}
+
+void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content){}
+
+
+//TODO: Lib funcs implementation
 void libfunc_input() {}
 void libfunc_objectmemberkeys() {}
 void libfunc_objecttotalmembers() {}
@@ -728,13 +899,15 @@ avm_table *avm_tablenew(void)
     return t;
 }
 
-extern void memclear_string(avm_memcell *m)
+//extern
+void memclear_string(avm_memcell *m)
 {
     assert(m->data.strVal);
     free(m->data.strVal);
 }
 
-extern void memclear_table(avm_memcell *m)
+//extern
+void memclear_table(avm_memcell *m)
 {
     assert(m->data.tableVal);
     avm_tabledecrefcounter(m->data.tableVal);
@@ -774,6 +947,129 @@ void avm_tabledestroy(avm_table *t)
     free(t);
 }
 
-int main(){
+void decoder(char *filename)
+{
+    size_t len;
+    char *currStr;
+    unsigned magicNumber;
+    int i;
 
+    FILE *stream;
+
+    stream = fopen(filename, "rb"); // r for read, b for binary
+    //read magic number
+    fread(&magicNumber, sizeof(magicNumber), 1, stream);
+    printf("Magic number :%u\n", magicNumber);
+
+    //read numbers
+    fread(&totalNumConsts, sizeof(totalNumConsts), 1, stream);
+    printf("Total Number Consts :%u\n", totalNumConsts);
+    numConsts = (double *)malloc(totalNumConsts * sizeof(double));
+    for (i = 0; i < totalNumConsts; i++)
+    {
+        fread(&numConsts[i], sizeof(numConsts[i]), 1, stream); //sizeof(double better?)
+        printf("numConst[%d] = %f\n", i, numConsts[i]);
+    }
+
+    //read strings
+    fread(&totalStringConsts, sizeof(totalStringConsts), 1, stream);
+    printf("Total String Consts :%u\n", totalStringConsts);
+    stringConsts = (char **)malloc(totalStringConsts * sizeof(char *));
+    for (i = 0; i < totalStringConsts; i++)
+    {
+        fread(&len, sizeof(len), 1, stream); //sizeof(double better?)
+        printf("LEN %lu\n", len);
+        currStr = (char *)malloc(sizeof(char) * (len + 1));
+
+        fread(currStr, len, 1, stream);
+        currStr[len] = '\0';
+
+        stringConsts[i] = currStr;
+        printf("strConst[%d] = %s\n", i, stringConsts[i]);
+    }
+
+    //read lib funcs
+    fread(&totalNamedLibfuncs, sizeof(totalNamedLibfuncs), 1, stream);
+    printf("Total Lib Funcs :%u\n", totalNamedLibfuncs);
+
+    namedLibfuncs = (char **)malloc(sizeof(totalNamedLibfuncs * sizeof(char *)));
+    for (i = 0; i < totalNamedLibfuncs; i++)
+    {
+        fread(&len, sizeof(len), 1, stream); //sizeof(double better?)
+        currStr = (char *)malloc(sizeof(char) * (len + 1));
+
+        fread(currStr, len, 1, stream);
+        currStr[len] = '\0';
+
+        namedLibfuncs[i] = currStr;
+
+        printf("LibFuncs[%d] = %s\n", i, namedLibfuncs[i]);
+    }
+
+    //read user funcs
+    fread(&totalUserFuncs, sizeof(totalUserFuncs), 1, stream);
+    printf("Total User Funcs :%u\n", totalUserFuncs);
+    userFuncs = (userfunc *)malloc(sizeof(userfunc) * totalUserFuncs);
+    for (i = 0; i < totalUserFuncs; i++)
+    {
+        unsigned address;
+        unsigned locals;
+
+        fread(&address, sizeof(address), 1, stream);
+        fread(&locals, sizeof(locals), 1, stream);
+
+        fread(&len, sizeof(len), 1, stream);
+        currStr = (char *)malloc(sizeof(char) * (len + 1));
+
+        fread(currStr, len, 1, stream);
+        currStr[len] = '\0';
+
+        userFuncs[i].address = address;
+        userFuncs[i].localSize = locals;
+        userFuncs[i].id = currStr;
+
+        printf("UserFuncs[%d] = (%u %u %s)\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
+    }
+
+    //read instructions
+    fread(&codeSize, sizeof(codeSize), 1, stream);
+    printf("Total Instructions :%u\n", codeSize);
+    code = (instruction *)malloc(sizeof(instruction) * codeSize);
+    for (i = 0; i < codeSize; i++)
+    {
+        unsigned opcode;
+        unsigned result_type, arg1_type, arg2_type;
+        unsigned result_val, arg1_val, arg2_val;
+        fread(&opcode, sizeof(opcode), 1, stream);
+        fread(&result_type, sizeof(result_type), 1, stream);
+        fread(&result_val, sizeof(result_val), 1, stream);
+        fread(&arg1_type, sizeof(arg1_type), 1, stream);
+        fread(&arg1_val, sizeof(arg1_val), 1, stream);
+        fread(&arg2_type, sizeof(arg2_type), 1, stream);
+        fread(&arg2_val, sizeof(arg2_val), 1, stream);
+
+        code[i].opcode = opcode;
+        code[i].result.type = result_type;
+        code[i].result.val = result_val;
+        code[i].arg1.type = arg1_type;
+        code[i].arg1.val = arg1_val;
+        code[i].arg2.type = arg2_type;
+        code[i].arg2.val = arg2_val;
+
+        printf("Opcode: %u\n", code[i].opcode);
+        printf("Result type:  %u\n", code[i].result.type);
+        printf("Result val:  %u\n", code[i].result.val);
+        printf("Argument 1 type:  %u\n", code[i].arg1.type);
+        printf("Argument 1 val:  %u\n", code[i].arg1.val);
+        printf("Argument 2 type:  %u\n", code[i].arg2.type);
+        printf("Argument 2 val:  %u\n", code[i].arg2.val);
+    }
+
+    fclose(stream);
+}
+
+int main()
+{
+    decoder("bin.abc");
+    return 0;
 }
