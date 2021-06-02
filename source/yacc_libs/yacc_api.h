@@ -12,7 +12,8 @@
 #include <math.h>
 
 #include "../utils/utils.h"
-#include "../avm/avm.h"
+//#include "../avm/avm.h"
+#include "tcode.h"
 #include "structs.h"
 
 int yyerror(char *message);

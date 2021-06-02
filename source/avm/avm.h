@@ -2,6 +2,9 @@
 #include <string.h>
 #include <assert.h>
 
+#include "../yacc_libs/tcode.h"
+
+/*
 typedef enum vmopcode
 {
     assign_v,
@@ -76,7 +79,7 @@ typedef struct userfunc
     unsigned localSize;
     char *id;
 } userfunc;
-
+*/
 typedef enum avm_memcell_t
 {
     number_m = 0,
@@ -144,8 +147,6 @@ typedef struct avm_table
 
     unsigned total;
 } avm_table;
-
-
 
 /*void avm_tableincrefcounter(avm_table *t)
 {

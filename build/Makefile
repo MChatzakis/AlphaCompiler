@@ -21,6 +21,8 @@ SYMBOL_TABLE_IMP = ../source/symboltable/symboltable.c
 
 YACC_API = ../source/yacc_libs/yacc_api.h
 
+TCODE_HEADER = ../source/yacc_libs/tcode.h
+
 EXEC = acc
 AVM_NAME = avm
 
@@ -34,10 +36,10 @@ yacc: $(YACC_FILE)
 lex: $(LEX_FILE)
 	lex -o $(LEX_C_FILE) $(LEX_FILE)
 
-acc: $(AVM_HEADER) $(LEX_C_FILE) $(YACC_C_FILE) $(YACC_H_FILE) $(SYMBOL_TABLE) $(SYMBOL_TABLE_IMP) $(UTIL_FILE) $(UTIL_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE) $(YACC_API) $(STRUCTS)
+acc: $(TCODE_HEADER) $(LEX_C_FILE) $(YACC_C_FILE) $(YACC_H_FILE) $(SYMBOL_TABLE) $(SYMBOL_TABLE_IMP) $(UTIL_FILE) $(UTIL_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE) $(YACC_API) $(STRUCTS)
 	gcc $(LEX_C_FILE) $(YACC_C_FILE) $(STACK_IMP_FILE) $(UTIL_IMP_FILE) $(SYMBOL_TABLE_IMP) -lm -o $(EXEC)
 
-avm: $(AVM_HEADER) $(AVM_IMP)
+avm: $(AVM_HEADER) $(AVM_IMP) $(TCODE_HEADER)
 	gcc $(AVM_IMP) -lm -o $(AVM_NAME) 
 
 test: script.py
