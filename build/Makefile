@@ -39,19 +39,18 @@ lex: $(LEX_FILE)
 acc: $(TCODE_HEADER) $(LEX_C_FILE) $(YACC_C_FILE) $(YACC_H_FILE) $(SYMBOL_TABLE) $(SYMBOL_TABLE_IMP) $(UTIL_FILE) $(UTIL_IMP_FILE) $(STACK_FILE) $(STACK_IMP_FILE) $(YACC_API) $(STRUCTS)
 	gcc $(LEX_C_FILE) $(YACC_C_FILE) $(STACK_IMP_FILE) $(UTIL_IMP_FILE) $(SYMBOL_TABLE_IMP) -lm -o $(EXEC)
 
-avm: $(AVM_HEADER) $(AVM_IMP) $(TCODE_HEADER)
-	gcc $(AVM_IMP) -lm -o $(AVM_NAME) 
+avm: $(AVM_HEADER) $(AVM_IMP) $(TCODE_HEADER) $(UTIL_FILE) $(UTIL_IMP_FILE)
+	gcc $(AVM_IMP) $(UTIL_IMP_FILE) -lm -o $(AVM_NAME) 
 
 test: script.py
 	python3 script.py
 
-cleanAll: clean
-	rm -f quads.txt
-
 clean:
 	rm -f $(EXEC)
+	rm -f $(AVM_NAME)
 	rm -f $(LEX_C_FILE)
 	rm -f $(YACC_C_FILE)
 	rm -f $(YACC_H_FILE)
 	rm -f ../source/parser.output
 	rm -f *.abc
+	rm -f quads.txt

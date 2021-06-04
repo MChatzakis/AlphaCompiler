@@ -13,8 +13,10 @@
 
 /* -------------------- Terminal Colors -------------------- */
 void fprintf_red(FILE *stream, const char *str, ...);
+void fprintf_avm_red(const char *str, ...);
 void fprintf_green(FILE *stream, const char *str, ...);
 void fprintf_yellow(FILE *stream, const char *str, ...);
+void fprintf_avm_yellow(const char *str, ...);
 void fprintf_blue(FILE *stream, const char *str, ...);
 void fprintf_magenta(FILE *stream, const char *str, ...);
 void fprintf_cyan(FILE *stream, const char *str, ...);

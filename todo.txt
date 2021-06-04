@@ -1,6 +1,11 @@
-2) Ksekinima vm (na ksanadoume dialexeis kai na arxisoume na ilopoioume sunartiseis)
-3) Check gia ton tcode (ton kwdika klp) + palia tests oti den trwne kana assert
+===============
+1) Complete avm tables
+2) Read theory (12,13,15 + front)
+3) 
 
 
-===ask===
-1) global blocks variables
+
+===============
+UNDEF
+1) tableset
+2) tableget

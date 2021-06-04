@@ -10,6 +10,26 @@ void fprintf_red(FILE *stream, const char *str, ...)
   va_end(args);
 }
 
+void fprintf_avm_red(const char *str, ...)
+{
+  va_list args;
+  va_start(args, str);
+  vfprintf(stderr, ANSI_COLOR_RED, args);
+  vfprintf(stderr, str, args);
+  vfprintf(stderr, ANSI_COLOR_RESET, args);
+  va_end(args);
+}
+
+void fprintf_avm_yellow( const char *str, ...)
+{
+  va_list args;
+  va_start(args, str);
+  vfprintf(stderr, ANSI_COLOR_RED, args);
+  vfprintf(stderr, str, args);
+  vfprintf(stderr, ANSI_COLOR_RESET, args);
+  va_end(args);
+}
+
 void fprintf_green(FILE *stream, const char *str, ...)
 {
   va_list args;
@@ -113,7 +133,7 @@ unsigned int NumberStack_top(NumberStack *ns)
 
 unsigned int NumberStack_pop(NumberStack *ns)
 {
-  unsigned int tmp =0;
+  unsigned int tmp = 0;
   NumberStackNode *del;
 
   assert(ns && ns->top);
