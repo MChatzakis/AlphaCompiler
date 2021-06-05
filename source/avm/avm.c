@@ -392,7 +392,7 @@ void execute_call(instruction *instr)
     avm_memcell *func = avm_translate_operand(&instr->arg1, &ax);
     assert(func);
 
-    printf("Executing call!\n");
+    //printf("Executing call!\n");
 
     avm_callsaveenvironment();
     switch (func->type)
@@ -512,7 +512,7 @@ void execute_pusharg(instruction *instr)
     avm_memcell *arg = avm_translate_operand(&instr->arg1, &ax);
     assert(arg);
 
-    printf("Pushing the arguments to the stack!\n");
+    //printf("Pushing the arguments to the stack!\n");
 
     avm_assign(&stack[top], arg);
     ++totalActuals;
@@ -727,10 +727,11 @@ char *libfuncs_getused(unsigned index)
     return namedLibfuncs[index];
 }
 
-//TODO
+//TODO ? !
 userfunc *avm_getfuncinfo(unsigned address)
 {
     return &userFuncs[address];
+    //return code[address].arg1;
 }
 
 void execute_uminus(instruction *instr)
@@ -775,8 +776,9 @@ void execute_jlt(instruction *instr) {}
 //TODO
 void execute_jgt(instruction *instr) {}
 
-//TODO
-void execute_nop(instruction *instr) {}
+void execute_nop(instruction *instr) {
+    //??? nothing
+}
 
 char *number_tostring(avm_memcell *m)
 {
@@ -807,10 +809,10 @@ char *bool_tostring(avm_memcell *m)
     return strdup("false");
 }
 
-//TODO
 char *table_tostring(avm_memcell *m)
 {
-    return "";
+    assert(m->type == table_m);
+    return strdup("Alpha table");
 }
 
 char *userfunc_tostring(avm_memcell *m)
@@ -867,14 +869,80 @@ library_func_t avm_getlibraryfunc(char *id)
     return NULL;
 }
 
-//TODO
 avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
 {
-    avm_memcell *m;
-    return m;
+    unsigned int ix = 0;
+    avm_table_bucket *curr, *prev = NULL, *pair;
+    assert(table);
+    switch (index->type)
+    {
+    case string_m:
+        ix = hashString(index->data.strVal);
+        curr = table->strIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            if (!strcmp((curr->key).data.strVal, index->data.strVal))
+            {
+                return &(curr->value);
+            }
+            curr = curr->next;
+        }
+        avm_error("Could not find table item.\n");
+
+    case number_m:
+        ix = customHashNum(index->data.numVal);
+        curr = table->numIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            if ((curr->key).data.numVal == index->data.numVal)
+            {
+
+                return &(curr->value);
+            }
+            curr = curr->next;
+        }
+        avm_error("Could not find table item.\n");
+    case bool_m:
+        ix = index->data.boolVal;
+        if (table->userfuncIndexed[ix]->key.data.boolVal == ix)
+        {
+            return &(table->userfuncIndexed[ix]->value);
+        }
+        avm_error("Bool not supported yet!\n");
+
+    case userfunc_m:
+        ix = hashString(userFuncs[index->data.funcVal].id);
+        curr = table->userfuncIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            if (!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id))
+            {
+                return &(curr->value);
+            }
+            curr = curr->next;
+        }
+        avm_error("Could not find table item.\n");
+    case libfunc_m:
+        ix = hashString(index->data.libfuncVal);
+        curr = table->libFuncIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            if (!strcmp(index->data.libfuncVal, (curr->key).data.libfuncVal))
+            {
+                return &(curr->value);
+            }
+            curr = curr->next;
+        }
+        avm_error("Could not find table item.\n");
+    }
+
+    return NULL;
 }
 
-//TODO
 void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content)
 {
     unsigned int ix = 0;
@@ -909,11 +977,106 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         {
             prev->next = pair;
         }
-
         break;
     case number_m:
+        ix = customHashNum(index->data.numVal);
+        curr = table->numIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            if ((curr->key).data.numVal == index->data.numVal)
+            {
+                curr->value = *content;
+                return;
+            }
+            curr = curr->next;
+        }
+
+        pair = (avm_table_bucket *)malloc(sizeof(avm_table_bucket));
+        pair->next = NULL;
+        pair->key = *index;
+        pair->value = *content;
+
+        if (prev == NULL)
+        {
+            table->numIndexed[ix] = pair;
+        }
+        else
+        {
+            prev->next = pair;
+        }
+        break;
+    case bool_m:
+        ix = index->data.boolVal;
+        if (table->userfuncIndexed[ix]->key.data.boolVal == ix)
+        {
+            table->userfuncIndexed[ix]->value = *content;
+        }
+        else
+        {
+            table->userfuncIndexed[ix]->key.data.boolVal = ix;
+            table->userfuncIndexed[ix]->value = *content;
+        }
+        break;
+    case userfunc_m:
+        ix = hashString(userFuncs[index->data.funcVal].id);
+        curr = table->userfuncIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            if (!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id))
+            {
+                curr->value = *content;
+                return;
+            }
+            curr = curr->next;
+        }
+
+        pair = (avm_table_bucket *)malloc(sizeof(avm_table_bucket));
+        pair->next = NULL;
+        pair->key = *index;
+        pair->value = *content;
+
+        if (prev == NULL)
+        {
+            table->userfuncIndexed[ix] = pair;
+        }
+        else
+        {
+            prev->next = pair;
+        }
+        break;
+    case libfunc_m:
+        ix = hashString(index->data.libfuncVal);
+        curr = table->libFuncIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            if (!strcmp(index->data.libfuncVal, (curr->key).data.libfuncVal))
+            {
+                curr->value = *content;
+                return;
+            }
+            curr = curr->next;
+        }
+
+        pair = (avm_table_bucket *)malloc(sizeof(avm_table_bucket));
+        pair->next = NULL;
+        pair->key = *index;
+        pair->value = *content;
+
+        if (prev == NULL)
+        {
+            table->libFuncIndexed[ix] = pair;
+        }
+        else
+        {
+            prev->next = pair;
+        }
         break;
     }
+
+    table->total++;
 }
 
 void libfunc_input()
@@ -929,7 +1092,8 @@ void libfunc_input()
         str = (char *)malloc(sizeof(char) * DEFAULT_STR_SIZE);
         memset((void *)str, 0, DEFAULT_STR_SIZE);
 
-        while ((c = getchar()) != EOF)
+        //while ((c = getchar()) != EOF)
+        while ((c = getchar()) != '\n')
         {
             *(str + counter) = c;
 
@@ -948,16 +1112,44 @@ void libfunc_input()
     }
 }
 
-//TODO
 void libfunc_objectmemberkeys()
 {
-    //is table->total?
+    unsigned n = avm_totalactuals();
+    if (n != 1)
+        avm_error("Object member keys requires one and only arg!\n", n);
+    else
+    {
+        avm_memcell *t = avm_getactual(0);
+
+        if (t->type != table_m) //check if it's a string
+        {
+            avm_error("The argument provided is not a table!\n", n);
+        }
+
+        avm_memcellclear(&retval);
+        retval.type = number_m;
+        retval.data.numVal = t->data.tableVal->total;
+    }
 }
 
-//TODO
 void libfunc_objecttotalmembers()
 {
-    //isnt total members equal to keys?
+    unsigned n = avm_totalactuals();
+    if (n != 1)
+        avm_error("Object member keys requires one and only arg!\n", n);
+    else
+    {
+        avm_memcell *t = avm_getactual(0);
+
+        if (t->type != table_m) //check if it's a string
+        {
+            avm_error("The argument provided is not a table!\n", n);
+        }
+
+        avm_memcellclear(&retval);
+        retval.type = number_m;
+        retval.data.numVal = t->data.tableVal->total;
+    }
 }
 
 //TODO
@@ -966,10 +1158,27 @@ void libfunc_objectcopy() //src->actual(0) dest->retval
     //should do deep copy?
 }
 
-//TODO
 void libfunc_argument()
 {
-    //what is this func?
+    unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
+    avm_memcellclear(&retval);
+
+    if (p_topsp)
+    {
+        avm_error("'argument' called outside function");
+        retval.type = nil_m;
+    }
+    else
+    {
+        unsigned n = avm_totalactuals();
+        if (n != 1)
+            avm_error("Object member keys requires one and only arg!\n", n);
+
+        //retval.type = number_m;
+        //retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
+        assert(n < avm_totalactuals());
+        retval = &stack[p_topsp + AVM_STACKENV_SIZE + 1 + n];
+    }
 }
 
 void libfunc_strtonum()
@@ -1092,7 +1301,6 @@ void libfunc_print()
 
 void avm_initialize()
 {
-
     avm_initstack();
     avm_registerlibfunc("print", libfunc_print);
     avm_registerlibfunc("typeof", libfunc_typeof);
