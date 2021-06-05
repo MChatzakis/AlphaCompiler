@@ -18,6 +18,8 @@ void fprintf_avm_red(const char *str, ...)
   vfprintf(stderr, str, args);
   vfprintf(stderr, ANSI_COLOR_RESET, args);
   va_end(args);
+
+  exit(EXIT_FAILURE);
 }
 
 void fprintf_avm_yellow( const char *str, ...)

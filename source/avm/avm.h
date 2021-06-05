@@ -4,7 +4,7 @@
 
 #include "../yacc_libs/tcode.h"
 
-#define AVM_STACKSIZE 4096 //is this N?
+#define AVM_STACKSIZE 4096
 #define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
 #define AVM_TABLE_HASHSIZE 211
 
@@ -49,7 +49,9 @@ typedef struct avm_table
 
     avm_table_bucket *strIndexed[AVM_TABLE_HASHSIZE]; //x["string"]
     avm_table_bucket *numIndexed[AVM_TABLE_HASHSIZE]; //x[1]
+
     avm_table_bucket *boolIndexed[AVM_TABLE_HASHSIZE]; //x[TRUE]
+    
     avm_table_bucket *userfuncIndexed[AVM_TABLE_HASHSIZE]; //x[func]
     avm_table_bucket *libFuncIndexed[AVM_TABLE_HASHSIZE]; //x[print]
 

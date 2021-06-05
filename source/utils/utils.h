@@ -40,4 +40,3 @@ NumberStackNode *NumberStack_push(NumberStack *ns, unsigned int val);
 unsigned int NumberStack_top(NumberStack *ns);
 unsigned int NumberStack_pop(NumberStack *ns);
 void NumberStack_print(NumberStack *ns);
-
