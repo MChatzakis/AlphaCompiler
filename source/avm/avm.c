@@ -170,6 +170,7 @@ char *string_tostring(avm_memcell *);
 char *bool_tostring(avm_memcell *);
 char *table_tostring(avm_memcell *);
 char *userfunc_tostring(avm_memcell *);
+char *libfunc_tostring(avm_memcell *m);
 char *nil_tostring(avm_memcell *);
 char *undef_tostring(avm_memcell *);
 
@@ -179,6 +180,7 @@ tostring_func_t tostringFuncs[] = {
     bool_tostring,
     table_tostring,
     userfunc_tostring,
+    libfunc_tostring,
     nil_tostring,
     undef_tostring};
 /* ---------------------- ------- ---------------------- */
@@ -269,14 +271,31 @@ unsigned int hashNum(unsigned int x);
 unsigned int customHashNum(double x);
 unsigned int hashString(const char *pcKey);
 
+/* ---------------------- Equality Functions ---------------------- */
+unsigned char numEqual(avm_memcell *m1, avm_memcell *m2);
+unsigned char stringEqual(avm_memcell *m1, avm_memcell *m2);
+unsigned char tableEqual(avm_memcell *m1, avm_memcell *m2);
+unsigned char userFuncEqual(avm_memcell *m1, avm_memcell *m2);
+
+typedef unsigned char (*equalityFuncDisp)(avm_memcell *m1, avm_memcell *m2);
+equalityFuncDisp equalArr[] = {
+    numEqual,
+    stringEqual,
+    NULL,
+    tableEqual,
+    userFuncEqual,
+    stringEqual,
+    NULL,
+    NULL};
+
 /* ---------------------- Code ---------------------- */
 avm_memcell *avm_translate_operand(vmarg *arg, avm_memcell *reg)
 {
 
-    if (arg->type == unused_a)
+    /*if (arg->type == unused_a)
     {
         return NULL;
-    }
+    }*/
 
     switch (arg->type)
     {
@@ -388,11 +407,10 @@ void avm_assign(avm_memcell *lv, avm_memcell *rv)
 
 void execute_call(instruction *instr)
 {
-
     avm_memcell *func = avm_translate_operand(&instr->arg1, &ax);
     assert(func);
 
-    //printf("Executing call!\n");
+    printf("Executing call!\n");
 
     avm_callsaveenvironment();
     switch (func->type)
@@ -512,7 +530,7 @@ void execute_pusharg(instruction *instr)
     avm_memcell *arg = avm_translate_operand(&instr->arg1, &ax);
     assert(arg);
 
-    //printf("Pushing the arguments to the stack!\n");
+    printf("Pushing the arguments to the stack!\n");
 
     avm_assign(&stack[top], arg);
     ++totalActuals;
@@ -621,6 +639,48 @@ unsigned char undef_tobool(avm_memcell *m)
     return 0;
 }
 
+unsigned char stringEqual(avm_memcell *m1, avm_memcell *m2)
+{
+    unsigned char result;
+
+    assert(m1 && m2);
+    assert(m1->type == string_m || m1->type == libfunc_m);
+    assert(m2->type == string_m || m2->type == libfunc_m);
+    assert(m1->type == m2->type);
+
+    if (m1->type == string_m)
+    {
+        result = !(strcmp(m1->data.strVal, m2->data.strVal));
+    }
+    else
+    {
+        result = !(strcmp(m1->data.libfuncVal, m2->data.libfuncVal));
+    }
+
+    return result;
+}
+
+unsigned char numEqual(avm_memcell *m1, avm_memcell *m2)
+{
+    assert(m1 && m2 && m1->type == number_m && m2->type == number_m);
+    return (unsigned char)(m1->data.numVal == m2->data.numVal);
+}
+
+unsigned char userFuncEqual(avm_memcell *m1, avm_memcell *m2)
+{
+    assert(m1 && m2 && m1->type == userfunc_m && m2->type == userfunc_m);
+    unsigned char res1, res2;
+    res1 = (unsigned char)(userFuncs[m1->data.funcVal].address == userFuncs[m2->data.funcVal].address);
+    res2 = (unsigned char)(!strcmp(userFuncs[m1->data.funcVal].id, userFuncs[m2->data.funcVal].id));
+    return (unsigned char)(res1 && res2);
+}
+
+unsigned char tableEqual(avm_memcell *m1, avm_memcell *m2)
+{
+    assert(m1 && m2 && m1->type == table_m && m2->type == table_m);
+    return (unsigned char)(m1->data.tableVal == m2->data.tableVal);
+}
+
 unsigned char avm_tobool(avm_memcell *m)
 {
     assert(m->type >= 0 && m->type < undef_m);
@@ -640,13 +700,16 @@ void execute_jeq(instruction *instr)
         avm_error("'undef involved in equality!");
     else if (rv1->type == nil_m || rv2->type == nil_m)
         result = rv1->type == nil_m && rv2->type == nil_m;
-    else if (rv1->type = bool_m || rv2->type == bool_m)
+    else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) == avm_tobool(rv2));
     else if (rv1->type != rv2->type)
         avm_error("%s == %s is illegal!", typeStrings[rv1->type], typeStrings[rv2->type]);
     else
     {
-        //eq chech with disp
+        //at this point type1 == type2
+        //assert(m1->type != nil_m && m1->type != undef_m)
+        unsigned int index = rv1->type;
+        result = (*equalArr[index])(rv1, rv2);
     }
 
     if (!executionFinished && result)
@@ -727,7 +790,7 @@ char *libfuncs_getused(unsigned index)
     return namedLibfuncs[index];
 }
 
-//TODO ? !
+//TODO
 userfunc *avm_getfuncinfo(unsigned address)
 {
     return &userFuncs[address];
@@ -758,25 +821,144 @@ void execute_not(instruction *instr)
     return;
 }
 
-//TODO
-void execute_jump(instruction *instr) {}
+void execute_jump(instruction *instr)
+{
+    unsigned int jumpTo;
+    assert(instr->result.type == label_a);
 
-//TODO
-void execute_jne(instruction *instr) {}
+    jumpTo = instr->result.val;
 
-//TODO
-void execute_jle(instruction *instr) {}
+    if (!executionFinished)
+        pc = jumpTo;
+}
 
-//TODO
-void execute_jge(instruction *instr) {}
+void execute_jne(instruction *instr)
+{
+    assert(instr->result.type == label_a);
 
-//TODO
-void execute_jlt(instruction *instr) {}
+    avm_memcell *rv1 = avm_translate_operand(&instr->arg1, &ax);
+    avm_memcell *rv2 = avm_translate_operand(&instr->arg2, &bx);
 
-//TODO
-void execute_jgt(instruction *instr) {}
+    unsigned char result = 0;
 
-void execute_nop(instruction *instr) {
+    if (rv1->type == undef_m || rv2->type == undef_m)
+        avm_error("'undef involved in equality!");
+    else if (rv1->type == nil_m || rv2->type == nil_m)
+        result = rv1->type == nil_m && rv2->type == nil_m;
+    else if (rv1->type == bool_m || rv2->type == bool_m)
+        result = (avm_tobool(rv1) == avm_tobool(rv2));
+    else if (rv1->type != rv2->type)
+        avm_error("%s == %s is illegal!", typeStrings[rv1->type], typeStrings[rv2->type]);
+    else
+    {
+        //at this point type1 == type2
+        //assert(m1->type != nil_m && m1->type != undef_m)
+        unsigned int index = rv1->type;
+        result = (*equalArr[index])(rv1, rv2);
+    }
+
+    if (!executionFinished && !result)
+        pc = instr->result.val;
+}
+
+void execute_jle(instruction *instr)
+{
+    assert(instr->result.type == label_a);
+
+    avm_memcell *rv1 = avm_translate_operand(&instr->arg1, &ax);
+    avm_memcell *rv2 = avm_translate_operand(&instr->arg2, &bx);
+
+    unsigned char result = 0;
+
+    if (rv1->type != number_m || rv2->type != number_m)
+    {
+        avm_error("Relational operation using non arithmetic operands!\n");
+        return; //if we change the exit on avm_error!
+    }
+
+    double x1 = rv1->data.numVal;
+    double x2 = rv2->data.numVal;
+
+    result = (x1 <= x2);
+
+    if (!executionFinished && result)
+        pc = instr->result.val;
+}
+
+void execute_jge(instruction *instr)
+{
+    assert(instr->result.type == label_a);
+
+    avm_memcell *rv1 = avm_translate_operand(&instr->arg1, &ax);
+    avm_memcell *rv2 = avm_translate_operand(&instr->arg2, &bx);
+
+    unsigned char result = 0;
+
+    if (rv1->type != number_m || rv2->type != number_m)
+    {
+        avm_error("Relational operation using non arithmetic operands!\n");
+        return; //if we change the exit on avm_error!
+    }
+
+    double x1 = rv1->data.numVal;
+    double x2 = rv2->data.numVal;
+
+    result = (x1 >= x2);
+
+    if (!executionFinished && result)
+        pc = instr->result.val;
+}
+
+void execute_jlt(instruction *instr)
+{
+    assert(instr->result.type == label_a);
+
+    avm_memcell *rv1 = avm_translate_operand(&instr->arg1, &ax);
+    avm_memcell *rv2 = avm_translate_operand(&instr->arg2, &bx);
+
+    unsigned char result = 0;
+
+    if (rv1->type != number_m || rv2->type != number_m)
+    {
+        avm_error("Relational operation using non arithmetic operands!\n");
+        return; //if we change the exit on avm_error!
+    }
+
+    double x1 = rv1->data.numVal;
+    double x2 = rv2->data.numVal;
+
+    result = (x1 < x2);
+
+    if (!executionFinished && result)
+        pc = instr->result.val;
+}
+
+void execute_jgt(instruction *instr)
+{
+    assert(instr->result.type == label_a);
+
+    avm_memcell *rv1 = avm_translate_operand(&instr->arg1, &ax);
+    avm_memcell *rv2 = avm_translate_operand(&instr->arg2, &bx);
+
+    unsigned char result = 0;
+
+    if (rv1->type != number_m || rv2->type != number_m)
+    {
+        avm_error("Relational operation using non arithmetic operands!\n");
+        return; //if we change the exit on avm_error!
+    }
+
+    double x1 = rv1->data.numVal;
+    double x2 = rv2->data.numVal;
+
+    result = (x1 > x2);
+
+    if (!executionFinished && result)
+        pc = instr->result.val;
+}
+
+void execute_nop(instruction *instr)
+{
     //??? nothing
 }
 
@@ -809,6 +991,13 @@ char *bool_tostring(avm_memcell *m)
     return strdup("false");
 }
 
+char *libfunc_tostring(avm_memcell *m)
+{
+    assert(m && m->type == libfunc_m);
+
+    return strdup(m->data.libfuncVal);
+}
+
 char *table_tostring(avm_memcell *m)
 {
     assert(m->type == table_m);
@@ -830,7 +1019,7 @@ char *nil_tostring(avm_memcell *m)
 
 char *undef_tostring(avm_memcell *m)
 {
-    assert(m->type == nil_m);
+    assert(m->type == undef_m);
     return strdup("undefined");
 }
 
@@ -873,7 +1062,9 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
 {
     unsigned int ix = 0;
     avm_table_bucket *curr, *prev = NULL, *pair;
-    assert(table);
+
+    assert(table && index);
+
     switch (index->type)
     {
     case string_m:
@@ -889,6 +1080,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             curr = curr->next;
         }
         avm_error("Could not find table item.\n");
+        break;
 
     case number_m:
         ix = customHashNum(index->data.numVal);
@@ -898,19 +1090,22 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             prev = curr;
             if ((curr->key).data.numVal == index->data.numVal)
             {
-
                 return &(curr->value);
             }
             curr = curr->next;
         }
         avm_error("Could not find table item.\n");
+        break;
+
     case bool_m:
         ix = index->data.boolVal;
-        if (table->userfuncIndexed[ix]->key.data.boolVal == ix)
+        curr = table->boolIndexed[ix];
+        if (curr != NULL) //&& table->userfuncIndexed[ix]->key.data.boolVal == ix)
         {
-            return &(table->userfuncIndexed[ix]->value);
+            return &(curr->value);
         }
         avm_error("Bool not supported yet!\n");
+        break;
 
     case userfunc_m:
         ix = hashString(userFuncs[index->data.funcVal].id);
@@ -918,13 +1113,15 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
         while (curr)
         {
             prev = curr;
-            if (!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id))
+            if (!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id) && userFuncs[index->data.funcVal].address == userFuncs[curr->key.data.funcVal].address) //address needless?
             {
                 return &(curr->value);
             }
             curr = curr->next;
         }
         avm_error("Could not find table item.\n");
+        break;
+
     case libfunc_m:
         ix = hashString(index->data.libfuncVal);
         curr = table->libFuncIndexed[ix];
@@ -938,9 +1135,11 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             curr = curr->next;
         }
         avm_error("Could not find table item.\n");
+
     }
 
-    return NULL;
+    //avmerror?
+    return NULL; //check if this is okay!
 }
 
 void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content)
@@ -1177,7 +1376,7 @@ void libfunc_argument()
         //retval.type = number_m;
         //retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
         assert(n < avm_totalactuals());
-        retval = &stack[p_topsp + AVM_STACKENV_SIZE + 1 + n];
+        //retval = &stack[p_topsp + AVM_STACKENV_SIZE + 1 + n];
     }
 }
 

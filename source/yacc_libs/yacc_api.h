@@ -2568,7 +2568,13 @@ unsigned libfuncs_newused(const char *s)
 unsigned userfuncs_newfunc(SymbolTableEntry *sym)
 {
     assert(sym);
+
+    /*First search for occurence of sym already!*/
     unsigned currIndex = currUserFuncs;
+    int i = 0;
+    for(i = 0; i<currUserFuncs; i++){
+
+    }
 
     if (currUserFuncs == totalUserFuncs)
     {
