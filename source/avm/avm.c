@@ -120,7 +120,7 @@ execute_func_t executeFuncs[] = {
     execute_jgt,
     execute_call,
     execute_pusharg,
-    NULL, //!
+    NULL,//!
     execute_funcenter,
     execute_funcexit,
     execute_newtable,
@@ -136,6 +136,8 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index);
 userfunc *avm_getfuncinfo(unsigned address);
 library_func_t avm_getlibraryfunc(char *id);
 avm_table *avm_tablenew(void);
+avm_table *avm_copyTable(avm_table *src);
+avm_table *avm_getTableKeys(avm_table *src);
 static void avm_initstack();
 void avm_calllibfunc(char *id);
 void avm_assign(avm_memcell *lv, avm_memcell *rv);
@@ -271,6 +273,14 @@ void decoder(char *filename); //decodes the binary file created by compiler
 unsigned int hashNum(unsigned int x);
 unsigned int customHashNum(double x);
 unsigned int hashString(const char *pcKey);
+unsigned char isNumber(char *str);
+unsigned char isTrue(char *str);
+unsigned char isFalse(char *str);
+unsigned char isNil(char *nil);
+unsigned char isDigit(char c);
+unsigned char isMinus(char c);
+unsigned char isDot(char c);
+unsigned char isInt(double d);
 
 /* ---------------------- Equality Functions ---------------------- */
 unsigned char numEqual(avm_memcell *m1, avm_memcell *m2);
@@ -292,7 +302,6 @@ equalityFuncDisp equalArr[] = {
 /* ---------------------- Code ---------------------- */
 avm_memcell *avm_translate_operand(vmarg *arg, avm_memcell *reg)
 {
-
     if (arg->type == unused_a)
     {
         reg->type = nil_m;
@@ -799,11 +808,9 @@ char *libfuncs_getused(unsigned index)
     return namedLibfuncs[index];
 }
 
-//TODO
 userfunc *avm_getfuncinfo(unsigned address)
 {
     return &userFuncs[address];
-    //return code[address].arg1;
 }
 
 void execute_uminus(instruction *instr)
@@ -976,9 +983,18 @@ char *number_tostring(avm_memcell *m)
     assert(m->type == number_m);
 
     double num = m->data.numVal;
+    int intNum;
     char strNum[60] = {0};
 
-    snprintf(strNum, 60, "%f", num);
+    if (isInt(num))
+    {
+        intNum = (int)num;
+        snprintf(strNum, 60, "%d", intNum);
+    }
+    else
+    {
+        snprintf(strNum, 60, "%.3f", num); //.2
+    }
 
     return strdup(strNum);
 }
@@ -1296,6 +1312,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
     table->total++;
 }
 
+//ok
 void libfunc_input()
 {
     int counter = 0, size_change = 1;
@@ -1309,7 +1326,6 @@ void libfunc_input()
         str = (char *)malloc(sizeof(char) * DEFAULT_STR_SIZE);
         memset((void *)str, 0, DEFAULT_STR_SIZE);
 
-        //while ((c = getchar()) != EOF)
         while ((c = getchar()) != '\n')
         {
             *(str + counter) = c;
@@ -1324,11 +1340,178 @@ void libfunc_input()
         *(str + counter) = '\0';
 
         avm_memcellclear(&retval);
-        retval.type = string_m;
-        retval.data.strVal = str;
+
+        if (isNumber(str))
+        {
+            double num = atof(str);
+            retval.type = number_m;
+            retval.data.numVal = num;
+        }
+        else if (isNil(str))
+        {
+            retval.type = nil_m;
+        }
+        else if (isTrue(str))
+        {
+            retval.type = bool_m;
+            retval.data.boolVal = 1;
+        }
+        else if (isFalse(str))
+        {
+            retval.type = bool_m;
+            retval.data.boolVal = 0;
+        }
+        else
+        {
+            retval.type = string_m;
+            retval.data.strVal = str;
+        }
     }
 }
 
+avm_table *avm_copyTable(avm_table *src)
+{
+    avm_table *newT = avm_tablenew();
+    avm_table_bucket *curr;
+    int i;
+
+    //copy str
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->strIndexed[i];
+        while (curr)
+        {
+            avm_tablesetelem(newT, &curr->key, &curr->value);
+            curr = curr->next;
+        }
+    }
+
+    //copy nums
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->numIndexed[i];
+        while (curr)
+        {
+            avm_tablesetelem(newT, &curr->key, &curr->value);
+            curr = curr->next;
+        }
+    }
+
+    //copy bools
+    for (i = 0; i < 2; i++)
+    {
+        curr = src->boolIndexed[i];
+        while (curr)
+        {
+            avm_tablesetelem(newT, &curr->key, &curr->value);
+            curr = curr->next;
+        }
+    }
+
+    //copy func
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->userfuncIndexed[i];
+        while (curr)
+        {
+            avm_tablesetelem(newT, &curr->key, &curr->value);
+            curr = curr->next;
+        }
+    }
+
+    //copy libfunc
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->libFuncIndexed[i];
+        while (curr)
+        {
+            avm_tablesetelem(newT, &curr->key, &curr->value);
+            curr = curr->next;
+        }
+    }
+
+    return newT;
+}
+
+avm_table *avm_getTableKeys(avm_table *src)
+{
+    avm_table *newT = avm_tablenew();
+    avm_table_bucket *curr;
+    avm_memcell ind;
+    int i;
+    int counter = 0;
+
+    ind.type = number_m;
+
+    //copy str
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->strIndexed[i];
+        while (curr)
+        {
+            ind.data.numVal = counter;
+            avm_tablesetelem(newT, &ind, &curr->value);
+            curr = curr->next;
+            counter++;
+        }
+    }
+
+    //copy nums
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->numIndexed[i];
+        while (curr)
+        {
+            ind.data.numVal = counter;
+            avm_tablesetelem(newT, &ind, &curr->value);
+            curr = curr->next;
+            counter++;
+        }
+    }
+
+    //copy bools
+    for (i = 0; i < 2; i++)
+    {
+        curr = src->boolIndexed[i];
+        while (curr)
+        {
+            ind.data.numVal = counter;
+            avm_tablesetelem(newT, &ind, &curr->value);
+            curr = curr->next;
+            counter++;
+        }
+    }
+
+    //copy func
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->userfuncIndexed[i];
+        while (curr)
+        {
+            ind.data.numVal = counter;
+            avm_tablesetelem(newT, &ind, &curr->value);
+            curr = curr->next;
+            counter++;
+        }
+    }
+
+    //copy libfunc
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->libFuncIndexed[i];
+        while (curr)
+        {
+            ind.data.numVal = counter;
+            avm_tablesetelem(newT, &ind, &curr->value);
+            curr = curr->next;
+            counter++;
+        }
+    }
+
+    return newT;
+}
+
+//TODO
 void libfunc_objectmemberkeys()
 {
     unsigned n = avm_totalactuals();
@@ -1342,13 +1525,15 @@ void libfunc_objectmemberkeys()
         {
             avm_error("The argument provided is not a table!\n", n);
         }
+        avm_table *newT = avm_getTableKeys(t->data.tableVal);
 
         avm_memcellclear(&retval);
-        retval.type = number_m;
-        retval.data.numVal = t->data.tableVal->total;
+        retval.type = table_m;
+        retval.data.tableVal = newT;
     }
 }
 
+//ok
 void libfunc_objecttotalmembers()
 {
     unsigned n = avm_totalactuals();
@@ -1369,12 +1554,29 @@ void libfunc_objecttotalmembers()
     }
 }
 
-//TODO
+//ok
 void libfunc_objectcopy() //src->actual(0) dest->retval
 {
-    //should do deep copy?
+    unsigned n = avm_totalactuals();
+    if (n != 1)
+        avm_error("objectcopy requires one and only arg!\n", n);
+    else
+    {
+        avm_memcell *t = avm_getactual(0);
+        if (t->type != table_m) //check if it's a string
+        {
+            avm_error("The argument provided is not a table!\n", n);
+        }
+
+        avm_table *newT = avm_copyTable(t->data.tableVal);
+
+        avm_memcellclear(&retval);
+        retval.type = table_m;
+        retval.data.tableVal = newT;
+    }
 }
 
+//TODO
 void libfunc_argument()
 {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
@@ -1387,17 +1589,28 @@ void libfunc_argument()
     }
     else
     {
-        unsigned n = avm_totalactuals();
-        if (n != 1)
-            avm_error("Object member keys requires one and only arg!\n", n);
-
         //retval.type = number_m;
         //retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
-        assert(n < avm_totalactuals());
-        //retval = &stack[p_topsp + AVM_STACKENV_SIZE + 1 + n];
+        unsigned int totalArgs = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
+        unsigned int totalActuals = avm_totalactuals();
+
+        if (totalActuals != 1)
+            avm_error("'argument expects one argument!'\n", totalActuals);
+        else
+        {
+            avm_memcell *selectedArg = avm_getactual(0);
+
+            if (selectedArg->type != number_m || isInt(selectedArg->data.numVal))
+            {
+                avm_error("'argument' requires int arg\n");
+            }
+
+            //???
+        }
     }
 }
 
+//ok
 void libfunc_strtonum()
 {
     unsigned n = avm_totalactuals();
@@ -1413,11 +1626,20 @@ void libfunc_strtonum()
         }
 
         avm_memcellclear(&retval);
-        retval.type = number_m;
-        retval.data.numVal = atof(str->data.strVal);
+
+        if (isNumber(str->data.strVal))
+        {
+            retval.type = number_m;
+            retval.data.numVal = atof(str->data.strVal);
+        }
+        else
+        {
+            retval.type = nil_m;
+        }
     }
 }
 
+//ok
 void libfunc_sqrt()
 {
     unsigned n = avm_totalactuals();
@@ -1432,11 +1654,20 @@ void libfunc_sqrt()
         }
         double x = number->data.numVal;
         avm_memcellclear(&retval);
-        retval.type = number_m;
-        retval.data.numVal = sqrt(x);
+
+        if (x >= 0)
+        {
+            retval.type = number_m;
+            retval.data.numVal = sqrt(x);
+        }
+        else
+        {
+            retval.type = nil_m;
+        }
     }
 }
 
+//ok
 void libfunc_cos()
 {
     unsigned n = avm_totalactuals();
@@ -1456,6 +1687,7 @@ void libfunc_cos()
     }
 }
 
+//ok
 void libfunc_sin()
 {
     unsigned n = avm_totalactuals();
@@ -1475,6 +1707,7 @@ void libfunc_sin()
     }
 }
 
+//ok
 void libfunc_totalarguments()
 {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
@@ -1492,6 +1725,7 @@ void libfunc_totalarguments()
     }
 }
 
+//ok
 void libfunc_typeof()
 {
     unsigned n = avm_totalactuals();
@@ -1505,15 +1739,19 @@ void libfunc_typeof()
     }
 }
 
+//ok
 void libfunc_print()
 {
     unsigned n = avm_totalactuals();
     for (unsigned i = 0; i < n; ++i)
     {
         char *s = avm_tostring(avm_getactual(i));
-        puts(s); //or printf
+        //puts(s); //or printf
+        printf("%s", s);
         free(s);
     }
+
+    printf("\n");
 }
 
 void avm_initialize()
@@ -1856,4 +2094,79 @@ unsigned int customHashNum(double x) //x[1] = 3
 {
     unsigned long z = abs((int)x);
     return z % AVM_TABLE_HASHSIZE; //x[0] x[212]
+}
+
+unsigned char isNumber(char *str)
+{
+    unsigned int counter = 0;
+    unsigned char dotFound = 0;
+
+    while (*(str + counter) != '\0')
+    {
+        /*- is only allowed in the start*/
+        if (isMinus(*(str + counter)))
+        {
+            if (counter != 0)
+            {
+                return 0;
+            }
+        }
+
+        /*Dot for double numbers is allowed inside the string, not in the start or in the end*/
+        else if (isDot(*(str + counter)))
+        {
+            if (!dotFound && counter > 0 && *(str + counter + 1) != '\0')
+            {
+                dotFound = 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        else if (!isDigit(*(str + counter)))
+        {
+            return 0;
+        }
+
+        counter++;
+    }
+
+    return 1;
+}
+
+unsigned char isDigit(char c)
+{
+    return (c >= '0' && c <= '9');
+}
+
+unsigned char isMinus(char c)
+{
+    return (c == '-');
+}
+
+unsigned char isDot(char c)
+{
+    return (c == '.');
+}
+
+unsigned char isTrue(char *str)
+{
+    return !(strcmp(str, "true"));
+}
+
+unsigned char isFalse(char *str)
+{
+    return !(strcmp(str, "false"));
+}
+
+unsigned char isNil(char *str)
+{
+    return !(strcmp(str, "nil"));
+}
+
+unsigned char isInt(double d)
+{
+    return ((int)d == d);
 }
