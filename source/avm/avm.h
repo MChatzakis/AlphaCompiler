@@ -47,12 +47,11 @@ typedef struct avm_table
 {
     unsigned refCounter;
 
-    avm_table_bucket *strIndexed[AVM_TABLE_HASHSIZE]; //x["string"]
-    avm_table_bucket *numIndexed[AVM_TABLE_HASHSIZE]; //x[1]
-    avm_table_bucket *userfuncIndexed[AVM_TABLE_HASHSIZE]; //x[func]
-    avm_table_bucket *libFuncIndexed[AVM_TABLE_HASHSIZE]; //x[print]
-    
-    avm_table_bucket *boolIndexed[2]; //[0] is for false, [1] is for true
+    avm_table_bucket *strIndexed[AVM_TABLE_HASHSIZE];
+    avm_table_bucket *numIndexed[AVM_TABLE_HASHSIZE];
+    avm_table_bucket *userfuncIndexed[AVM_TABLE_HASHSIZE];
+    avm_table_bucket *libFuncIndexed[AVM_TABLE_HASHSIZE];
+    avm_table_bucket *boolIndexed[2];
 
     unsigned total;
 } avm_table;
