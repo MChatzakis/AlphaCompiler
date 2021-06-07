@@ -120,9 +120,9 @@ execute_func_t executeFuncs[] = {
     execute_jgt,
     execute_call,
     execute_pusharg,
+    NULL, //!
     execute_funcenter,
     execute_funcexit,
-    NULL, //!
     execute_newtable,
     execute_tablegetelem,
     execute_tablesetelem,
@@ -148,6 +148,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
 void avm_tableincrefcounter(avm_table *t);
 void avm_tabledecrefcounter(avm_table *t);
 void avm_tablebucketsinit(avm_table_bucket **p);
+void avm_tablebuckersinit_customSize(avm_table_bucket **p, unsigned size);
 void avm_memcellclear(avm_memcell *m);
 void avm_tablebucketsdestroy(avm_table_bucket **p);
 void avm_tabledestroy(avm_table *t);
@@ -292,10 +293,11 @@ equalityFuncDisp equalArr[] = {
 avm_memcell *avm_translate_operand(vmarg *arg, avm_memcell *reg)
 {
 
-    /*if (arg->type == unused_a)
+    if (arg->type == unused_a)
     {
-        return NULL;
-    }*/
+        reg->type = nil_m;
+        return reg;
+    }
 
     switch (arg->type)
     {
@@ -369,6 +371,7 @@ void execute_cycle(void)
 
         unsigned oldPC = pc;
         (*executeFuncs[instr->opcode])(instr);
+        //printf("PC in cycle: %d\n", pc);
         if (pc == oldPC)
             pc++;
     }
@@ -417,8 +420,9 @@ void execute_call(instruction *instr)
     {
     case userfunc_m:
     {
-        pc = func->data.funcVal;
+        pc = userFuncs[func->data.funcVal].address;
         assert(pc < AVM_ENDING_PC);
+        printf("PC %d\n", pc);
         assert(code[pc].opcode == funcenter_v);
         break;
     }
@@ -466,12 +470,14 @@ void avm_callsaveenvironment()
 
 void execute_funcenter(instruction *instr)
 {
+    printf("funcenter exiting\n");
+
     avm_memcell *func = avm_translate_operand(&instr->result, &ax);
     assert(func);
-    assert(pc == func->data.funcVal);
+    assert(pc == userFuncs[func->data.funcVal].address);
 
     totalActuals = 0;
-    userfunc *funcInfo = avm_getfuncinfo(pc);
+    userfunc *funcInfo = avm_getfuncinfo(func->data.funcVal);
 
     topsp = top;
     top = top - funcInfo->localSize;
@@ -494,6 +500,9 @@ void execute_funcexit(instruction *unused)
 
     while (++oldTop <= top)
         avm_memcellclear(&stack[oldTop]);
+
+    printf("funcextit!!!\n");
+    printf("PC after exit: %d\n", pc);
 }
 
 void avm_calllibfunc(char *id)
@@ -1135,7 +1144,6 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             curr = curr->next;
         }
         avm_error("Could not find table item.\n");
-
     }
 
     //avmerror?
@@ -1146,7 +1154,10 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
 {
     unsigned int ix = 0;
     avm_table_bucket *curr, *prev = NULL, *pair;
-    assert(table);
+
+    assert(table && index && content);
+
+    /*Remember to patch for nils*/
     switch (index->type)
     {
     case string_m:
@@ -1158,6 +1169,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             if (!strcmp((curr->key).data.strVal, index->data.strVal))
             {
                 curr->value = *content;
+                //&(curr->value) = content;
                 return;
             }
             curr = curr->next;
@@ -1176,6 +1188,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         {
             prev->next = pair;
         }
+
         break;
     case number_m:
         ix = customHashNum(index->data.numVal);
@@ -1207,14 +1220,19 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         break;
     case bool_m:
         ix = index->data.boolVal;
-        if (table->userfuncIndexed[ix]->key.data.boolVal == ix)
+        curr = table->boolIndexed[ix];
+        if (curr == NULL)
         {
-            table->userfuncIndexed[ix]->value = *content;
+            pair = (avm_table_bucket *)malloc(sizeof(avm_table_bucket));
+            pair->next = NULL;
+            pair->key = *index;
+            pair->value = *content;
+            table->boolIndexed[ix] = pair;
         }
         else
         {
-            table->userfuncIndexed[ix]->key.data.boolVal = ix;
-            table->userfuncIndexed[ix]->value = *content;
+            curr->value = *content;
+            return;
         }
         break;
     case userfunc_m:
@@ -1223,7 +1241,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         while (curr)
         {
             prev = curr;
-            if (!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id))
+            if (index->data.funcVal == curr->key.data.funcVal) //!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id))
             {
                 curr->value = *content;
                 return;
@@ -1493,7 +1511,7 @@ void libfunc_print()
     for (unsigned i = 0; i < n; ++i)
     {
         char *s = avm_tostring(avm_getactual(i));
-        puts(s);
+        puts(s); //or printf
         free(s);
     }
 }
@@ -1544,6 +1562,12 @@ void avm_tablebucketsinit(avm_table_bucket **p)
         p[i] = (avm_table_bucket *)0;
 }
 
+void avm_tablebuckersinit_customSize(avm_table_bucket **p, unsigned size)
+{
+    for (unsigned i = 0; i < size; ++i)
+        p[i] = (avm_table_bucket *)0;
+}
+
 avm_table *avm_tablenew(void)
 {
     avm_table *t = (avm_table *)malloc(sizeof(avm_table));
@@ -1556,7 +1580,8 @@ avm_table *avm_tablenew(void)
     avm_tablebucketsinit(t->strIndexed);
     avm_tablebucketsinit(t->userfuncIndexed);
     avm_tablebucketsinit(t->libFuncIndexed);
-    avm_tablebucketsinit(t->boolIndexed);
+
+    avm_tablebuckersinit_customSize(t->boolIndexed, 2);
 
     return t;
 }

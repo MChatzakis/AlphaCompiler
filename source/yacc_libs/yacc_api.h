@@ -2556,6 +2556,17 @@ unsigned consts_newnumber(double n)
 unsigned libfuncs_newused(const char *s)
 {
     unsigned currIndex = currNamedLibfunc;
+
+    unsigned i = 0;
+
+    for (i = 0; i < currNamedLibfunc; i++)
+    {
+        if (!strcmp(s, namedLibfuncs[i]))
+        {
+            return i;
+        }
+    }
+
     if (currNamedLibfunc == totalNamedLibfuncs)
     {
         expandLibFuncs();
@@ -2571,9 +2582,15 @@ unsigned userfuncs_newfunc(SymbolTableEntry *sym)
 
     /*First search for occurence of sym already!*/
     unsigned currIndex = currUserFuncs;
-    int i = 0;
-    for(i = 0; i<currUserFuncs; i++){
 
+    unsigned i = 0;
+
+    for (i = 0; i < currUserFuncs; i++)
+    {
+        if (!strcmp(userFuncs[i].id, (sym->value).funcVal->name) && userFuncs[i].address == (sym->value).funcVal->address)
+        {
+            return i;
+        }
     }
 
     if (currUserFuncs == totalUserFuncs)
