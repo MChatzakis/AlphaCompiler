@@ -19,6 +19,7 @@
 #define AVM_SAVEDPC_OFFSET +3
 #define AVM_SAVEDTOP_OFFSET +2
 #define AVM_SAVEDTOPSP_OFFSET +1
+
 #define AVM_ENDING_PC codeSize
 
 #define avm_error fprintf_avm_red
@@ -120,7 +121,7 @@ execute_func_t executeFuncs[] = {
     execute_jgt,
     execute_call,
     execute_pusharg,
-    NULL,//!
+    NULL, //!
     execute_funcenter,
     execute_funcexit,
     execute_newtable,
@@ -764,10 +765,17 @@ void execute_tablegetelem(instruction *instr)
     }
     else
     {
+        if (i->type == nil_m)
+        {
+            avm_warning("Addressing tables with nil indexes is not allowed!");
+            return;
+        }
+
         avm_memcell *content = avm_tablegetelem(t->data.tableVal, i);
         if (content)
             avm_assign(lv, content);
         else
+        /*Returning null means that the content was not found*/
         {
             char *ts = avm_tostring(t);
             char *is = avm_tostring(i);
@@ -789,6 +797,10 @@ void execute_tablesetelem(instruction *instr)
 
     if (t->type != table_m)
         avm_error("illegal use of type %s as table!", typeStrings[t->type]);
+    else if (i->type == nil_m)
+        avm_warning("Nil indexes are not allowed on table addressing\n");
+    else if (i->type == undef_m)
+        avm_warning("Undefined indexes are not allowed on table addressing\n");
     else
         avm_tablesetelem(t->data.tableVal, i, c);
 }
@@ -975,7 +987,6 @@ void execute_jgt(instruction *instr)
 
 void execute_nop(instruction *instr)
 {
-    //??? nothing
 }
 
 char *number_tostring(avm_memcell *m)
@@ -1026,7 +1037,98 @@ char *libfunc_tostring(avm_memcell *m)
 char *table_tostring(avm_memcell *m)
 {
     assert(m->type == table_m);
-    return strdup("Alpha table");
+
+    int size_change = 1, counter = 0;
+    char c;
+
+    char *str = (char *)malloc(sizeof(char) * DEFAULT_STR_SIZE);
+    memset((void *)str, 0, DEFAULT_STR_SIZE);
+
+    avm_table *t = m->data.tableVal;
+    int i;
+    if (t->isSimple)
+    {
+        avm_table_bucket *curr;
+        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+        {
+            curr = t->numIndexed[i];
+            while (curr)
+            {
+                char *s = avm_tostring(&curr->value);
+                curr = curr->next;
+                //copy s to str, fasi str += s
+            }
+            //
+        }
+    }
+    else
+    {
+        avm_table_bucket *curr;
+
+        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+        {
+            curr = t->numIndexed[i];
+            while (curr)
+            {
+                curr = curr->next;
+            }
+        }
+
+        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+        {
+            curr = t->strIndexed[i];
+            while (curr)
+            {
+                char *key = avm_tostring(&curr->key);
+                char *val = avm_tostring(&curr->value);
+                curr = curr->next;
+                free(key);
+                free(val);
+            }
+        }
+
+        for (i = 0; i < 2; i++)
+        {
+            curr = t->boolIndexed[i];
+            while (curr)
+            {
+                char *key = avm_tostring(&curr->key);
+                char *val = avm_tostring(&curr->value);
+                curr = curr->next;
+                free(key);
+                free(val);
+            }
+        }
+
+        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+        {
+            curr = t->libFuncIndexed[i];
+            while (curr)
+            {
+                char *key = avm_tostring(&curr->key);
+                char *val = avm_tostring(&curr->value);
+                //str += "{" + key + ":" + val + "}";
+                curr = curr->next;
+                free(key);
+                free(val);
+            }
+        }
+
+        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+        {
+            curr = t->userfuncIndexed[i];
+            while (curr)
+            {
+                char *key = avm_tostring(&curr->key);
+                char *val = avm_tostring(&curr->value);
+                curr = curr->next;
+                free(key);
+                free(val);
+            }
+        }
+    }
+
+    return str;
 }
 
 char *userfunc_tostring(avm_memcell *m)
@@ -1168,7 +1270,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
 
 void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content)
 {
-    unsigned int ix = 0;
+    unsigned int ix = 0, simple;
     avm_table_bucket *curr, *prev = NULL, *pair;
 
     assert(table && index && content);
@@ -1205,6 +1307,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             prev->next = pair;
         }
 
+        table->isSimple = 0;
         break;
     case number_m:
         ix = customHashNum(index->data.numVal);
@@ -1233,6 +1336,10 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         {
             prev->next = pair;
         }
+        if (pair->key.data.numVal >= 0 && isInt(pair->key.data.numVal))
+        {
+            table->isSimple = 0;
+        }
         break;
     case bool_m:
         ix = index->data.boolVal;
@@ -1250,6 +1357,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             curr->value = *content;
             return;
         }
+        table->isSimple = 0;
         break;
     case userfunc_m:
         ix = hashString(userFuncs[index->data.funcVal].id);
@@ -1278,6 +1386,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         {
             prev->next = pair;
         }
+        table->isSimple = 0;
         break;
     case libfunc_m:
         ix = hashString(index->data.libfuncVal);
@@ -1306,7 +1415,11 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         {
             prev->next = pair;
         }
+        table->isSimple = 0;
         break;
+    default:
+        /*Ti prepei na kanoyme gia arrays?*/
+        assert(0);
     }
 
     table->total++;
@@ -1511,7 +1624,7 @@ avm_table *avm_getTableKeys(avm_table *src)
     return newT;
 }
 
-//TODO
+//ok
 void libfunc_objectmemberkeys()
 {
     unsigned n = avm_totalactuals();
@@ -1582,7 +1695,7 @@ void libfunc_argument()
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
     avm_memcellclear(&retval);
 
-    if (p_topsp)
+    if (p_topsp) //bug an i sinartisi eiani sto pc 0. Isws na vazame ena arxiko jump ston kwdika?
     {
         avm_error("'argument' called outside function");
         retval.type = nil_m;
@@ -1604,8 +1717,11 @@ void libfunc_argument()
             {
                 avm_error("'argument' requires int arg\n");
             }
+            int off = (int)selectedArg->data.numVal;
 
-            //???
+            avm_memcell arg = stack[p_topsp + AVM_NUMACTUALS_OFFSET + off];
+            retval.data = arg.data;
+            retval.type = arg.type;
         }
     }
 }
@@ -1710,10 +1826,10 @@ void libfunc_sin()
 //ok
 void libfunc_totalarguments()
 {
-    unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
+    unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
     avm_memcellclear(&retval);
 
-    if (p_topsp)
+    if (!p_topsp)
     {
         avm_error("'total arguments' called outside function");
         retval.type = nil_m;
@@ -1813,6 +1929,7 @@ avm_table *avm_tablenew(void)
     AVM_WIPEOUT(*t);
 
     t->refCounter = t->total = 0;
+    t->isSimple = 1; //if it has only ints for indexed
 
     avm_tablebucketsinit(t->numIndexed);
     avm_tablebucketsinit(t->strIndexed);

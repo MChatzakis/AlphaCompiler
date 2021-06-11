@@ -54,6 +54,7 @@ typedef struct avm_table
     avm_table_bucket *boolIndexed[2];
 
     unsigned total;
+    unsigned char isSimple;
 } avm_table;
 
 avm_memcell stack[AVM_STACKSIZE];
