@@ -1,16 +1,5 @@
-===============
-1) Complete avm tables
-2) Read theory (12,13,15 + front)
---------------
-
-a) Add delete with nil at table set
-b) Check phase4-5 with test
-c) Check lecture code is right
-
-==============
-QA: 
-1) Τι πρεπει να κάνει η argument?
-2) Ποια η διαφορά total table members vs keys.
-3) Ο σαβιδης εχει πει οτι αν κανουμε print table δεν ειναι αναγκη να τονν τυπωνουμε ολο, ισχυει;
-
-=============
+1) Finish and Check libfuncs
+2) Finish and check 2string funcs
+3) Add avm_tabledelete -> px t[5] = nil =>delete
+4) Check that top decrease is okay at the load
+5) Start tests for tcode and vm

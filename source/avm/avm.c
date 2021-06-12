@@ -1336,7 +1336,8 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         {
             prev->next = pair;
         }
-        if (pair->key.data.numVal >= 0 && isInt(pair->key.data.numVal))
+        
+        if (pair->key.data.numVal < 0 || !isInt(pair->key.data.numVal))
         {
             table->isSimple = 0;
         }
@@ -1625,7 +1626,7 @@ avm_table *avm_getTableKeys(avm_table *src)
 }
 
 //ok
-void libfunc_objectmemberkeys()
+void libfunc_objectmemberkeys() //t = objectmemberkeys(tab); 
 {
     unsigned n = avm_totalactuals();
     if (n != 1)
@@ -1638,6 +1639,7 @@ void libfunc_objectmemberkeys()
         {
             avm_error("The argument provided is not a table!\n", n);
         }
+
         avm_table *newT = avm_getTableKeys(t->data.tableVal);
 
         avm_memcellclear(&retval);
@@ -1759,14 +1761,14 @@ void libfunc_strtonum()
 void libfunc_sqrt()
 {
     unsigned n = avm_totalactuals();
-    if (n != 2)
-        avm_error("two arguments (not %d) expected in 'sin'!\n", n);
+    if (n != 1)
+        avm_error("one argument (not %d) expected in 'sqrt'!\n", n);
     else
     {
         avm_memcell *number = avm_getactual(0);
         if (number->type != number_m)
         {
-            avm_error("The argument provided for pow is not a number!\n", n);
+            avm_error("The argument provided for sqrt is not a number!\n", n);
         }
         double x = number->data.numVal;
         avm_memcellclear(&retval);
@@ -2110,12 +2112,17 @@ void decoder(char *filename)
 
         avm_memcell *arg;
 
+        //kanoume sinexws decrease.. den prepei! if(N - 1 - code[i].result.val <= top) ->tote thelei decrease top!
         if (code[i].result.type == 1)
         {
             arg = avm_translate_operand(&code[i].result, &ax);
             assert(arg);
             avm_assign(&stack[N - 1 - code[i].result.val], arg);
-            avm_dec_top();
+            //x = 1; t = x + 1;
+            if (N - 1 - code[i].result.val <= top)
+            {
+                avm_dec_top();
+            }
         }
 
         if (code[i].arg1.type == 1)
@@ -2123,7 +2130,10 @@ void decoder(char *filename)
             arg = avm_translate_operand(&code[i].arg1, &ax);
             assert(arg);
             avm_assign(&stack[N - 1 - code[i].arg1.val], arg);
-            avm_dec_top();
+            if (N - 1 - code[i].arg1.val <= top)
+            {
+                avm_dec_top();
+            }
         }
 
         if (code[i].arg2.type == 1)
@@ -2131,7 +2141,10 @@ void decoder(char *filename)
             arg = avm_translate_operand(&code[i].arg2, &ax);
             assert(arg);
             avm_assign(&stack[N - 1 - code[i].arg2.val], arg);
-            avm_dec_top();
+            if (N - 1 - code[i].arg2.val <= top)
+            {
+                avm_dec_top();
+            }
         }
 
         /*printf("Opcode: %u ", code[i].opcode);
@@ -2223,7 +2236,7 @@ unsigned char isNumber(char *str)
         /*- is only allowed in the start*/
         if (isMinus(*(str + counter)))
         {
-            if (counter != 0)
+            if (counter != 0 || !isDigit(*(str + counter + 1))) 
             {
                 return 0;
             }
@@ -2285,5 +2298,5 @@ unsigned char isNil(char *str)
 
 unsigned char isInt(double d)
 {
-    return ((int)d == d);
+    return (unsigned char)((int)d == d);
 }

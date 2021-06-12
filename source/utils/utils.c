@@ -26,7 +26,7 @@ void fprintf_avm_yellow( const char *str, ...)
 {
   va_list args;
   va_start(args, str);
-  vfprintf(stderr, ANSI_COLOR_RED, args);
+  vfprintf(stderr, ANSI_COLOR_YELLOW, args);
   vfprintf(stderr, str, args);
   vfprintf(stderr, ANSI_COLOR_RESET, args);
   va_end(args);
