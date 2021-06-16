@@ -151,6 +151,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
 void avm_tableincrefcounter(avm_table *t);
 void avm_tabledecrefcounter(avm_table *t);
 void avm_tablebucketsinit(avm_table_bucket **p);
+void avm_tabledelelem(avm_table *table, avm_memcell *index);
 void avm_tablebuckersinit_customSize(avm_table_bucket **p, unsigned size);
 void avm_memcellclear(avm_memcell *m);
 void avm_tablebucketsdestroy(avm_table_bucket **p);
@@ -380,6 +381,7 @@ void execute_cycle(void)
             currLine = instr->srcLine;
 
         unsigned oldPC = pc;
+        printf("going to %d, %d = \n", instr->opcode, pc);
         (*executeFuncs[instr->opcode])(instr);
         //printf("PC in cycle: %d\n", pc);
         if (pc == oldPC)
@@ -420,7 +422,7 @@ void avm_assign(avm_memcell *lv, avm_memcell *rv)
 
 void execute_call(instruction *instr)
 {
-    avm_memcell *func = avm_translate_operand(&instr->arg1, &ax);
+    avm_memcell *func = avm_translate_operand(&(instr->arg1), &ax);
     assert(func);
 
     printf("Executing call!\n");
@@ -437,9 +439,11 @@ void execute_call(instruction *instr)
         break;
     }
     case string_m:
+        printf("String -- %s\n", (func->data).strVal);
         avm_calllibfunc((func->data).strVal);
         break;
     case libfunc_m:
+        printf("LibF -- %s\n", (func->data).libfuncVal);
         avm_calllibfunc((func->data).libfuncVal);
         break;
     default:
@@ -509,7 +513,10 @@ void execute_funcexit(instruction *unused)
     topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
 
     while (++oldTop <= top)
+    {
+        printf("**DELETING ITEM %s\n", avm_tostring(&stack[oldTop]));
         avm_memcellclear(&stack[oldTop]);
+    }
 
     printf("funcextit!!!\n");
     printf("PC after exit: %d\n", pc);
@@ -779,7 +786,7 @@ void execute_tablegetelem(instruction *instr)
         {
             char *ts = avm_tostring(t);
             char *is = avm_tostring(i);
-            avm_warning("%s[%s] not found!", ts, ts);
+            avm_warning("%s[%s] not found!", ts, is);
             free(ts);
             free(is);
         }
@@ -791,18 +798,31 @@ void execute_tablesetelem(instruction *instr)
     avm_memcell *t = avm_translate_operand(&instr->result, (avm_memcell *)0);
     avm_memcell *i = avm_translate_operand(&instr->arg1, &ax);
     avm_memcell *c = avm_translate_operand(&instr->arg2, &bx);
+
     printf("Inside set\n");
+
     assert(t && &stack[N - 1] >= t && t > &stack[top]);
     assert(i && c);
 
     if (t->type != table_m)
         avm_error("illegal use of type %s as table!", typeStrings[t->type]);
-    else if (i->type == nil_m)
+    else if (i->type == nil_m) //t[nil] = 10;
         avm_warning("Nil indexes are not allowed on table addressing\n");
     else if (i->type == undef_m)
         avm_warning("Undefined indexes are not allowed on table addressing\n");
     else
-        avm_tablesetelem(t->data.tableVal, i, c);
+    {
+        //i == index;
+        if (c->type == nil_m)
+        {
+
+            avm_tabledelelem(t->data.tableVal, i);
+        }
+        else
+        {
+            avm_tablesetelem(t->data.tableVal, i, c);
+        }
+    }
 }
 
 double consts_getnumber(unsigned index)
@@ -817,6 +837,8 @@ char *consts_getstring(unsigned index)
 
 char *libfuncs_getused(unsigned index)
 {
+    printf("INDEX:::::: %d\n", index);
+    printf("========%s\n", namedLibfuncs[index]);
     return namedLibfuncs[index];
 }
 
@@ -1030,8 +1052,57 @@ char *bool_tostring(avm_memcell *m)
 char *libfunc_tostring(avm_memcell *m)
 {
     assert(m && m->type == libfunc_m);
+    char funcToStr[60] = {0};
+    strcpy(funcToStr, "Lib Function: ");
+    strcat(funcToStr, m->data.libfuncVal);
+    return strdup(funcToStr);
+}
 
-    return strdup(m->data.libfuncVal);
+void pair_tostring(avm_table_bucket *curr, avm_table *t, char **str, int *size_change, int *counter) //(char *str, char *key, char *val)
+{
+    char *key, *val;
+    char addr[21] = {0};
+    while (curr)
+    {
+        if (curr->key.data.tableVal == t) //avoiding self loop
+        {
+            snprintf(addr, 20, "%p", t); // snprintf(strNum, 60, "%d", intNum);
+            key = strdup(addr);
+        }
+        else
+        {
+            key = avm_tostring(&curr->key);
+        }
+
+        if (curr->value.data.tableVal == t) //avoiding self loop
+        {
+            snprintf(addr, 20, "%p", t); // snprintf(strNum, 60, "%d", intNum);
+            val = strdup(addr);
+        }
+        else
+        {
+            val = avm_tostring(&curr->value);
+        }
+
+        *counter += strlen(key) + strlen(val) + 5;
+
+        while (*counter >= DEFAULT_STR_SIZE * (*size_change))
+        {
+            (*size_change)++;
+            *str = (char *)realloc((void *)(*str), (*size_change) * DEFAULT_STR_SIZE * sizeof(char));
+        }
+
+        strcat(*str, " {");
+        strcat(*str, key);
+        strcat(*str, ":");
+        strcat(*str, val);
+        strcat(*str, "} ");
+
+        free(key);
+        free(val);
+
+        curr = curr->next;
+    }
 }
 
 char *table_tostring(avm_memcell *m)
@@ -1044,89 +1115,52 @@ char *table_tostring(avm_memcell *m)
     char *str = (char *)malloc(sizeof(char) * DEFAULT_STR_SIZE);
     memset((void *)str, 0, DEFAULT_STR_SIZE);
 
+    str[counter++] = '[';
+
     avm_table *t = m->data.tableVal;
     int i;
-    if (t->isSimple)
+
+    avm_table_bucket *curr;
+
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
     {
-        avm_table_bucket *curr;
-        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
-        {
-            curr = t->numIndexed[i];
-            while (curr)
-            {
-                char *s = avm_tostring(&curr->value);
-                curr = curr->next;
-                //copy s to str, fasi str += s
-            }
-            //
-        }
+        curr = t->numIndexed[i];
+        pair_tostring(curr, t, &str, &size_change, &counter);
     }
-    else
+
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
     {
-        avm_table_bucket *curr;
-
-        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
-        {
-            curr = t->numIndexed[i];
-            while (curr)
-            {
-                curr = curr->next;
-            }
-        }
-
-        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
-        {
-            curr = t->strIndexed[i];
-            while (curr)
-            {
-                char *key = avm_tostring(&curr->key);
-                char *val = avm_tostring(&curr->value);
-                curr = curr->next;
-                free(key);
-                free(val);
-            }
-        }
-
-        for (i = 0; i < 2; i++)
-        {
-            curr = t->boolIndexed[i];
-            while (curr)
-            {
-                char *key = avm_tostring(&curr->key);
-                char *val = avm_tostring(&curr->value);
-                curr = curr->next;
-                free(key);
-                free(val);
-            }
-        }
-
-        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
-        {
-            curr = t->libFuncIndexed[i];
-            while (curr)
-            {
-                char *key = avm_tostring(&curr->key);
-                char *val = avm_tostring(&curr->value);
-                //str += "{" + key + ":" + val + "}";
-                curr = curr->next;
-                free(key);
-                free(val);
-            }
-        }
-
-        for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
-        {
-            curr = t->userfuncIndexed[i];
-            while (curr)
-            {
-                char *key = avm_tostring(&curr->key);
-                char *val = avm_tostring(&curr->value);
-                curr = curr->next;
-                free(key);
-                free(val);
-            }
-        }
+        curr = t->strIndexed[i];
+        pair_tostring(curr, t, &str, &size_change, &counter);
     }
+
+    for (i = 0; i < 2; i++)
+    {
+        curr = t->boolIndexed[i];
+        pair_tostring(curr, t, &str, &size_change, &counter);
+    }
+
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = t->libFuncIndexed[i];
+        pair_tostring(curr, t, &str, &size_change, &counter);
+    }
+
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = t->userfuncIndexed[i];
+        pair_tostring(curr, t, &str, &size_change, &counter);
+    }
+
+    counter += 2;
+
+    if (counter >= DEFAULT_STR_SIZE * (size_change))
+    {
+        str = (char *)realloc((void *)(str), ((size_change * DEFAULT_STR_SIZE) + 2) * sizeof(char));
+    }
+
+    str[counter - 2] = ']';
+    str[counter - 1] = '\0';
 
     return str;
 }
@@ -1134,8 +1168,19 @@ char *table_tostring(avm_memcell *m)
 char *userfunc_tostring(avm_memcell *m)
 {
     assert(m->type == userfunc_m);
+
     unsigned index = m->data.funcVal;
-    return strdup(userFuncs[index].id);
+    char funcToStr[60] = {0};
+
+    strcpy(funcToStr, "User Function: ");
+
+    char addressToStr[60] = {0};
+    snprintf(addressToStr, 59, "%d", index);
+
+    //addressToStr[59] = '\0';
+
+    strcat(funcToStr, addressToStr);
+    return strdup(funcToStr);
 }
 
 char *nil_tostring(avm_memcell *m)
@@ -1268,6 +1313,131 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
     return NULL; //check if this is okay!
 }
 
+void avm_tabledelelem(avm_table *table, avm_memcell *index)
+{
+    unsigned int ix = 0, foundItemToDelete = 0;
+    avm_table_bucket *curr, *prev = NULL;
+
+    assert(table && index);
+
+    switch (index->type)
+    {
+    case string_m:
+        ix = hashString(index->data.strVal);
+        curr = table->strIndexed[ix];
+        while (curr)
+        {
+            if (!strcmp((curr->key).data.strVal, index->data.strVal))
+            {
+                if (prev == NULL)
+                {
+                    table->strIndexed[ix] = curr->next;
+                }
+                else
+                {
+                    prev->next = curr->next;
+                }
+
+                free(curr);
+                table->total--;
+                return;
+            }
+
+            prev = curr;
+            curr = curr->next;
+        }
+        break;
+    case number_m:
+        ix = customHashNum(index->data.numVal);
+        curr = table->numIndexed[ix];
+        while (curr)
+        {
+            if ((curr->key).data.numVal == index->data.numVal)
+            {
+                if (prev == NULL)
+                {
+                    table->numIndexed[ix] = curr->next;
+                }
+                else
+                {
+                    prev->next = curr->next;
+                }
+
+                free(curr);
+                table->total--;
+                return;
+            }
+            prev = curr;
+            curr = curr->next;
+        }
+        break;
+    case bool_m:
+        ix = index->data.boolVal;
+        curr = table->boolIndexed[ix];
+        if (curr != NULL)
+        {
+            table->boolIndexed[ix] = NULL;
+            free(curr);
+            table->total--;
+            return;
+        }
+        break;
+    case userfunc_m:
+        ix = hashString(userFuncs[index->data.funcVal].id);
+        curr = table->userfuncIndexed[ix];
+        while (curr)
+        {
+            if (index->data.funcVal == curr->key.data.funcVal)
+            {
+                if (prev == NULL)
+                {
+                    table->userfuncIndexed[ix] = curr->next;
+                }
+                else
+                {
+                    prev->next = curr->next;
+                }
+
+                free(curr);
+                table->total--;
+                return;
+            }
+            prev = curr;
+            curr = curr->next;
+        }
+        break;
+    case libfunc_m:
+        ix = hashString(index->data.libfuncVal);
+        curr = table->libFuncIndexed[ix];
+        while (curr)
+        {
+
+            if (!strcmp(index->data.libfuncVal, (curr->key).data.libfuncVal))
+            {
+                if (prev == NULL)
+                {
+                    table->libFuncIndexed[ix] = curr->next;
+                }
+                else
+                {
+                    prev->next = curr->next;
+                }
+
+                free(curr);
+                table->total--;
+                return;
+            }
+            prev = curr;
+            curr = curr->next;
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    avm_warning("Could not find the table item to delete!\n");
+}
+
 void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content)
 {
     unsigned int ix = 0, simple;
@@ -1336,7 +1506,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         {
             prev->next = pair;
         }
-        
+
         if (pair->key.data.numVal < 0 || !isInt(pair->key.data.numVal))
         {
             table->isSimple = 0;
@@ -1564,7 +1734,7 @@ avm_table *avm_getTableKeys(avm_table *src)
         while (curr)
         {
             ind.data.numVal = counter;
-            avm_tablesetelem(newT, &ind, &curr->value);
+            avm_tablesetelem(newT, &ind, &curr->key);
             curr = curr->next;
             counter++;
         }
@@ -1577,7 +1747,7 @@ avm_table *avm_getTableKeys(avm_table *src)
         while (curr)
         {
             ind.data.numVal = counter;
-            avm_tablesetelem(newT, &ind, &curr->value);
+            avm_tablesetelem(newT, &ind, &curr->key);
             curr = curr->next;
             counter++;
         }
@@ -1590,7 +1760,7 @@ avm_table *avm_getTableKeys(avm_table *src)
         while (curr)
         {
             ind.data.numVal = counter;
-            avm_tablesetelem(newT, &ind, &curr->value);
+            avm_tablesetelem(newT, &ind, &curr->key);
             curr = curr->next;
             counter++;
         }
@@ -1603,7 +1773,7 @@ avm_table *avm_getTableKeys(avm_table *src)
         while (curr)
         {
             ind.data.numVal = counter;
-            avm_tablesetelem(newT, &ind, &curr->value);
+            avm_tablesetelem(newT, &ind, &curr->key);
             curr = curr->next;
             counter++;
         }
@@ -1616,7 +1786,7 @@ avm_table *avm_getTableKeys(avm_table *src)
         while (curr)
         {
             ind.data.numVal = counter;
-            avm_tablesetelem(newT, &ind, &curr->value);
+            avm_tablesetelem(newT, &ind, &curr->key);
             curr = curr->next;
             counter++;
         }
@@ -1626,7 +1796,7 @@ avm_table *avm_getTableKeys(avm_table *src)
 }
 
 //ok
-void libfunc_objectmemberkeys() //t = objectmemberkeys(tab); 
+void libfunc_objectmemberkeys() //t = objectmemberkeys(tab);
 {
     unsigned n = avm_totalactuals();
     if (n != 1)
@@ -1691,39 +1861,37 @@ void libfunc_objectcopy() //src->actual(0) dest->retval
     }
 }
 
-//TODO
+//ok
 void libfunc_argument()
 {
-    unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
+    unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
     avm_memcellclear(&retval);
 
-    if (p_topsp) //bug an i sinartisi eiani sto pc 0. Isws na vazame ena arxiko jump ston kwdika?
+    if (!p_topsp)
     {
         avm_error("'argument' called outside function");
         retval.type = nil_m;
     }
     else
     {
-        //retval.type = number_m;
-        //retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
         unsigned int totalArgs = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
-        unsigned int totalActuals = avm_totalactuals();
+        unsigned int totalActuals = avm_totalactuals(); //argument(1)
 
         if (totalActuals != 1)
             avm_error("'argument expects one argument!'\n", totalActuals);
         else
         {
-            avm_memcell *selectedArg = avm_getactual(0);
+            avm_memcell *selectedArg = avm_getactual(0); //
 
-            if (selectedArg->type != number_m || isInt(selectedArg->data.numVal))
+            if (selectedArg->type != number_m || !isInt(selectedArg->data.numVal) || selectedArg->data.numVal < 0 || selectedArg->data.numVal >= totalArgs)
             {
                 avm_error("'argument' requires int arg\n");
             }
             int off = (int)selectedArg->data.numVal;
 
-            avm_memcell arg = stack[p_topsp + AVM_NUMACTUALS_OFFSET + off];
-            retval.data = arg.data;
-            retval.type = arg.type;
+            avm_memcell *arg = &stack[p_topsp + AVM_STACKENV_SIZE + 1 + off];
+            retval.data = arg->data;
+            retval.type = arg->type;
         }
     }
 }
@@ -1858,7 +2026,7 @@ void libfunc_typeof()
 }
 
 //ok
-void libfunc_print()
+void libfunc_print() //print(1,2,3)
 {
     unsigned n = avm_totalactuals();
     for (unsigned i = 0; i < n; ++i)
@@ -1966,6 +2134,7 @@ void avm_memcellclear(avm_memcell *m)
     }
 }
 
+//na to ksanadoume
 void avm_tablebucketsdestroy(avm_table_bucket **p)
 {
     for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i, ++p)
@@ -2038,8 +2207,13 @@ void decoder(char *filename)
         fread(currStr, len, 1, stream);
         currStr[len] = '\0';
 
-        stringConsts[i] = currStr;
+        stringConsts[i] = strdup(currStr);
         //printf("strConst[%d] = %s\n", i, stringConsts[i]);
+    }
+
+    for (i = 0; i < totalStringConsts; i++)
+    {
+        printf("strConst[%d] = %s\n", i, stringConsts[i]);
     }
 
     //read lib funcs
@@ -2055,9 +2229,13 @@ void decoder(char *filename)
         fread(currStr, len, 1, stream);
         currStr[len] = '\0';
 
-        namedLibfuncs[i] = currStr;
-
+        namedLibfuncs[i] = strdup(currStr); // strdup(currStr);
         //printf("LibFuncs[%d] = %s\n", i, namedLibfuncs[i]);
+    }
+
+    for (i = 0; i < totalNamedLibfuncs; i++)
+    {
+        printf("LibFuncs[%d] = %s\n", i, namedLibfuncs[i]);
     }
 
     //read user funcs
@@ -2080,11 +2258,14 @@ void decoder(char *filename)
 
         userFuncs[i].address = address;
         userFuncs[i].localSize = locals;
-        userFuncs[i].id = currStr;
+        userFuncs[i].id = strdup(currStr);
 
         //printf("UserFuncs[%d] = (%u %u %s)\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
     }
-
+    for (i = 0; i < totalUserFuncs; i++)
+    {
+        printf("UserFuncs[%d] = (%u %u %s)\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
+    }
     //read instructions
     fread(&codeSize, sizeof(codeSize), 1, stream);
     //printf("Total Instructions :%u\n", codeSize);
@@ -2236,7 +2417,7 @@ unsigned char isNumber(char *str)
         /*- is only allowed in the start*/
         if (isMinus(*(str + counter)))
         {
-            if (counter != 0 || !isDigit(*(str + counter + 1))) 
+            if (counter != 0 || !isDigit(*(str + counter + 1)))
             {
                 return 0;
             }
