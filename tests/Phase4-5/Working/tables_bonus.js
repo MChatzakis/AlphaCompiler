@@ -26,6 +26,9 @@ func = f;
 print("must print >f userFunc<: ", t[f], "\n"); // f userFunc
 print("must print >f userFunc<: ", t[func], "\n"); // f userFunc
 
+/*
+We do not support functors!
+*/
 func = [
 	{"()" : (function (t, msg){
 		print("Call ", t.class, "'s print\n");

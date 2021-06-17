@@ -1,4 +1,4 @@
-avm
+//avm
 function fract(x) {
 
 	if(x == 1)

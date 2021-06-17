@@ -113,4 +113,4 @@ function foo () {
     }
 }
 foo();
-while(true)print("ok");
+//while(true)print("ok");

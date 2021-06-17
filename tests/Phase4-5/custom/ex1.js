@@ -1,15 +1,3 @@
-/*
-proper output: 
-
-Book Title: Hitchhicker's Guide to the Galaxy
-        Section :Section #1
-                paragraph 1... blah
-                paragraph 2... blah
-        Section :Section #2
-        Section :Section #3
-
-*/
-
 function Book(title) {
     return [
 		{ "title" : title },
@@ -68,31 +56,4 @@ function Paragraph(text) {
 }
 
 book = Book("Hitchhicker's Guide to the Galaxy");
-book..AppendSection(Section("Section #1"));
-book..AppendSection(Section("Section #2"));
-book..AppendSection(Section("Section #3"));
-
-book.sections[0]..AppendParagraph(Paragraph("paragraph 1... blah"));
-book.sections[0]..AppendParagraph(Paragraph("paragraph 2... blah"));
-
-function PrintVisitor() {
-	return [
-		{ "VisitBook" :
-			(function(book) {
-				print("Book Title: ", book.title, "\n");
-			})
-		},
-		{ "VisitSection" :
-			(function(section) {
-				print("\tSection :", section.title, "\n");
-			})
-		},
-		{ "VisitParagraph" :
-			(function(paragraph) {
-				print("\t\t", paragraph.content, "\n");
-			})
-		}
-	];
-}
-
-book.Accept(book, PrintVisitor());
+print(book);

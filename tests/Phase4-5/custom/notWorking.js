@@ -22,7 +22,7 @@ function sum(i)
 }
 
 {
-    print("a2 = 2 + 2 * 2 / 8;\n");
+    /*print("a2 = 2 + 2 * 2 / 8;\n");
 	a2 = 2 + 2 * 2 / 8;
 
     print("c = f1(3,4);");
@@ -33,8 +33,8 @@ function sum(i)
     
 	print("global b = not a;\n");
 	::b = not a;
-
-	if(a) {
+*/
+	if(false) {
 		// never here
         	print("The impossible happened\n");
     }

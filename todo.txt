@@ -6,3 +6,8 @@
 4) Check that top decrease is okay at the load
 
 5) Start tests for tcode and vm
+
+
+QQ:
+1)Indexing with tables
+2)Get element after deleting an item

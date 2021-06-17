@@ -153,6 +153,7 @@ void avm_tabledecrefcounter(avm_table *t);
 void avm_tablebucketsinit(avm_table_bucket **p);
 void avm_tabledelelem(avm_table *table, avm_memcell *index);
 void avm_tablebuckersinit_customSize(avm_table_bucket **p, unsigned size);
+void avm_tablebucketsdestroy_CustomSize(avm_table_bucket **p, unsigned size);
 void avm_memcellclear(avm_memcell *m);
 void avm_tablebucketsdestroy(avm_table_bucket **p);
 void avm_tabledestroy(avm_table *t);
@@ -283,6 +284,7 @@ unsigned char isDigit(char c);
 unsigned char isMinus(char c);
 unsigned char isDot(char c);
 unsigned char isInt(double d);
+long hashPtr(void *ptr);
 
 /* ---------------------- Equality Functions ---------------------- */
 unsigned char numEqual(avm_memcell *m1, avm_memcell *m2);
@@ -381,7 +383,7 @@ void execute_cycle(void)
             currLine = instr->srcLine;
 
         unsigned oldPC = pc;
-        printf("going to %d, %d = \n", instr->opcode, pc);
+        //printf("going to %d, %d = \n", instr->opcode, pc);
         (*executeFuncs[instr->opcode])(instr);
         //printf("PC in cycle: %d\n", pc);
         if (pc == oldPC)
@@ -417,37 +419,97 @@ void avm_assign(avm_memcell *lv, avm_memcell *rv)
     if (lv->type == string_m)
         lv->data.strVal = strdup(rv->data.strVal);
     else if (lv->type == table_m)
+    {
+        //printf("Increasing ref counter of table %s\n", avm_tostring(lv));
         avm_tableincrefcounter(lv->data.tableVal);
+    }
+}
+
+void avm_functorCall(avm_memcell *table)
+{
+    assert(table->type == table_m);
+    char *fs = "()";
+    unsigned int ix = 0, functorFound = 0;
+    avm_table_bucket *curr, *prev = NULL;
+    avm_memcell *function;
+
+    ix = hashString(fs);
+    curr = (table->data.tableVal)->strIndexed[ix];
+    while (curr)
+    {
+        prev = curr;
+        if (!strcmp((curr->key).data.strVal, fs))
+        {
+            function = &(curr->value);
+            functorFound = 1;
+            break;
+        }
+        curr = curr->next;
+    }
+
+    if (!functorFound)
+    {
+        avm_error("err");
+    }
+
+    //pushargs -> at this point all other args are already pushed?
+    ++totalActuals;
+    avm_assign(&stack[top], table);
+    avm_dec_top();
+    //printf("TOP: top %d\n",top);
+    //printf("TOP: top %d\n",top);
+    //topsp = top;
+
+    avm_callsaveenvironment();
+
+    assert(function && function->type == userfunc_m);
+
+    pc = userFuncs[function->data.funcVal].address;
+
+    assert(pc < AVM_ENDING_PC);
+
+    assert(code[pc].opcode == funcenter_v);
+    assert(pc == userFuncs[function->data.funcVal].address);
+
+    //printf("FUNC TRIED, going to PC: %d\n", pc);
 }
 
 void execute_call(instruction *instr)
 {
+    avm_memcell *table;
     avm_memcell *func = avm_translate_operand(&(instr->arg1), &ax);
     assert(func);
 
-    printf("Executing call!\n");
+    //printf("Executing call!\n");
 
-    avm_callsaveenvironment();
+    //avm_callsaveenvironment();
     switch (func->type)
     {
     case userfunc_m:
     {
+        avm_callsaveenvironment();
         pc = userFuncs[func->data.funcVal].address;
         assert(pc < AVM_ENDING_PC);
-        printf("PC %d\n", pc);
+        //printf("PC %d\n", pc);
         assert(code[pc].opcode == funcenter_v);
         break;
     }
     case string_m:
-        printf("String -- %s\n", (func->data).strVal);
+        avm_callsaveenvironment();
+        //printf("String -- %s\n", (func->data).strVal);
         avm_calllibfunc((func->data).strVal);
         break;
     case libfunc_m:
-        printf("LibF -- %s\n", (func->data).libfuncVal);
+        avm_callsaveenvironment();
+        //printf("LibF -- %s\n", (func->data).libfuncVal);
         avm_calllibfunc((func->data).libfuncVal);
+        break;
+    case table_m:
+        avm_functorCall(func);
         break;
     default:
     {
+        avm_callsaveenvironment();
         char *s = avm_tostring(func);
         avm_error("call: cannot bind '%s' to function!", s);
         free(s);
@@ -484,7 +546,7 @@ void avm_callsaveenvironment()
 
 void execute_funcenter(instruction *instr)
 {
-    printf("funcenter exiting\n");
+    //printf("funcenter entering\n");
 
     avm_memcell *func = avm_translate_operand(&instr->result, &ax);
     assert(func);
@@ -507,19 +569,21 @@ unsigned avm_get_envvalue(unsigned i)
 
 void execute_funcexit(instruction *unused)
 {
+    //printf("funcextit!!!\n");
     unsigned oldTop = top;
     top = avm_get_envvalue(topsp + AVM_SAVEDTOP_OFFSET);
+    //printf("one\n");
     pc = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
+    //printf("two pc = %d\n", pc);
     topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
 
     while (++oldTop <= top)
     {
-        printf("**DELETING ITEM %s\n", avm_tostring(&stack[oldTop]));
+        //printf("**DELETING ITEM %s\n", avm_tostring(&stack[oldTop]));
         avm_memcellclear(&stack[oldTop]);
     }
 
-    printf("funcextit!!!\n");
-    printf("PC after exit: %d\n", pc);
+    //printf("PC after exit: %d\n", pc);
 }
 
 void avm_calllibfunc(char *id)
@@ -556,7 +620,7 @@ void execute_pusharg(instruction *instr)
     avm_memcell *arg = avm_translate_operand(&instr->arg1, &ax);
     assert(arg);
 
-    printf("Pushing the arguments to the stack!\n");
+    //printf("Pushing the arguments to the stack!\n");
 
     avm_assign(&stack[top], arg);
     ++totalActuals;
@@ -565,6 +629,7 @@ void execute_pusharg(instruction *instr)
 
 char *avm_tostring(avm_memcell *m)
 {
+    //printf("TYPE: %d\n", m->type);
     assert(m->type >= 0 && m->type <= undef_m);
     return (*tostringFuncs[m->type])(m);
 }
@@ -744,21 +809,27 @@ void execute_jeq(instruction *instr)
 
 void execute_newtable(instruction *instr)
 {
-    printf("new table created\n");
+    //printf("new table created\n");
     avm_memcell *lv = avm_translate_operand(&instr->result, (avm_memcell *)0);
+
     assert(lv && (&stack[N - 1] >= lv && lv > &stack[top] || lv == &retval));
+
     avm_memcellclear(lv);
     lv->type = table_m;
     lv->data.tableVal = avm_tablenew();
+
     avm_tableincrefcounter(lv->data.tableVal);
 }
 
 void execute_tablegetelem(instruction *instr)
 {
+    //printf("GET1!\n");
     avm_memcell *lv = avm_translate_operand(&instr->result, (avm_memcell *)0);
+    //printf("GET2!\n");
     avm_memcell *t = avm_translate_operand(&instr->arg1, (avm_memcell *)0);
+    //printf("GET3!\n");
     avm_memcell *i = avm_translate_operand(&instr->arg2, &ax);
-    printf("bla vla\n");
+
     assert(lv && &stack[N - 1] >= lv && lv > &stack[top] || lv == &retval);
     assert(t && &stack[N - 1] >= t && t > &stack[top]);
     assert(i);
@@ -784,22 +855,27 @@ void execute_tablegetelem(instruction *instr)
         else
         /*Returning null means that the content was not found*/
         {
-            char *ts = avm_tostring(t);
+            /*char *ts = avm_tostring(t);
             char *is = avm_tostring(i);
-            avm_warning("%s[%s] not found!", ts, is);
+            avm_warning("%s[%s] not found! (Ignore if this after deleting..)\n", ts, is);
             free(ts);
-            free(is);
+            free(is);*/
+
+            avm_memcell nilCont;
+            nilCont.type = nil_m;
+            avm_assign(lv, &nilCont);
         }
     }
 }
 
 void execute_tablesetelem(instruction *instr)
 {
+    //printf("inside\n");
     avm_memcell *t = avm_translate_operand(&instr->result, (avm_memcell *)0);
     avm_memcell *i = avm_translate_operand(&instr->arg1, &ax);
     avm_memcell *c = avm_translate_operand(&instr->arg2, &bx);
 
-    printf("Inside set\n");
+    //printf("Inside set: [%s][%s] = [%s]\n", avm_tostring(t), avm_tostring(i), avm_tostring(c));
 
     assert(t && &stack[N - 1] >= t && t > &stack[top]);
     assert(i && c);
@@ -815,7 +891,6 @@ void execute_tablesetelem(instruction *instr)
         //i == index;
         if (c->type == nil_m)
         {
-
             avm_tabledelelem(t->data.tableVal, i);
         }
         else
@@ -837,8 +912,8 @@ char *consts_getstring(unsigned index)
 
 char *libfuncs_getused(unsigned index)
 {
-    printf("INDEX:::::: %d\n", index);
-    printf("========%s\n", namedLibfuncs[index]);
+    //printf("INDEX:::::: %d\n", index);
+    //printf("========%s\n", namedLibfuncs[index]);
     return namedLibfuncs[index];
 }
 
@@ -1152,6 +1227,12 @@ char *table_tostring(avm_memcell *m)
         pair_tostring(curr, t, &str, &size_change, &counter);
     }
 
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = t->tableIndexed[i];
+        pair_tostring(curr, t, &str, &size_change, &counter);
+    }
+
     counter += 2;
 
     if (counter >= DEFAULT_STR_SIZE * (size_change))
@@ -1242,6 +1323,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
     case string_m:
         ix = hashString(index->data.strVal);
         curr = table->strIndexed[ix];
+        //printf("Looking for %s of table\n", index->data.strVal);
         while (curr)
         {
             prev = curr;
@@ -1251,9 +1333,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             }
             curr = curr->next;
         }
-        avm_error("Could not find table item.\n");
         break;
-
     case number_m:
         ix = customHashNum(index->data.numVal);
         curr = table->numIndexed[ix];
@@ -1266,19 +1346,15 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             }
             curr = curr->next;
         }
-        avm_error("Could not find table item.\n");
         break;
-
     case bool_m:
         ix = index->data.boolVal;
         curr = table->boolIndexed[ix];
-        if (curr != NULL) //&& table->userfuncIndexed[ix]->key.data.boolVal == ix)
+        if (curr != NULL)
         {
             return &(curr->value);
         }
-        avm_error("Bool not supported yet!\n");
         break;
-
     case userfunc_m:
         ix = hashString(userFuncs[index->data.funcVal].id);
         curr = table->userfuncIndexed[ix];
@@ -1291,9 +1367,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             }
             curr = curr->next;
         }
-        avm_error("Could not find table item.\n");
         break;
-
     case libfunc_m:
         ix = hashString(index->data.libfuncVal);
         curr = table->libFuncIndexed[ix];
@@ -1306,11 +1380,26 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             }
             curr = curr->next;
         }
-        avm_error("Could not find table item.\n");
+        break;
+    case table_m:
+        ix = hashPtr(index->data.tableVal);
+        //printf("HERE!");
+        curr = table->tableIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            //printf("Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
+
+            if (index->data.tableVal, (curr->key).data.tableVal)
+            {
+                return &(curr->value);
+            }
+            curr = curr->next;
+        }
+        break;
     }
 
-    //avmerror?
-    return NULL; //check if this is okay!
+    return NULL;
 }
 
 void avm_tabledelelem(avm_table *table, avm_memcell *index)
@@ -1431,11 +1520,48 @@ void avm_tabledelelem(avm_table *table, avm_memcell *index)
             curr = curr->next;
         }
         break;
+    case table_m:
+        ix = hashPtr(index->data.tableVal);
+        curr = table->tableIndexed[ix];
+        while (curr)
+        {
+            if (index->data.tableVal, (curr->key).data.tableVal)
+            {
+                if (prev == NULL)
+                {
+                    table->tableIndexed[ix] = curr->next;
+                }
+                else
+                {
+                    prev->next = curr->next;
+                }
+
+                free(curr);
+                table->total--;
+                return;
+            }
+            prev = curr;
+            curr = curr->next;
+        }
+        break;
     default:
         assert(0);
     }
 
     avm_warning("Could not find the table item to delete!\n");
+}
+
+void avm_deepCopy(avm_memcell *dst, avm_memcell *src)
+{
+    dst->type = src->type;
+    if (dst->type == string_m)
+    {
+        dst->data.strVal = strdup(src->data.strVal);
+    }
+    else
+    {
+        dst->data = src->data;
+    }
 }
 
 void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content)
@@ -1444,8 +1570,6 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
     avm_table_bucket *curr, *prev = NULL, *pair;
 
     assert(table && index && content);
-
-    /*Remember to patch for nils*/
     switch (index->type)
     {
     case string_m:
@@ -1588,12 +1712,49 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         }
         table->isSimple = 0;
         break;
+    case table_m:
+        ix = (unsigned)hashPtr(index->data.tableVal);
+        printf("Going to index %u\n", ix);
+
+        curr = table->tableIndexed[ix];
+        while (curr)
+        {
+            prev = curr;
+            printf("Inserting table. Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
+            if (index->data.tableVal == curr->key.data.tableVal)
+            {
+                
+                pair->value = *content;
+                return;
+            }
+            curr = curr->next;
+        }
+
+        pair = (avm_table_bucket *)malloc(sizeof(avm_table_bucket));
+        pair->next = NULL;
+        pair->key = *index;
+        pair->value = *content;
+        if (prev == NULL)
+        {
+            table->tableIndexed[ix] = pair;
+        }
+        else
+        {
+            prev->next = pair;
+        }
+        table->isSimple = 0;
+        break;
     default:
-        /*Ti prepei na kanoyme gia arrays?*/
         assert(0);
     }
 
     table->total++;
+    //are the following okay?
+    if (content->type == table_m)
+    {
+        (content->data.tableVal->refCounter)++;
+    }
+    table->refCounter++;
 }
 
 //ok
@@ -2070,14 +2231,21 @@ static void avm_initstack()
 
 void avm_tableincrefcounter(avm_table *t)
 {
-    ++t->refCounter;
+    ++(t->refCounter);
 }
 
 void avm_tabledecrefcounter(avm_table *t)
 {
+
     assert(t->refCounter > 0);
-    if (!--t->refCounter) //if(refCount == 0) { free table }
+    avm_memcell tab;
+    tab.data.tableVal = t;
+    tab.type = table_m;
+    //printf("Decreasing table %s\n", avm_tostring(&tab));
+    if (!(--(t->refCounter))) //if(refCount == 0) { free table }
+    {
         avm_tabledestroy(t);
+    }
 }
 
 void avm_tablebucketsinit(avm_table_bucket **p)
@@ -2105,6 +2273,7 @@ avm_table *avm_tablenew(void)
     avm_tablebucketsinit(t->strIndexed);
     avm_tablebucketsinit(t->userfuncIndexed);
     avm_tablebucketsinit(t->libFuncIndexed);
+    avm_tablebucketsinit(t->tableIndexed);
 
     avm_tablebuckersinit_customSize(t->boolIndexed, 2);
 
@@ -2151,13 +2320,30 @@ void avm_tablebucketsdestroy(avm_table_bucket **p)
     }
 }
 
+void avm_tablebucketsdestroy_CustomSize(avm_table_bucket **p, unsigned size)
+{
+    for (unsigned i = 0; i < size; ++i, ++p)
+    {
+        for (avm_table_bucket *b = *p; b;)
+        {
+            avm_table_bucket *del = b;
+            b = b->next;
+            avm_memcellclear(&del->key);
+            avm_memcellclear(&del->value);
+            free(del);
+        }
+        p[i] = (avm_table_bucket *)0;
+    }
+}
+
 void avm_tabledestroy(avm_table *t)
 {
     avm_tablebucketsdestroy(t->strIndexed);
     avm_tablebucketsdestroy(t->numIndexed);
-    avm_tablebucketsdestroy(t->boolIndexed);
+    avm_tablebucketsdestroy_CustomSize(t->boolIndexed, 2);
     avm_tablebucketsdestroy(t->libFuncIndexed);
     avm_tablebucketsdestroy(t->userfuncIndexed);
+    avm_tablebucketsdestroy(t->tableIndexed);
 
     free(t);
 }
@@ -2207,7 +2393,7 @@ void decoder(char *filename)
         fread(currStr, len, 1, stream);
         currStr[len] = '\0';
 
-        stringConsts[i] = strdup(currStr);
+        stringConsts[i] = currStr;
         //printf("strConst[%d] = %s\n", i, stringConsts[i]);
     }
 
@@ -2220,7 +2406,7 @@ void decoder(char *filename)
     fread(&totalNamedLibfuncs, sizeof(totalNamedLibfuncs), 1, stream);
     //printf("Total Lib Funcs :%u\n", totalNamedLibfuncs);
 
-    namedLibfuncs = (char **)malloc(sizeof(totalNamedLibfuncs * sizeof(char *)));
+    namedLibfuncs = (char **)malloc(totalNamedLibfuncs * sizeof(char *));
     for (i = 0; i < totalNamedLibfuncs; i++)
     {
         fread(&len, sizeof(len), 1, stream); //sizeof(double better?)
@@ -2228,8 +2414,9 @@ void decoder(char *filename)
 
         fread(currStr, len, 1, stream);
         currStr[len] = '\0';
+        //printf("String read is : %s\n", currStr);
 
-        namedLibfuncs[i] = strdup(currStr); // strdup(currStr);
+        namedLibfuncs[i] = currStr; // strdup(currStr);
         //printf("LibFuncs[%d] = %s\n", i, namedLibfuncs[i]);
     }
 
@@ -2258,7 +2445,7 @@ void decoder(char *filename)
 
         userFuncs[i].address = address;
         userFuncs[i].localSize = locals;
-        userFuncs[i].id = strdup(currStr);
+        userFuncs[i].id = currStr;
 
         //printf("UserFuncs[%d] = (%u %u %s)\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
     }
@@ -2480,4 +2667,11 @@ unsigned char isNil(char *str)
 unsigned char isInt(double d)
 {
     return (unsigned char)((int)d == d);
+}
+
+long hashPtr(void *ptr)
+{
+    long index = (long)ptr;
+
+    return index % AVM_TABLE_HASHSIZE;
 }
