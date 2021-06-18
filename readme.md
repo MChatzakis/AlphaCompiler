@@ -37,13 +37,27 @@ make
 The produced executable "calc" supports input and output filestreams, for example:
 
 ```
-./calc  -i [ inputfile <string> ]
+./acc   -i [ inputfile <string> ]
         -o [ outputfile <string>]
 ```
 
 By default, input filestream is stdin and output filestream is stdout. Use -h for help. Errors are always printed in stderr.
 
 ## Alpha Virtual Machine:
+Alpha applications run on the AVM (Alpha Virtual Machine), which is a complete virtual machine designed to provide a C/C++ based rutime environment. \
+To compile the AVM executable, use:
+```
+cd build
+make //make avm works as well
+```
+Thus, to compile an alpha application, assuming the file is named "code.alpha" (extensions do not matter):
+```
+cd build
+make  //produces avm and acc executables
+./acc -i code.alpha //produces the binary file called bin.abc
+./avm -f bin.abc //use avm to run the code
+```
+
 
 
 
