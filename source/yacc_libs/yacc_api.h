@@ -2416,6 +2416,7 @@ void patch_incomplete_jumps()
         if (curr->iaddress == currQuad)
         {
             instructions[curr->instrNo].result.type = label_a;
+            //printf("INSTRUCTION LAST: %u\n",currInstruction);
             instructions[curr->instrNo].result.val = currInstruction;
         }
         else
@@ -2905,6 +2906,7 @@ void generate_FUNCEND(quad *q)
 void generate_UMINUS(quad *q)
 {
     //generate(uminus_v, q);
+    q->taddress = nextinstructionlabel();
     instruction t; //arg1
     t.opcode = mul_op;
     t.srcLine = q->line;

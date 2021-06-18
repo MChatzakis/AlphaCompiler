@@ -285,6 +285,7 @@ unsigned char isMinus(char c);
 unsigned char isDot(char c);
 unsigned char isInt(double d);
 long hashPtr(void *ptr);
+double DegreeToRadians(double degree);
 
 /* ---------------------- Equality Functions ---------------------- */
 unsigned char numEqual(avm_memcell *m1, avm_memcell *m2);
@@ -423,6 +424,10 @@ void avm_assign(avm_memcell *lv, avm_memcell *rv)
         //printf("Increasing ref counter of table %s\n", avm_tostring(lv));
         avm_tableincrefcounter(lv->data.tableVal);
     }
+
+    /*if(lv == &retval){
+        printf("MAKING AN ASSIGN FROM RETURN STMT\n");
+    }*/
 }
 
 void avm_functorCall(avm_memcell *table)
@@ -462,7 +467,7 @@ void avm_functorCall(avm_memcell *table)
 
     avm_callsaveenvironment();
 
-    assert(function && function->type == userfunc_m);
+    assert(function && function->type == userfunc_m);//should throw error
 
     pc = userFuncs[function->data.funcVal].address;
 
@@ -620,7 +625,9 @@ void execute_pusharg(instruction *instr)
     avm_memcell *arg = avm_translate_operand(&instr->arg1, &ax);
     assert(arg);
 
-    //printf("Pushing the arguments to the stack!\n");
+    //
+
+    //printf("Pushing %p(%s) to the stack\n", arg, avm_tostring(arg));
 
     avm_assign(&stack[top], arg);
     ++totalActuals;
@@ -754,7 +761,7 @@ unsigned char stringEqual(avm_memcell *m1, avm_memcell *m2)
 unsigned char numEqual(avm_memcell *m1, avm_memcell *m2)
 {
     assert(m1 && m2 && m1->type == number_m && m2->type == number_m);
-    return (unsigned char)(m1->data.numVal == m2->data.numVal);
+    return (unsigned char)(fabs(m1->data.numVal - m2->data.numVal) < 0.00001);
 }
 
 unsigned char userFuncEqual(avm_memcell *m1, avm_memcell *m2)
@@ -823,11 +830,8 @@ void execute_newtable(instruction *instr)
 
 void execute_tablegetelem(instruction *instr)
 {
-    //printf("GET1!\n");
     avm_memcell *lv = avm_translate_operand(&instr->result, (avm_memcell *)0);
-    //printf("GET2!\n");
     avm_memcell *t = avm_translate_operand(&instr->arg1, (avm_memcell *)0);
-    //printf("GET3!\n");
     avm_memcell *i = avm_translate_operand(&instr->arg2, &ax);
 
     assert(lv && &stack[N - 1] >= lv && lv > &stack[top] || lv == &retval);
@@ -1591,6 +1595,10 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         pair->next = NULL;
         pair->key = *index;
         pair->value = *content;
+        /*if (content->type == string_m)
+        {
+            pair->value.data.strVal = strdup(content->data.strVal);
+        } //this is wrong patch???*/
 
         if (prev == NULL)
         {
@@ -1723,7 +1731,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             printf("Inserting table. Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
             if (index->data.tableVal == curr->key.data.tableVal)
             {
-                
+
                 pair->value = *content;
                 return;
             }
@@ -2030,7 +2038,7 @@ void libfunc_argument()
 
     if (!p_topsp)
     {
-        avm_error("'argument' called outside function");
+        avm_warning("'argument' called outside function\n");
         retval.type = nil_m;
     }
     else
@@ -2048,11 +2056,18 @@ void libfunc_argument()
             {
                 avm_error("'argument' requires int arg\n");
             }
-            int off = (int)selectedArg->data.numVal;
+            int off = (int)selectedArg->data.numVal; //2.00
 
             avm_memcell *arg = &stack[p_topsp + AVM_STACKENV_SIZE + 1 + off];
-            retval.data = arg->data;
             retval.type = arg->type;
+            if (retval.type == string_m)
+            {
+                retval.data.strVal = strdup(arg->data.strVal);
+            }   
+            else
+            {
+                retval.data = arg->data;
+            }
         }
     }
 }
@@ -2130,7 +2145,8 @@ void libfunc_cos()
         double x = arg->data.numVal;
         avm_memcellclear(&retval);
         retval.type = number_m;
-        retval.data.numVal = cos(x);
+        double radian = DegreeToRadians(x);
+        retval.data.numVal = cos(radian);
     }
 }
 
@@ -2150,7 +2166,8 @@ void libfunc_sin()
         double x = arg->data.numVal;
         avm_memcellclear(&retval);
         retval.type = number_m;
-        retval.data.numVal = sin(x);
+        double radian = DegreeToRadians(x);
+        retval.data.numVal = sin(radian);
     }
 }
 
@@ -2162,7 +2179,7 @@ void libfunc_totalarguments()
 
     if (!p_topsp)
     {
-        avm_error("'total arguments' called outside function");
+        avm_warning("'total arguments' called outside function\n");
         retval.type = nil_m;
     }
     else
@@ -2241,9 +2258,9 @@ void avm_tabledecrefcounter(avm_table *t)
     avm_memcell tab;
     tab.data.tableVal = t;
     tab.type = table_m;
-    //printf("Decreasing table %s\n", avm_tostring(&tab));
     if (!(--(t->refCounter))) //if(refCount == 0) { free table }
     {
+        printf("Deleting table %s\n", avm_tostring(&tab));
         avm_tabledestroy(t);
     }
 }
@@ -2283,7 +2300,9 @@ avm_table *avm_tablenew(void)
 void memclear_string(avm_memcell *m)
 {
     assert(m->data.strVal);
+    //printf("Clearing string %p (%s)\n", m->data.strVal, m->data.strVal);
     free(m->data.strVal);
+    //m->data.strVal = NULL;
 }
 
 void memclear_table(avm_memcell *m)
@@ -2667,6 +2686,10 @@ unsigned char isNil(char *str)
 unsigned char isInt(double d)
 {
     return (unsigned char)((int)d == d);
+}
+
+double DegreeToRadians(double degree){
+   return degree * (M_PI/180.0);
 }
 
 long hashPtr(void *ptr)

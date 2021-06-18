@@ -24,19 +24,24 @@ function sum(i)
 {
     print("a2 = 2 + 2 * 2 / 8;\n");
 	a2 = 2 + 2 * 2 / 8;
+	print(a2);
 
     print("c = f1(3,4);");
-	c = f1(3,4);
-    
+	c = false;//f1(3,4);
+	print(c);
+
 	print("local a = (1>2 and ::b <= 6) or (c != false);\n");
-	local a = (1>2 and ::b <= 6) or (c != false);
-    
+	local a = false;//(1>2 and ::b <= 6) or (c != false);
+    print(a);
+	
+
 	print("global b = not a;\n");
 	::b = not a;
-
+	print(b);
+	
 	if(a) {
 		// never here
-        	print("The impossible happened\n");
+        print("The impossible happened\n");
     }
 	else
 	{
@@ -50,7 +55,7 @@ function sum(i)
 			i++;
 		}
 	}
-
+	
 	c = 3 + -2 * -2;
 	print(c);
 }

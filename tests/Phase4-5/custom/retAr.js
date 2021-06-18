@@ -1,7 +1,7 @@
 function createMovie(title, actors){
     return [
         {"title" : title},
-        {"actors" : actors},
+        {"actors" : ["Mark", "Hans", "Harisson"]},
         {"year" : 0},
         {"awards" : []},
         {"age restricted" : true},
@@ -10,5 +10,5 @@ function createMovie(title, actors){
 }
 
 starWars = createMovie("StarWars", ["Mark", "Hans", "Harisson"]);
-starWars["title"] = 1978; //?
+starWars["year"] = 1978; //?
 print(starWars);

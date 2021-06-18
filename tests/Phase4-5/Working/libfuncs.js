@@ -115,8 +115,8 @@ check(strtonum("3.12a"), "nil", nil);
 check(strtonum("3.141"), "number", 3.141);
 check(sqrt(2), "number", 1.41421356237309504880);
 check(sqrt(-1), "nil", nil);
-check(cos(45), "number", 0.5);
-check(sin(45), "number", 0.5);
+check(cos(60), "number", 0.5);
+check(sin(30), "number", 0.5);
 check(totalarguments(), "nil", nil);
 check(argument(0), "nil", nil);
 
@@ -132,7 +132,7 @@ print("trypeof(typeof)\t:", typeof(typeof), "<\n\n");
 print("Testing lib function input and typeof (type exit for exit)\n\n");
 
 stdin = nil;
-while (true) {
+while (true) { //was while
         
     if (typeof(stdin) == "string") {
         if (stdin == "exit") {
