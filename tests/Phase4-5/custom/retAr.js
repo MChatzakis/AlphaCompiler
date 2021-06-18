@@ -1,6 +1,6 @@
 function createMovie(title, actors){
     return [
-        {"title" : title},
+        {title : "title"},
         {"actors" : ["Mark", "Hans", "Harisson"]},
         {"year" : 0},
         {"awards" : []},

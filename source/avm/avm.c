@@ -152,7 +152,7 @@ void avm_tableincrefcounter(avm_table *t);
 void avm_tabledecrefcounter(avm_table *t);
 void avm_tablebucketsinit(avm_table_bucket **p);
 void avm_tabledelelem(avm_table *table, avm_memcell *index);
-void avm_tablebuckersinit_customSize(avm_table_bucket **p, unsigned size);
+void avm_tablebucketsinit_customSize(avm_table_bucket **p, unsigned size);
 void avm_tablebucketsdestroy_CustomSize(avm_table_bucket **p, unsigned size);
 void avm_memcellclear(avm_memcell *m);
 void avm_tablebucketsdestroy(avm_table_bucket **p);
@@ -467,7 +467,7 @@ void avm_functorCall(avm_memcell *table)
 
     avm_callsaveenvironment();
 
-    assert(function && function->type == userfunc_m);//should throw error
+    assert(function && function->type == userfunc_m); //should throw error
 
     pc = userFuncs[function->data.funcVal].address;
 
@@ -1333,6 +1333,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             prev = curr;
             if (!strcmp((curr->key).data.strVal, index->data.strVal))
             {
+                //avm_tableincrefcounter(table);
                 return &(curr->value);
             }
             curr = curr->next;
@@ -1346,6 +1347,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             prev = curr;
             if ((curr->key).data.numVal == index->data.numVal)
             {
+                //avm_tableincrefcounter(table);
                 return &(curr->value);
             }
             curr = curr->next;
@@ -1356,6 +1358,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
         curr = table->boolIndexed[ix];
         if (curr != NULL)
         {
+            //avm_tableincrefcounter(table);
             return &(curr->value);
         }
         break;
@@ -1367,6 +1370,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             prev = curr;
             if (!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id) && userFuncs[index->data.funcVal].address == userFuncs[curr->key.data.funcVal].address) //address needless?
             {
+                //avm_tableincrefcounter(table);
                 return &(curr->value);
             }
             curr = curr->next;
@@ -1380,6 +1384,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             prev = curr;
             if (!strcmp(index->data.libfuncVal, (curr->key).data.libfuncVal))
             {
+                //avm_tableincrefcounter(table);
                 return &(curr->value);
             }
             curr = curr->next;
@@ -1396,6 +1401,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
 
             if (index->data.tableVal, (curr->key).data.tableVal)
             {
+                //avm_tableincrefcounter(table);
                 return &(curr->value);
             }
             curr = curr->next;
@@ -1584,8 +1590,12 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             prev = curr;
             if (!strcmp((curr->key).data.strVal, index->data.strVal))
             {
-                curr->value = *content;
-                //&(curr->value) = content;
+                curr->value = *content; //type, ptr->string
+                if (content->type == string_m)
+                {
+                    curr->value.data.strVal = strdup(content->data.strVal);
+                }
+
                 return;
             }
             curr = curr->next;
@@ -1595,10 +1605,16 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         pair->next = NULL;
         pair->key = *index;
         pair->value = *content;
-        /*if (content->type == string_m)
+
+        if (content->type == string_m)
         {
             pair->value.data.strVal = strdup(content->data.strVal);
-        } //this is wrong patch???*/
+        }
+
+        if (index->type == string_m)
+        {
+            pair->key.data.strVal = strdup(index->data.strVal);
+        }
 
         if (prev == NULL)
         {
@@ -1620,6 +1636,10 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             if ((curr->key).data.numVal == index->data.numVal)
             {
                 curr->value = *content;
+                if (content->type == string_m)
+                {
+                    curr->value.data.strVal = strdup(content->data.strVal);
+                }
                 return;
             }
             curr = curr->next;
@@ -1629,6 +1649,11 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         pair->next = NULL;
         pair->key = *index;
         pair->value = *content;
+
+        if (content->type == string_m)
+        {
+            pair->value.data.strVal = strdup(content->data.strVal);
+        }
 
         if (prev == NULL)
         {
@@ -1653,11 +1678,19 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             pair->next = NULL;
             pair->key = *index;
             pair->value = *content;
+            if (content->type == string_m)
+            {
+                pair->value.data.strVal = strdup(content->data.strVal);
+            }
             table->boolIndexed[ix] = pair;
         }
         else
         {
             curr->value = *content;
+            if (content->type == string_m)
+            {
+                curr->value.data.strVal = strdup(content->data.strVal);
+            }
             return;
         }
         table->isSimple = 0;
@@ -1671,6 +1704,10 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             if (index->data.funcVal == curr->key.data.funcVal) //!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id))
             {
                 curr->value = *content;
+                if (content->type == string_m)
+                {
+                    curr->value.data.strVal = strdup(content->data.strVal);
+                }
                 return;
             }
             curr = curr->next;
@@ -1680,6 +1717,11 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         pair->next = NULL;
         pair->key = *index;
         pair->value = *content;
+
+        if (content->type == string_m)
+        {
+            pair->value.data.strVal = strdup(content->data.strVal);
+        }
 
         if (prev == NULL)
         {
@@ -1700,6 +1742,10 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             if (!strcmp(index->data.libfuncVal, (curr->key).data.libfuncVal))
             {
                 curr->value = *content;
+                if (content->type == string_m)
+                {
+                    curr->value.data.strVal = strdup(content->data.strVal);
+                }
                 return;
             }
             curr = curr->next;
@@ -1709,6 +1755,16 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         pair->next = NULL;
         pair->key = *index;
         pair->value = *content;
+
+        if (content->type == string_m)
+        {
+            pair->value.data.strVal = strdup(content->data.strVal);
+        }
+
+        if (index->type == string_m)
+        {
+            pair->key.data.strVal = strdup(index->data.strVal);
+        }
 
         if (prev == NULL)
         {
@@ -1731,8 +1787,11 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             printf("Inserting table. Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
             if (index->data.tableVal == curr->key.data.tableVal)
             {
-
-                pair->value = *content;
+                curr->value = *content;
+                if (content->type == string_m)
+                {
+                    curr->value.data.strVal = strdup(content->data.strVal);
+                }
                 return;
             }
             curr = curr->next;
@@ -1742,6 +1801,12 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         pair->next = NULL;
         pair->key = *index;
         pair->value = *content;
+
+        if (content->type == string_m)
+        {
+            pair->value.data.strVal = strdup(content->data.strVal);
+        }
+
         if (prev == NULL)
         {
             table->tableIndexed[ix] = pair;
@@ -1757,8 +1822,8 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
     }
 
     table->total++;
-    //are the following okay?
-    if (content->type == table_m)
+    //!are the following okay?
+    if (content->type == table_m) //t[1] = p;
     {
         (content->data.tableVal->refCounter)++;
     }
@@ -2063,7 +2128,7 @@ void libfunc_argument()
             if (retval.type == string_m)
             {
                 retval.data.strVal = strdup(arg->data.strVal);
-            }   
+            }
             else
             {
                 retval.data = arg->data;
@@ -2271,7 +2336,7 @@ void avm_tablebucketsinit(avm_table_bucket **p)
         p[i] = (avm_table_bucket *)0;
 }
 
-void avm_tablebuckersinit_customSize(avm_table_bucket **p, unsigned size)
+void avm_tablebucketsinit_customSize(avm_table_bucket **p, unsigned size)
 {
     for (unsigned i = 0; i < size; ++i)
         p[i] = (avm_table_bucket *)0;
@@ -2292,7 +2357,7 @@ avm_table *avm_tablenew(void)
     avm_tablebucketsinit(t->libFuncIndexed);
     avm_tablebucketsinit(t->tableIndexed);
 
-    avm_tablebuckersinit_customSize(t->boolIndexed, 2);
+    avm_tablebucketsinit_customSize(t->boolIndexed, 2);
 
     return t;
 }
@@ -2688,8 +2753,9 @@ unsigned char isInt(double d)
     return (unsigned char)((int)d == d);
 }
 
-double DegreeToRadians(double degree){
-   return degree * (M_PI/180.0);
+double DegreeToRadians(double degree)
+{
+    return degree * (M_PI / 180.0);
 }
 
 long hashPtr(void *ptr)
