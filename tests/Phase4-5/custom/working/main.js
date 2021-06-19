@@ -1,4 +1,4 @@
-function f(a){
+/*function f(a){
     print(a);
 }
 
@@ -6,4 +6,5 @@ function main(){
     f("HELLO!");
 }
 
-main();
+main();*/
+//x = 1;

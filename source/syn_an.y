@@ -998,6 +998,8 @@ int main(int argc, char **argv){
 
     yyparse();
 
+    printf("------------------------------------------ Alpha Compiler Report ------------------------------------------\n");
+
     //SymbolTable_print(symTab, ost);
     ScopeTable_print(scopeTab, ost);
 
@@ -1009,8 +1011,12 @@ int main(int argc, char **argv){
 
         generateInstructions();
         printTCodeData(ost);
-        createAVMfile("binaryCode.abc");
+        
+        //createAVMfile("binaryCode.abc");
         createAVMBinaryFile("bin.abc");
+        
+        printf("------------------------------------------ --------------------- ------------------------------------------\n");
+
     }
     else{
         fprintf_red(stderr, "[Alpha Compiler] -- COMPILATION ERROR: Intermediate code generation failed.\n");

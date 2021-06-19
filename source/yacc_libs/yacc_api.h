@@ -2451,7 +2451,7 @@ void emitInstruction(instruction i)
         expandInstructions();
     }
 
-    printf("\nemit\n");
+    //printf("\nemit\n");
 
     instruction *in = instructions + currInstruction++;
     in->arg1 = i.arg1;
@@ -2607,7 +2607,6 @@ unsigned userfuncs_newfunc(SymbolTableEntry *sym)
     return currIndex;
 }
 
-/* Prepei na ftiaksoume tis akolouthes */
 void reset_operand(vmarg *arg)
 {
     arg->val = 0; //mipws prepei na ginei kati na min deixnei se pinaka? px -1?
@@ -2881,7 +2880,7 @@ void generate_FUNCEND(quad *q)
     SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack); //sto target code scope == index sto function table
     unsigned index = FuncStack_topScope(targetFuncStack);
 
-    printf("Name of func %s, %d\n", (f->value.funcVal)->name, index);
+    //printf("Name of func %s, %d\n", (f->value.funcVal)->name, index);
 
     FuncStack_pop(targetFuncStack);
     backpatchInstructions(f, nextinstructionlabel());
@@ -2920,10 +2919,11 @@ void generate_UMINUS(quad *q)
 
 void generateInstructions()
 {
-    for (unsigned i = 1; i < currQuad; ++i)
+    unsigned i;
+    for (i = 1; i < currQuad; ++i)
     {
         //printf("aa\n"); //currQuad is total quad number at the end
-        printf("went to %d\n", quads[i].op);
+        //printf("went to %d\n", quads[i].op);
         quad *q = quads + i;
         (*generators[quads[i].op])(quads + i); //q = quads + i | index = q - quads = i
     }
