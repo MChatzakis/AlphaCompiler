@@ -1571,8 +1571,6 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
 
     assert(table && index && content);
 
-
-
     if (content->type == table_m)
     {
         //printf("Indexing inside set elem with table %s\n",avm_tostring(content));
@@ -2094,14 +2092,14 @@ void libfunc_objectcopy()
         if (t->type != table_m) //check if it's a string
         {
             avm_warning("[AVM] -- Warning: The argument provided is not a table!\n");
-            avm_memcellclear(&retval);
+            //avm_memcellclear(&retval);
             retval.type = nil_m;
             return;
         }
 
         avm_table *newT = avm_copyTable(t->data.tableVal);
 
-        avm_memcellclear(&retval);
+        //avm_memcellclear(&retval);
         retval.type = table_m;
         retval.data.tableVal = newT;
     }
@@ -2168,7 +2166,7 @@ void libfunc_strtonum()
             return;
         }
 
-        avm_memcellclear(&retval);
+        //avm_memcellclear(&retval);
 
         if (isNumber(str->data.strVal))
         {
@@ -2200,7 +2198,7 @@ void libfunc_sqrt()
             return;
         }
         double x = number->data.numVal;
-        avm_memcellclear(&retval);
+        //avm_memcellclear(&retval);
 
         if (x >= 0)
         {
@@ -2226,11 +2224,13 @@ void libfunc_cos()
         avm_memcell *arg = avm_getactual(0);
         if (arg->type != number_m)
         {
-            avm_warning("[AVM] -- Warning: The argument provided for cos is not a number!\n", n);
+            avm_warning("[AVM] -- Warning: The argument provided for cos is not a number!\n");
             retval.type = nil_m;
+            return;
         }
+
         double x = arg->data.numVal;
-        avm_memcellclear(&retval);
+        //avm_memcellclear(&retval);
         retval.type = number_m;
         double radian = DegreeToRadians(x);
         retval.data.numVal = cos(radian);
@@ -2242,16 +2242,18 @@ void libfunc_sin()
 {
     unsigned n = avm_totalactuals();
     if (n != 1)
-        avm_error("one argument (not %d) expected in 'sin'!\n", n);
+        avm_error("[AVM] -- Error: One argument (not %d) expected in 'sin'!\n", n);
     else
     {
+        avm_memcellclear(&retval);
         avm_memcell *arg = avm_getactual(0);
         if (arg->type != number_m)
         {
-            avm_error("The argument provided for sin() is not a number!\n", n);
+            avm_warning("[AVM] -- Warning: The argument provided for sin is not a number!\n", n);
+            retval.type = nil_m;
+            return;
         }
         double x = arg->data.numVal;
-        avm_memcellclear(&retval);
         retval.type = number_m;
         double radian = DegreeToRadians(x);
         retval.data.numVal = sin(radian);
@@ -2266,7 +2268,7 @@ void libfunc_totalarguments()
 
     if (!p_topsp)
     {
-        avm_warning("'total arguments' called outside function\n");
+        avm_warning("[AVM] -- Warning: 'total arguments' called outside of function.\n");
         retval.type = nil_m;
     }
     else
@@ -2281,7 +2283,7 @@ void libfunc_typeof()
 {
     unsigned n = avm_totalactuals();
     if (n != 1)
-        avm_error("one argument (not %d) expected in 'typeof'!", n);
+        avm_error("[AVM] -- Error: one argument (not %d) expected in 'typeof'!\n", n);
     else
     {
         avm_memcellclear(&retval);
@@ -2335,21 +2337,19 @@ static void avm_initstack()
 
 void avm_tableincrefcounter(avm_table *t)
 {
-    avm_memcell tab;
-    tab.data.tableVal = t;
-    tab.type = table_m;
     ++(t->refCounter);
 }
 
 void avm_tabledecrefcounter(avm_table *t)
 {
+    if(1){
+        return;
+    }
+
     assert(t->refCounter > 0);
-    avm_memcell tab;
-    tab.data.tableVal = t;
-    tab.type = table_m;
     if (!(--(t->refCounter)))
     {
-        //avm_tabledestroy(t); //!
+        avm_tabledestroy(t);
     }
 }
 
@@ -2390,15 +2390,13 @@ avm_table *avm_tablenew(void)
 void memclear_string(avm_memcell *m)
 {
     assert(m->data.strVal);
-    //printf("Clearing string %p (%s)\n", m->data.strVal, m->data.strVal);
     free(m->data.strVal);
-    //m->data.strVal = NULL;
 }
 
 void memclear_table(avm_memcell *m)
 {
     assert(m->data.tableVal);
-    //avm_tabledecrefcounter(m->data.tableVal);
+    avm_tabledecrefcounter(m->data.tableVal);
 }
 
 void avm_memcellclear(avm_memcell *m)
@@ -2412,7 +2410,6 @@ void avm_memcellclear(avm_memcell *m)
     }
 }
 
-//na to ksanadoume
 void avm_tablebucketsdestroy(avm_table_bucket **p)
 {
     unsigned i;
@@ -2456,7 +2453,6 @@ void avm_tabledestroy(avm_table *t)
     avm_tablebucketsdestroy_CustomSize(t->boolIndexed, 2);
     avm_tablebucketsdestroy(t->libFuncIndexed);
     avm_tablebucketsdestroy(t->userfuncIndexed);
-    avm_tablebucketsdestroy(t->tableIndexed);
 
     free(t);
 }
