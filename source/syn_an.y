@@ -81,7 +81,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
 
-                                            //resettemp();
+                                            resettemp();
                                             $$ = $1;
                                         }
             | whilestmt                 {
@@ -89,7 +89,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>While Statement (stmt -> whilestmt)\n");
                                             }
                                             
-                                            //resettemp();
+                                            resettemp();
                                             $$ = NULL;
                                         }
             | forstmt                   {
@@ -97,7 +97,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>For Statement (stmt -> forstmt)\n");
                                             }
 
-                                            //resettemp();
+                                            resettemp();
                                             $$ = NULL;
                                         }
             | returnstmt                {
