@@ -69,7 +69,7 @@ stmt:       expr SEMICOLON              {
                                             }
                                             
                                             partEvaluation($1);
-                                            resettemp();
+                                            //resettemp();
                                            
                                             $$ = NULL;
                                         }
@@ -78,7 +78,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
 
-                                            resettemp();
+                                            //resettemp();
                                             $$ = $1;
                                         }
             | whilestmt                 {
@@ -86,7 +86,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>While Statement (stmt -> whilestmt)\n");
                                             }
                                             
-                                            resettemp();
+                                            //resettemp();
                                             $$ = NULL;
                                         }
             | forstmt                   {
@@ -94,7 +94,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>For Statement (stmt -> forstmt)\n");
                                             }
 
-                                            resettemp();
+                                            //resettemp();
                                             $$ = NULL;
                                         }
             | returnstmt                {
@@ -102,7 +102,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Return Statement (stmt -> return)\n");
                                             }
 
-                                            resettemp();
+                                            //resettemp();
                                             $$ = NULL;
                                         }
             | BREAK SEMICOLON           {
@@ -110,7 +110,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Break Statement (stmt -> break)\n");
                                             }
 
-                                            resettemp();                                          
+                                            //resettemp();                                          
                                             $$ = ManageBreak();
                                         }
             | CONTINUE SEMICOLON        {
@@ -118,7 +118,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Continue Statement (stmt -> continue;)\n");
                                             }
                                             
-                                            resettemp();                                            
+                                            //resettemp();                                            
                                             $$ = ManageContinue();
                                         }
             | block                     {
@@ -126,7 +126,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Block Statement (stmt -> block)\n");
                                             }
 
-                                            resettemp();
+                                            //resettemp();
                                             $$ = $1;
                                         }
             | funcdef                   {
@@ -134,7 +134,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Func Def Statement (stmt -> funcdef)\n");
                                             }
 
-                                            resettemp();
+                                            //resettemp();
                                             $$ = NULL;
                                         }
             | SEMICOLON                 {
@@ -142,7 +142,7 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Semicolon Statement (stmt -> ;)\n");
                                             }
 
-                                            resettemp();
+                                            //resettemp();
                                             $$ = NULL;
                                         }
             ;

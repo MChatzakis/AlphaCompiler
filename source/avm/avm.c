@@ -273,6 +273,7 @@ void execute_cycle(void);
 
 /* ---------------------- Utils ---------------------- */
 void decoder(char *filename); //decodes the binary file created by compiler
+void print_log(int printInstr);
 unsigned int hashNum(unsigned int x);
 unsigned int customHashNum(double x);
 unsigned int hashString(const char *pcKey);
@@ -871,6 +872,7 @@ void execute_tablesetelem(instruction *instr)
         }
         else
         {
+            //printf("Indexing %s[%s] = [%s]\n", avm_tostring(t),avm_tostring(i),avm_tostring(c));
             avm_tablesetelem(t->data.tableVal, i, c);
         }
     }
@@ -1568,6 +1570,8 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
     avm_table_bucket *curr, *prev = NULL, *pair;
 
     assert(table && index && content);
+
+
 
     if (content->type == table_m)
     {
@@ -2394,7 +2398,7 @@ void memclear_string(avm_memcell *m)
 void memclear_table(avm_memcell *m)
 {
     assert(m->data.tableVal);
-    avm_tabledecrefcounter(m->data.tableVal);
+    //avm_tabledecrefcounter(m->data.tableVal);
 }
 
 void avm_memcellclear(avm_memcell *m)
@@ -2597,9 +2601,14 @@ void decoder(char *filename)
     fclose(stream);
 }
 
-void print_log()
+void print_log(int printInstr)
 {
     int i;
+    if (!printInstr)
+    {
+        return;
+    }
+
     printf("----------- Load Report -----------\n");
     printf("--- Number Consts :%u ---\n", totalNumConsts);
     for (i = 0; i < totalNumConsts; i++)
@@ -2613,19 +2622,19 @@ void print_log()
         printf("str[%d] = %s\n", i, stringConsts[i]);
     }
 
-    printf("--- Total Lib Funcs :%u ---\n", totalNamedLibfuncs);
+    printf("--- Lib Funcs :%u ---\n", totalNamedLibfuncs);
     for (i = 0; i < totalNamedLibfuncs; i++)
     {
         printf("lib[%d] = %s\n", i, namedLibfuncs[i]);
     }
 
-    printf("--- Total User Funcs :%u ---\n", totalUserFuncs);
+    printf("--- User Funcs :%u ---\n", totalUserFuncs);
     for (i = 0; i < totalUserFuncs; i++)
     {
         printf("UserFuncs[%d] = (%u %u %s)\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
     }
 
-    printf("--- Total Instructions :%u ---\n", codeSize);
+    printf("--- Instructions :%u ---\n", codeSize);
 
     char *opcodes[26] = {
         "assign",
@@ -2674,22 +2683,25 @@ void print_log()
     }
 
     printf("Total globals (including hidden vars) %d\n", (AVM_STACKSIZE - 1) - top);
-    printf("Starting TOP: %d\n", top);
+    printf("Starting TOP value: %d\n", top);
 
     printf("----------- ----------- -----------\n\n");
 }
 
 int main(int argc, char **argv)
 {
-    int opt;
+    int opt, printInstr = 0;
     char *binFile = NULL;
 
-    while ((opt = getopt(argc, argv, "f:h")) != -1)
+    while ((opt = getopt(argc, argv, "f:ph")) != -1)
     {
         switch (opt)
         {
         case 'f':
             binFile = strdup(optarg);
+            break;
+        case 'p':
+            printInstr = 1;
             break;
         case 'h':
             printf(
@@ -2697,6 +2709,7 @@ int main(int argc, char **argv)
                 "Usage: ./avm -f alphaBinFile.abc\n"
                 "Options:\n"
                 "   -f <string>         Specifies the filename of binary file.\n"
+                "   -p                  Prints the runtime log.\n"
                 "   -h                  Prints this help\n");
             return 0;
         default:
@@ -2709,7 +2722,7 @@ int main(int argc, char **argv)
 
     decoder(binFile);
 
-    print_log();
+    print_log(printInstr);
 
     while (!executionFinished)
     {
