@@ -69,7 +69,11 @@ stmt:       expr SEMICOLON              {
                                             }
                                             
                                             partEvaluation($1);
-                                            //resettemp();
+                                            if($1->type == arithexpr_e 
+                                                || $1->type == boolexpr_e 
+                                                || $1->type == assignexpr_e){
+                                                resettemp();
+                                            }
                                            
                                             $$ = NULL;
                                         }

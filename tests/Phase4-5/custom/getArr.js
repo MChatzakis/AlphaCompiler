@@ -8,7 +8,7 @@ function createTable(){
 function getTab(){
     return [
         {"tab" : createTable()},
-        {"csd" : (function f(){return;})},
+        {"csd" : (function f(){while(1)break;})},
         {"bool" : true}
     ];
 }
