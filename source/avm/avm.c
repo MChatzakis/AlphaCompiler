@@ -121,7 +121,7 @@ execute_func_t executeFuncs[] = {
     execute_jgt,
     execute_call,
     execute_pusharg,
-    NULL, //!
+    NULL,
     execute_funcenter,
     execute_funcexit,
     execute_newtable,
@@ -469,7 +469,6 @@ void avm_functorCall(avm_memcell *table)
     pc = userFuncs[function->data.funcVal].address;
 
     assert(pc < AVM_ENDING_PC);
-
     assert(code[pc].opcode == funcenter_v);
     assert(pc == userFuncs[function->data.funcVal].address);
 }
@@ -1386,7 +1385,7 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
             prev = curr;
             //printf("Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
 
-            if (index->data.tableVal, (curr->key).data.tableVal)
+            if (index->data.tableVal == (curr->key).data.tableVal) /*!? nomizw itan xwris comparison*/
             {
                 /*if (curr->value.type == table_m)
                 {
@@ -1525,7 +1524,7 @@ void avm_tabledelelem(avm_table *table, avm_memcell *index)
         curr = table->tableIndexed[ix];
         while (curr)
         {
-            if (index->data.tableVal, (curr->key).data.tableVal)
+            if (index->data.tableVal ==  (curr->key).data.tableVal)
             {
                 if (prev == NULL)
                 {
@@ -1827,7 +1826,6 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
     table->total++;
 }
 
-//ok
 void libfunc_input()
 {
     int counter = 0, size_change = 1;
@@ -1889,7 +1887,7 @@ avm_table *avm_copyTable(avm_table *src)
     avm_table *newT = avm_tablenew();
     avm_table_bucket *curr;
     int i;
-
+    //increase ref count
     //copy str
     for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
     {
@@ -1938,6 +1936,17 @@ avm_table *avm_copyTable(avm_table *src)
     for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
     {
         curr = src->libFuncIndexed[i];
+        while (curr)
+        {
+            avm_tablesetelem(newT, &curr->key, &curr->value);
+            curr = curr->next;
+        }
+    }
+
+    //copy tables
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->tableIndexed[i];
         while (curr)
         {
             avm_tablesetelem(newT, &curr->key, &curr->value);
@@ -2023,11 +2032,23 @@ avm_table *avm_getTableKeys(avm_table *src)
         }
     }
 
+    //copy tables
+    for (i = 0; i < AVM_TABLE_HASHSIZE; i++)
+    {
+        curr = src->tableIndexed[i];
+        while (curr)
+        {
+            ind.data.numVal = counter;
+            avm_tablesetelem(newT, &ind, &curr->key);
+            curr = curr->next;
+            counter++;
+        }
+    }
+
     return newT;
 }
 
-//ok
-void libfunc_objectmemberkeys() //t = objectmemberkeys(tab);
+void libfunc_objectmemberkeys()
 {
     unsigned n = avm_totalactuals();
     if (n != 1)
@@ -2040,20 +2061,19 @@ void libfunc_objectmemberkeys() //t = objectmemberkeys(tab);
         if (t->type != table_m) //check if it's a string
         {
             avm_warning("[AVM] -- Warning: The argument provided is not a table.\n");
-            avm_memcellclear(&retval);
+            //avm_memcellclear(&retval);
             retval.type = nil_m;
             return;
         }
 
         avm_table *newT = avm_getTableKeys(t->data.tableVal);
 
-        avm_memcellclear(&retval);
+        //avm_memcellclear(&retval);
         retval.type = table_m;
         retval.data.tableVal = newT;
     }
 }
 
-//ok
 void libfunc_objecttotalmembers()
 {
     unsigned n = avm_totalactuals();
@@ -2067,18 +2087,17 @@ void libfunc_objecttotalmembers()
         if (t->type != table_m) //check if it's a string
         {
             avm_warning("[AVM] -- Warnign: The argument provided is not a table!\n");
-            avm_memcellclear(&retval);
+            //avm_memcellclear(&retval);
             retval.type = nil_m;
             return;
         }
 
-        avm_memcellclear(&retval);
+        //avm_memcellclear(&retval);
         retval.type = number_m;
         retval.data.numVal = t->data.tableVal->total;
     }
 }
 
-//ok
 void libfunc_objectcopy()
 {
     unsigned n = avm_totalactuals();
@@ -2105,7 +2124,6 @@ void libfunc_objectcopy()
     }
 }
 
-//ok
 void libfunc_argument()
 {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
@@ -2147,7 +2165,6 @@ void libfunc_argument()
     }
 }
 
-//ok
 void libfunc_strtonum()
 {
     unsigned n = avm_totalactuals();
@@ -2180,7 +2197,6 @@ void libfunc_strtonum()
     }
 }
 
-//ok
 void libfunc_sqrt()
 {
     unsigned n = avm_totalactuals();
@@ -2212,7 +2228,6 @@ void libfunc_sqrt()
     }
 }
 
-//ok
 void libfunc_cos()
 {
     unsigned n = avm_totalactuals();
@@ -2237,7 +2252,6 @@ void libfunc_cos()
     }
 }
 
-//ok
 void libfunc_sin()
 {
     unsigned n = avm_totalactuals();
@@ -2260,7 +2274,6 @@ void libfunc_sin()
     }
 }
 
-//ok
 void libfunc_totalarguments()
 {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
@@ -2278,7 +2291,6 @@ void libfunc_totalarguments()
     }
 }
 
-//ok
 void libfunc_typeof()
 {
     unsigned n = avm_totalactuals();
@@ -2292,7 +2304,6 @@ void libfunc_typeof()
     }
 }
 
-//ok
 void libfunc_print()
 {
     unsigned n = avm_totalactuals(), i;
@@ -2343,7 +2354,7 @@ void avm_tableincrefcounter(avm_table *t)
 void avm_tabledecrefcounter(avm_table *t)
 {
     if(1){
-        return;
+        return; //should remove bad things are gonna happen
     }
 
     assert(t->refCounter > 0);
