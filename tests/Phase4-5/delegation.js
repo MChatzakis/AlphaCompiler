@@ -78,7 +78,7 @@ function objectfindif(obj, predicate, closure) {
 
 // //////////////////// Tables //////////////////// //
 function table_append(table, obj) {
-	print("Inside Append, table = ", table, " obj = ", obj);
+	//print("Inside Append, table = ", table, " obj = ", obj);
 	table["__data"][table["__nextIndex"]++] = obj;
 }
 /*
@@ -143,20 +143,20 @@ function desire_send(self, methodname, arguments) {
 // Create a basic desire
 function createDesire() {
 	
-	print("---------------- create desire -------------------");
+	//print("---------------- create desire -------------------");
 	x =  [
 		// State
 		  { "__delegatees": createTable() }
 		// methods
 		, { "send": desire_send }
 		, { "delegate": (function (self, delegatee) {
-				print("SELF=",self);
-				print("DEL=",delegatee);
+				//print("SELF=",self);
+				//print("DEL=",delegatee);
 				self["__delegatees"]..append(delegatee);
 			})}
 		, { "understands": desire_understands }
 	];
-	print("xxxxxxx:  ",x );
+	//print("xxxxxxx:  ",x );
 	return x;
 }
 
@@ -165,23 +165,23 @@ function createDesire() {
 father = createDesire();
 father.poo = (function(){ ::println("father poo called."); });
 father.self = father;
-print(father);
+//print(father);
 
 //print("DEL FATHER", father["__delegatees"]);
 
 mother = createDesire();
 mother.poo = (function(){ ::println("mother poo called."); });
-print(mother);
+//print(mother);
 
 
 fother = createDesire();
 fother.loo = (function(){ ::println("fother loo called."); });
-print(fother);
+//print(fother);
 
 
 mather = createDesire();
 mather.loo = (function(){ :: println( "mather loo called." ) ; } ) ;
-print(mather);
+//print(mather);
 
 
 choild = createDesire();
