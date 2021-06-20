@@ -20,6 +20,7 @@ The parser uses Lex to detect the tokens ignoring whitespaces, and manipulates t
 The Symboltable library contains the symboltable structure (to store every symbol), the scope list (to keep together symbols of the same scope), the function argument list (to keep the arguments of a function) and the function stack (to check symbol accessibility and to match every formal argument to its corresponding function).
 
 ## Intermediate Code Generation:
+
 The quads are printed by default to output filestream and additionally to the file "quads.txt", only when the input has not compilation errors.
 
 We provide two ways to print the quads (verbose and formal). By defaults the quads are printed using the verbose method, but the formal method can be invoked by setting the printQuad(int flag, FILE* stream) flag to 0, manually.
@@ -27,33 +28,26 @@ We provide two ways to print the quads (verbose and formal). By defaults the qua
 Note: The above features got disabled on final version. They can be re-enabled manually from the syn_an.y file.
 
 ## Intermediate Code Generation:
-To compile:
 
-```
-cd build
-make
-```
+The quads produced are printed in stdout using "-p" flag.
 
-The produced executable "calc" supports input and output filestreams, for example:
+## Target Code Generation:
 
-```
-./acc   -i [ inputfile <string> ]
-        -o [ outputfile <string>]
-```
-
-By default, input filestream is stdin and output filestream is stdout. Use -h for help. Errors are always printed in stderr.
+The instructions are printed in stdout by default and they are written to the specific Alpha binary file (bin.abc).
+To cover corner cases, hidden variables optimization is disabled for the table members, to avoid resetting bugs.
 
 ## Alpha Virtual Machine:
-Alpha applications run on the AVM (Alpha Virtual Machine), which is a complete virtual machine designed to provide a C/C++ based rutime environment. \
+
+Alpha applications run on the AVM (Alpha Virtual Machine), which is a complete virtual machine designed to provide a C/C++ based runtime environment. \
 To compile the AVM executable, use:
 ```
 cd build
-make //make avm works as well
+make //"make avm" works as well
 ```
 Thus, to compile an alpha application, assuming the file is named "code.alpha" (extensions do not matter):
 ```
 cd build
-make  //produces avm and acc executables
+make
 ./acc -i code.alpha //produces the binary file called bin.abc
 ./avm -f bin.abc //use avm to run the code
 ```
