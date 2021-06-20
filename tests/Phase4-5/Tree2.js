@@ -158,8 +158,8 @@ function GenerateTree(maxHeight) {
 			local childR 	= TreeNode();
 			local childL 	= TreeNode();
 			
-			childL.info 	= parent.info + "L"; //apo tin glwssa to + thelei mono arithmous!
-			childR.info 	= parent.info + "R";
+			childL.info 	= parent.info; // + "L"; //apo tin glwssa to + thelei mono arithmous!
+			childR.info 	= parent.info; //+ "R";
 			
 			parent.left		= childL;
 			parent.right	= childR;
