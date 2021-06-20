@@ -1781,13 +1781,13 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         break;
     case table_m:
         ix = (unsigned)hashPtr(index->data.tableVal);
-        printf("Going to index %u\n", ix);
+        //printf("Going to index %u\n", ix);
 
         curr = table->tableIndexed[ix];
         while (curr)
         {
             prev = curr;
-            printf("Inserting table. Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
+            //printf("Inserting table. Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
             if (index->data.tableVal == curr->key.data.tableVal)
             {
                 curr->value = *content;
