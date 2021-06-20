@@ -26,10 +26,7 @@ The quads are printed by default to output filestream and additionally to the fi
 We provide two ways to print the quads (verbose and formal). By defaults the quads are printed using the verbose method, but the formal method can be invoked by setting the printQuad(int flag, FILE* stream) flag to 0, manually.
 
 Note: The above features got disabled on final version. They can be re-enabled manually from the syn_an.y file.
-
-## Intermediate Code Generation:
-
-The quads produced are printed in stdout using "-p" flag.
+The quads produced are printed in stdout using "-p" compiler flag.
 
 ## Target Code Generation:
 
@@ -39,12 +36,15 @@ To cover corner cases, hidden variables optimization is disabled for the table m
 ## Alpha Virtual Machine:
 
 Alpha applications run on the AVM (Alpha Virtual Machine), which is a complete virtual machine designed to provide a C/C++ based runtime environment. \
+
 To compile the AVM executable, use:
 ```
 cd build
 make //"make avm" works as well
 ```
+
 Thus, to compile an alpha application, assuming the file is named "code.alpha" (extensions do not matter):
+
 ```
 cd build
 make
