@@ -56,6 +56,8 @@ unsigned int currQuad = 0;
 
 #define TRACE_PRINT 0 /*Set this flag to print the rule evaluation messages*/
 
+int tmpOpt = 0;
+
 /**
  * @brief Checks if id refers to some library function name.
  * 

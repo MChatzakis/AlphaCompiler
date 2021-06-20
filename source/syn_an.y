@@ -70,10 +70,13 @@ stmt:       expr SEMICOLON              {
                                             
                                             partEvaluation($1);
 
-                                            if( $1!=NULL && ($1->type == arithexpr_e || $1->type == boolexpr_e)){//|| $1->type == assignexpr_e){
-                                                resettemp();
-                                            }
+                                            //if( $1!=NULL && ($1->type == arithexpr_e || $1->type == boolexpr_e)){//|| $1->type == assignexpr_e){
+                                                //resettemp();
+                                            //}
                                            
+                                            if(!tmpOpt)
+                                                resettemp();
+
                                             $$ = NULL;
                                         }
             | ifstmt                    {
@@ -81,7 +84,9 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>If/Ifelse Statement (stmt -> ifstmt)\n");
                                             }
 
-                                            resettemp();
+                                            if(!tmpOpt)
+                                                resettemp();
+
                                             $$ = $1;
                                         }
             | whilestmt                 {
@@ -89,7 +94,9 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>While Statement (stmt -> whilestmt)\n");
                                             }
                                             
-                                            resettemp();
+                                            if(!tmpOpt)
+                                                resettemp();
+
                                             $$ = NULL;
                                         }
             | forstmt                   {
@@ -97,7 +104,9 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>For Statement (stmt -> forstmt)\n");
                                             }
 
-                                            resettemp();
+                                            if(!tmpOpt)
+                                                resettemp();
+
                                             $$ = NULL;
                                         }
             | returnstmt                {
@@ -105,22 +114,31 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Return Statement (stmt -> return)\n");
                                             }
 
-                                            //resettemp();
+                                            //resettemp(); //fige
+                                            if(!tmpOpt)
+                                                resettemp();
+                                            
                                             $$ = NULL;
+
                                         }
             | BREAK SEMICOLON           {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Break Statement (stmt -> break)\n");
                                             }
 
-                                            //resettemp();                                          
+                                            if(!tmpOpt)
+                                                resettemp();
+
+                                            //resettemp();     //fige                                      
                                             $$ = ManageBreak();
                                         }
             | CONTINUE SEMICOLON        {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Continue Statement (stmt -> continue;)\n");
                                             }
-                                            
+
+                                            if(!tmpOpt)
+                                                resettemp();
                                             //resettemp();                                            
                                             $$ = ManageContinue();
                                         }
@@ -128,7 +146,8 @@ stmt:       expr SEMICOLON              {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>Block Statement (stmt -> block)\n");
                                             }
-
+                                            if(!tmpOpt)
+                                                resettemp();
                                             //resettemp();
                                             $$ = $1;
                                         }
@@ -137,7 +156,8 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Func Def Statement (stmt -> funcdef)\n");
                                             }
 
-                                            //resettemp();
+                                            if(!tmpOpt)
+                                                resettemp();
                                             $$ = NULL;
                                         }
             | SEMICOLON                 {
@@ -145,7 +165,8 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Semicolon Statement (stmt -> ;)\n");
                                             }
 
-                                            //resettemp();
+                                            if(!tmpOpt)
+                                                resettemp();
                                             $$ = NULL;
                                         }
             ;
@@ -167,9 +188,12 @@ stmts:      stmts stmt                  {
                                             $$ = newstmt();
                                             $$->breakList = mergelist(breaklist1, breaklist2);
                                             $$->contList = mergelist(contlist1, contlist2); 
+
+                                            //printf("MIA FORA STO PANW?\n");
                                         }
             | stmt                      {
                                             $$ = $1;
+                                            //printf("MIA FORA?\n");
                                         }
             ;
 
@@ -358,6 +382,9 @@ primary:    lvalue                      {
                                             if(TRACE_PRINT){
                                                 fprintf(ost, "=>OBJECT DEF (primary -> objectdef)\n");
                                             }
+
+                                            tmpOpt--; 
+                                            //tmpOpt = 1;
 
                                             $$ = $1;
                                         }
@@ -557,25 +584,26 @@ elist:      expr                {
                                 }
             ;
 
-objectdef:  LEFT_BRACKET indexed RIGHT_BRACKET  {
+objectdef:  LEFT_BRACKET {tmpOpt++;} indexed RIGHT_BRACKET  {
                                                     indexedPair *p;
 
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[INDEXED] (objectdef -> [indexed])\n");
                                                     }
 
-                                                    p = reverseIndexedPairList($2);
+                                                    p = reverseIndexedPairList($3);
                                                     $$ = ManageIndexedObjectDef(p);
+                                                    
                                                 }
-            | LEFT_BRACKET elist RIGHT_BRACKET  {
+            | LEFT_BRACKET {tmpOpt++;} elist RIGHT_BRACKET  {
                                                     expr *rev;
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[ELIST] (objectdef -> [ELIST])\n");
                                                     }
-                                                    rev = reverseExprList($2);
+                                                    rev = reverseExprList($3);
                                                     $$ = ManageObjectDef(rev);
                                                 }
-            | LEFT_BRACKET RIGHT_BRACKET        {
+            | LEFT_BRACKET {tmpOpt++;} RIGHT_BRACKET        {
                                                     if(TRACE_PRINT){
                                                         fprintf(ost, "=>[empty] (objectdef -> [])\n");
                                                     }
@@ -949,13 +977,13 @@ int yyerror(char *message){
 
 int main(int argc, char **argv){
 
-    int opt;
+    int opt, printReport = 0;
     char* file_name;
 
     ost = stdout;
     yyin = stdin;
 
-    while ((opt = getopt(argc, argv, "i:o:h")) != -1)
+    while ((opt = getopt(argc, argv, "i:o:ph")) != -1)
     {
         switch (opt)
         { 
@@ -977,8 +1005,11 @@ int main(int argc, char **argv){
             }
             free(file_name);
             break;
+        case 'p':
+            printReport = 1;
+            break;
         case 'h':
-            printf("Usage:\n[-i]: The input file. By default input file stream is stdin.\n[-o]: The output file. By default output file stream is stdout.\n[-h]: Prints the help prompt.\n");
+            printf("Usage:\n[-i]: The input file. By default input file stream is stdin.\n[-o]: The output file. By default output file stream is stdout.\n[-p]: Prints the compilation report.\n[-h]: Prints the help prompt.\n");
             return 0;
         default:
             printf("Wrong command line arguments. Run with \"-h\" for help.\n");
@@ -1004,15 +1035,20 @@ int main(int argc, char **argv){
     printf("------------------------------------------ Alpha Compiler Report ------------------------------------------\n");
 
     //SymbolTable_print(symTab, ost);
-    ScopeTable_print(scopeTab, ost);
+    if(printReport)
+        ScopeTable_print(scopeTab, ost);
 
     if(!compileError){
-        printQuads(1, ost);
+
+        if(printReport)
+            printQuads(1, ost);
+        
         //printToFile();
 
         targetFuncStack = FuncStack_init();
 
         generateInstructions();
+        
         printTCodeData(ost);
         
         //createAVMfile("binaryCode.abc");

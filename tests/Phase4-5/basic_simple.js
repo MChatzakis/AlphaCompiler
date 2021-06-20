@@ -1,3 +1,4 @@
+//OK
 a = b = 5;
 
 function f1(a,b)
