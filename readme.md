@@ -35,7 +35,7 @@ To cover corner cases, hidden variables optimization is disabled for the table m
 
 ## Alpha Virtual Machine:
 
-Alpha applications run on the AVM (Alpha Virtual Machine), which is a complete virtual machine designed to provide a C/C++ based runtime environment. \
+Alpha applications run on the AVM (Alpha Virtual Machine), which is a complete virtual machine designed to provide a C/C++ based runtime environment.
 
 To compile the AVM executable, use:
 ```
