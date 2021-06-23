@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# Testing
+tests/
+
 # Object files
 *.o
 *.ko
