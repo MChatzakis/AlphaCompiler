@@ -70,10 +70,6 @@ stmt:       expr SEMICOLON              {
                                             
                                             partEvaluation($1);
 
-                                            //if( $1!=NULL && ($1->type == arithexpr_e || $1->type == boolexpr_e)){//|| $1->type == assignexpr_e){
-                                                //resettemp();
-                                            //}
-                                           
                                             if(!tmpOpt)
                                                 resettemp();
 
@@ -114,7 +110,6 @@ stmt:       expr SEMICOLON              {
                                                 fprintf(ost, "=>Return Statement (stmt -> return)\n");
                                             }
 
-                                            //resettemp(); //fige
                                             if(!tmpOpt)
                                                 resettemp();
                                             
@@ -128,8 +123,7 @@ stmt:       expr SEMICOLON              {
 
                                             if(!tmpOpt)
                                                 resettemp();
-
-                                            //resettemp();     //fige                                      
+                                   
                                             $$ = ManageBreak();
                                         }
             | CONTINUE SEMICOLON        {
@@ -139,7 +133,7 @@ stmt:       expr SEMICOLON              {
 
                                             if(!tmpOpt)
                                                 resettemp();
-                                            //resettemp();                                            
+
                                             $$ = ManageContinue();
                                         }
             | block                     {
@@ -148,7 +142,7 @@ stmt:       expr SEMICOLON              {
                                             }
                                             if(!tmpOpt)
                                                 resettemp();
-                                            //resettemp();
+
                                             $$ = $1;
                                         }
             | funcdef                   {
@@ -158,6 +152,7 @@ stmt:       expr SEMICOLON              {
 
                                             if(!tmpOpt)
                                                 resettemp();
+
                                             $$ = NULL;
                                         }
             | SEMICOLON                 {
@@ -167,6 +162,7 @@ stmt:       expr SEMICOLON              {
 
                                             if(!tmpOpt)
                                                 resettemp();
+
                                             $$ = NULL;
                                         }
             ;
@@ -177,7 +173,6 @@ stmts:      stmts stmt                  {
                                             if($1 != NULL){
                                                 breaklist1 = $1->breakList;
                                                 contlist1 = $1->contList;
-                                                //free stmt
                                             }
 
                                             if($2 != NULL){
@@ -188,12 +183,9 @@ stmts:      stmts stmt                  {
                                             $$ = newstmt();
                                             $$->breakList = mergelist(breaklist1, breaklist2);
                                             $$->contList = mergelist(contlist1, contlist2); 
-
-                                            //printf("MIA FORA STO PANW?\n");
                                         }
             | stmt                      {
                                             $$ = $1;
-                                            //printf("MIA FORA?\n");
                                         }
             ;
 
@@ -384,7 +376,6 @@ primary:    lvalue                      {
                                             }
 
                                             tmpOpt--; 
-                                            //tmpOpt = 1;
 
                                             $$ = $1;
                                         }
@@ -633,7 +624,6 @@ indexedelem:LEFT_BRACE expr COLON expr RIGHT_BRACE  {
                                                             fprintf(ost, "=>{EXPR : EXPR} (indexedelem -> { expr : expr })\n");
                                                         }
 
-                                                        /*We are not sure for this -- Check again*/
                                                         partEvaluation($2);
                                                         partEvaluation($4);
 
@@ -742,8 +732,6 @@ funcdef:    funcprefix M funcargs funcblockstart funcbody funcblockend    {
                                                 
                                                 //FuncStack_print(functionStack);
                                                 FuncStack_pop(functionStack);
-
-                                                //patchlist($1->returnList, nextquadlabel()-1);
                                                 
                                                 patchlabel($2-2, nextquadlabel());
                                                 
@@ -920,16 +908,10 @@ M:          {
             }
             ;
 
-forprefix:  FOR LEFT_PARENTHESIS elist SEMICOLON M expr 
-            { 
-                //$6 = valToBool($6, nextquadlabel(), nextquadlabel()+1);
-            } 
-            SEMICOLON   {
-                            $$ = ManageForPrefix($6, $5);
-                        }
-            | FOR LEFT_PARENTHESIS SEMICOLON M expr  {
-                    //$5 = valToBool($5, nextquadlabel(), nextquadlabel()+1);
-                                                        } SEMICOLON       {
+forprefix:  FOR LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON   {
+                                                                        $$ = ManageForPrefix($6, $5);
+                                                                    }
+            | FOR LEFT_PARENTHESIS SEMICOLON M expr SEMICOLON       {
                                                                         $$ = ManageForPrefix($5, $4);
                                                                     }
             ;
