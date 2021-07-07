@@ -8,6 +8,10 @@
 # Manos Chatzakis, Nikos Fanourakis                         #
 #############################################################
 
+#!IMPORTANT (JULY 2021): 
+# The tests have been removed from public repository. 
+# This script wont locate these folders.
+
 import os
 import subprocess
 import sys
