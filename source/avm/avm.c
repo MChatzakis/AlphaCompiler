@@ -385,9 +385,7 @@ void execute_cycle(void)
             currLine = instr->srcLine;
 
         unsigned oldPC = pc;
-        //printf("going to %d, %d = \n", instr->opcode, pc);
         (*executeFuncs[instr->opcode])(instr);
-        //printf("PC in cycle: %d\n", pc);
         if (pc == oldPC)
             pc++;
     }
@@ -422,7 +420,6 @@ void avm_assign(avm_memcell *lv, avm_memcell *rv)
         lv->data.strVal = strdup(rv->data.strVal);
     else if (lv->type == table_m)
     {
-        //printf("AVMTOBOOL: Increasing ref counter of table %s\n", avm_tostring(lv));
         avm_tableincrefcounter(lv->data.tableVal);
     }
 }
@@ -460,7 +457,7 @@ void avm_functorCall(avm_memcell *table)
 
     avm_callsaveenvironment();
 
-    assert(function); // && function->type == userfunc_m); //should throw error
+    assert(function);
     if (function->type != userfunc_m)
     {
         avm_error("[AVM] -- Error: Functor calls must contain user function as values.\n");
@@ -479,7 +476,6 @@ void execute_call(instruction *instr)
     avm_memcell *func = avm_translate_operand(&(instr->arg1), &ax);
     assert(func);
 
-    //avm_callsaveenvironment();
     switch (func->type)
     {
     case userfunc_m:
@@ -540,8 +536,6 @@ void avm_callsaveenvironment()
 
 void execute_funcenter(instruction *instr)
 {
-    //printf("funcenter entering\n");
-
     avm_memcell *func = avm_translate_operand(&instr->result, &ax);
     assert(func);
     assert(pc == userFuncs[func->data.funcVal].address);
@@ -835,12 +829,6 @@ void execute_tablegetelem(instruction *instr)
         else
         /*Returning null means that the content was not found*/
         {
-            /*char *ts = avm_tostring(t);
-            char *is = avm_tostring(i);
-            avm_warning("%s[%s] not found! (Ignore if this after deleting..)\n", ts, is);
-            free(ts);
-            free(is);*/
-
             avm_memcell nilCont;
             nilCont.type = nil_m;
             avm_assign(lv, &nilCont);
@@ -871,7 +859,6 @@ void execute_tablesetelem(instruction *instr)
         }
         else
         {
-            //printf("Indexing %s[%s] = [%s]\n", avm_tostring(t),avm_tostring(i),avm_tostring(c));
             avm_tablesetelem(t->data.tableVal, i, c);
         }
     }
@@ -884,7 +871,7 @@ double consts_getnumber(unsigned index)
 
 char *consts_getstring(unsigned index)
 {
-    return stringConsts[index]; //TABLESET t "string" 1
+    return stringConsts[index];
 }
 
 char *libfuncs_getused(unsigned index)
@@ -1074,7 +1061,7 @@ char *number_tostring(avm_memcell *m)
     }
     else
     {
-        snprintf(strNum, 60, "%.3f", num); //.2
+        snprintf(strNum, 60, "%.3f", num);
     }
 
     return strdup(strNum);
@@ -1106,7 +1093,7 @@ char *libfunc_tostring(avm_memcell *m)
     return strdup(funcToStr);
 }
 
-void pair_tostring(avm_table_bucket *curr, avm_table *t, char **str, int *size_change, int *counter) //(char *str, char *key, char *val)
+void pair_tostring(avm_table_bucket *curr, avm_table *t, char **str, int *size_change, int *counter)
 {
     char *key, *val;
     char addr[21] = {0};
@@ -1114,7 +1101,7 @@ void pair_tostring(avm_table_bucket *curr, avm_table *t, char **str, int *size_c
     {
         if (curr->key.data.tableVal == t) //avoiding self loop
         {
-            snprintf(addr, 20, "%p", t); // snprintf(strNum, 60, "%d", intNum);
+            snprintf(addr, 20, "%p", t);
             key = strdup(addr);
         }
         else
@@ -1124,7 +1111,7 @@ void pair_tostring(avm_table_bucket *curr, avm_table *t, char **str, int *size_c
 
         if (curr->value.data.tableVal == t) //avoiding self loop
         {
-            snprintf(addr, 20, "%p", t); // snprintf(strNum, 60, "%d", intNum);
+            snprintf(addr, 20, "%p", t);
             val = strdup(addr);
         }
         else
@@ -1231,8 +1218,6 @@ char *userfunc_tostring(avm_memcell *m)
     char addressToStr[60] = {0};
     snprintf(addressToStr, 59, "%d", index);
 
-    //addressToStr[59] = '\0';
-
     strcat(funcToStr, addressToStr);
     return strdup(funcToStr);
 }
@@ -1301,7 +1286,6 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
     case string_m:
         ix = hashString(index->data.strVal);
         curr = table->strIndexed[ix];
-        //printf("Looking for %s of table\n", index->data.strVal);
         while (curr)
         {
             prev = curr;
@@ -1378,14 +1362,12 @@ avm_memcell *avm_tablegetelem(avm_table *table, avm_memcell *index)
         break;
     case table_m:
         ix = hashPtr(index->data.tableVal);
-        //printf("HERE!");
         curr = table->tableIndexed[ix];
         while (curr)
         {
             prev = curr;
-            //printf("Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
 
-            if (index->data.tableVal == (curr->key).data.tableVal) /*!? nomizw itan xwris comparison*/
+            if (index->data.tableVal == (curr->key).data.tableVal)
             {
                 /*if (curr->value.type == table_m)
                 {
@@ -1572,7 +1554,6 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
 
     if (content->type == table_m)
     {
-        //printf("Indexing inside set elem with table %s\n",avm_tostring(content));
         avm_tableincrefcounter(content->data.tableVal);
     }
 
@@ -1592,7 +1573,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
             prev = curr;
             if (!strcmp((curr->key).data.strVal, index->data.strVal))
             {
-                curr->value = *content; //type, ptr->string
+                curr->value = *content;
                 if (content->type == string_m)
                 {
                     curr->value.data.strVal = strdup(content->data.strVal);
@@ -1703,7 +1684,7 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         while (curr)
         {
             prev = curr;
-            if (index->data.funcVal == curr->key.data.funcVal) //!strcmp(userFuncs[index->data.funcVal].id, userFuncs[curr->key.data.funcVal].id))
+            if (index->data.funcVal == curr->key.data.funcVal)
             {
                 curr->value = *content;
                 if (content->type == string_m)
@@ -1780,13 +1761,11 @@ void avm_tablesetelem(avm_table *table, avm_memcell *index, avm_memcell *content
         break;
     case table_m:
         ix = (unsigned)hashPtr(index->data.tableVal);
-        //printf("Going to index %u\n", ix);
 
         curr = table->tableIndexed[ix];
         while (curr)
         {
             prev = curr;
-            //printf("Inserting table. Comparing %p with %p\n", index->data.tableVal, curr->key.data.tableVal);
             if (index->data.tableVal == curr->key.data.tableVal)
             {
                 curr->value = *content;
@@ -2058,17 +2037,14 @@ void libfunc_objectmemberkeys()
         avm_memcell *t = avm_getactual(0);
         avm_memcellclear(&retval);
 
-        if (t->type != table_m) //check if it's a string
+        if (t->type != table_m)
         {
             avm_warning("[AVM] -- Warning: The argument provided is not a table.\n");
-            //avm_memcellclear(&retval);
             retval.type = nil_m;
             return;
         }
 
         avm_table *newT = avm_getTableKeys(t->data.tableVal);
-
-        //avm_memcellclear(&retval);
         retval.type = table_m;
         retval.data.tableVal = newT;
     }
@@ -2084,15 +2060,12 @@ void libfunc_objecttotalmembers()
         avm_memcell *t = avm_getactual(0);
         avm_memcellclear(&retval);
 
-        if (t->type != table_m) //check if it's a string
+        if (t->type != table_m)
         {
             avm_warning("[AVM] -- Warnign: The argument provided is not a table!\n");
-            //avm_memcellclear(&retval);
             retval.type = nil_m;
             return;
         }
-
-        //avm_memcellclear(&retval);
         retval.type = number_m;
         retval.data.numVal = t->data.tableVal->total;
     }
@@ -2108,17 +2081,14 @@ void libfunc_objectcopy()
         avm_memcellclear(&retval);
 
         avm_memcell *t = avm_getactual(0);
-        if (t->type != table_m) //check if it's a string
+        if (t->type != table_m)
         {
             avm_warning("[AVM] -- Warning: The argument provided is not a table!\n");
-            //avm_memcellclear(&retval);
             retval.type = nil_m;
             return;
         }
 
         avm_table *newT = avm_copyTable(t->data.tableVal);
-
-        //avm_memcellclear(&retval);
         retval.type = table_m;
         retval.data.tableVal = newT;
     }
@@ -2149,7 +2119,7 @@ void libfunc_argument()
             {
                 avm_error("[AVM] -- Error: 'argument' requires int argument\n");
             }
-            int off = (int)selectedArg->data.numVal; //2.00
+            int off = (int)selectedArg->data.numVal;
 
             avm_memcell *arg = &stack[p_topsp + AVM_STACKENV_SIZE + 1 + off];
             retval.type = arg->type;
@@ -2176,14 +2146,12 @@ void libfunc_strtonum()
 
         avm_memcell *str = avm_getactual(0);
 
-        if (str->type != string_m) //check if it's a string
+        if (str->type != string_m)
         {
             avm_warning("[AVM] -- Warning: The argument provided for strtonum is not a string!\n", n);
             retval.type = nil_m;
             return;
         }
-
-        //avm_memcellclear(&retval);
 
         if (isNumber(str->data.strVal))
         {
@@ -2214,7 +2182,6 @@ void libfunc_sqrt()
             return;
         }
         double x = number->data.numVal;
-        //avm_memcellclear(&retval);
 
         if (x >= 0)
         {
@@ -2245,7 +2212,6 @@ void libfunc_cos()
         }
 
         double x = arg->data.numVal;
-        //avm_memcellclear(&retval);
         retval.type = number_m;
         double radian = DegreeToRadians(x);
         retval.data.numVal = cos(radian);
@@ -2492,23 +2458,20 @@ void decoder(char *filename)
     numConsts = (double *)malloc(totalNumConsts * sizeof(double));
     for (i = 0; i < totalNumConsts; i++)
     {
-        fread(&numConsts[i], sizeof(numConsts[i]), 1, stream); //sizeof(double better?)
-        //printf("numConst[%d] = %f\n", i, numConsts[i]);
+        fread(&numConsts[i], sizeof(numConsts[i]), 1, stream);
     }
 
     fread(&totalStringConsts, sizeof(totalStringConsts), 1, stream);
     stringConsts = (char **)malloc(totalStringConsts * sizeof(char *));
     for (i = 0; i < totalStringConsts; i++)
     {
-        fread(&len, sizeof(len), 1, stream); //sizeof(double better?)
-        //printf("LEN %lu\n", len);
+        fread(&len, sizeof(len), 1, stream);
         currStr = (char *)malloc(sizeof(char) * (len + 1));
 
         fread(currStr, len, 1, stream);
         currStr[len] = '\0';
 
         stringConsts[i] = currStr;
-        //printf("strConst[%d] = %s\n", i, stringConsts[i]);
     }
 
     fread(&totalNamedLibfuncs, sizeof(totalNamedLibfuncs), 1, stream);
@@ -2516,11 +2479,11 @@ void decoder(char *filename)
     namedLibfuncs = (char **)malloc(totalNamedLibfuncs * sizeof(char *));
     for (i = 0; i < totalNamedLibfuncs; i++)
     {
-        fread(&len, sizeof(len), 1, stream); //sizeof(double better?)
+        fread(&len, sizeof(len), 1, stream);
         currStr = (char *)malloc(sizeof(char) * (len + 1));
         fread(currStr, len, 1, stream);
         currStr[len] = '\0';
-        namedLibfuncs[i] = currStr; // strdup(currStr);
+        namedLibfuncs[i] = currStr;
     }
 
     fread(&totalUserFuncs, sizeof(totalUserFuncs), 1, stream);
@@ -2542,8 +2505,6 @@ void decoder(char *filename)
         userFuncs[i].address = address;
         userFuncs[i].localSize = locals;
         userFuncs[i].id = currStr;
-
-        //printf("UserFuncs[%d] = (%u %u %s)\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
     }
 
     fread(&codeSize, sizeof(codeSize), 1, stream);
