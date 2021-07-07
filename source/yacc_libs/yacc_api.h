@@ -757,7 +757,7 @@ expr *emit_iftableitem(expr *e)
     else
     {
         expr *result = newexpr(var_e);
-        result->sym = newtemp(); // = e[e->index]
+        result->sym = newtemp();
         emit(tablegetelem_op, e, e->index, result, 0, yylineno);
         return result;
     }
@@ -807,7 +807,6 @@ expr *make_call(expr *lv, expr *reversed_elist)
     }
 
     emit(call_op, func, NULL, NULL, 0, yylineno);
-    //emit(call_op, NULL, NULL, func, 0, yylineno);
 
     expr *result = newexpr(var_e);
     result->sym = newtemp();
@@ -1631,7 +1630,6 @@ void printQuadFormally(unsigned int i, FILE *stream)
     if (isJumpCode(i))
         fprintf(stream, "%u ", quads[i].label);
 
-    //fprintf(ost, "[%u]", quads[i].line);
     fprintf(stream, "\n");
 }
 
@@ -1950,7 +1948,7 @@ expr *ManageRelationExpression(expr *ex1, iopcode op, expr *ex2)
     }
 
     ex = newexpr(boolexpr_e);
-    ex->sym = newtemp(); /*An auto to vgaloyme, doylevei akrivws opws to tool me ligoteres krifes metavlites. O savidis deixnei oti prepei na bei..*/
+    ex->sym = newtemp();
     ex->truelist = newlist(nextquadlabel());
     ex->falselist = newlist(nextquadlabel() + 1);
 
@@ -2345,14 +2343,13 @@ void make_operand(expr *e, vmarg *arg)
     case programfunc_e:
     {
         arg->type = userfunc_a;
-        //arg->val = e->sym->taddress;
         arg->val = userfuncs_newfunc(e->sym);
         break;
     }
     case libraryfunc_e:
     {
         arg->type = libfunc_a;
-        arg->val = libfuncs_newused((e->sym->value).funcVal->name); //e->sym->name);
+        arg->val = libfuncs_newused((e->sym->value).funcVal->name);
         break;
     }
     default:
@@ -2418,7 +2415,6 @@ void patch_incomplete_jumps()
         if (curr->iaddress == currQuad)
         {
             instructions[curr->instrNo].result.type = label_a;
-            //printf("INSTRUCTION LAST: %u\n",currInstruction);
             instructions[curr->instrNo].result.val = currInstruction;
         }
         else
@@ -2452,8 +2448,6 @@ void emitInstruction(instruction i)
     {
         expandInstructions();
     }
-
-    //printf("\nemit\n");
 
     instruction *in = instructions + currInstruction++;
     in->arg1 = i.arg1;
@@ -2602,8 +2596,7 @@ unsigned userfuncs_newfunc(SymbolTableEntry *sym)
     }
 
     userFuncs[currUserFuncs].address = (sym->value).funcVal->address;
-    userFuncs[currUserFuncs].id = (char *)(sym->value).funcVal->name; //should strdup here?..
-    //userFuncs[currUserFuncs].id = strdup((sym->value).funcVal->name);
+    userFuncs[currUserFuncs].id = (char *)(sym->value).funcVal->name;
     userFuncs[currUserFuncs++].localSize = (sym->value).funcVal->totalLocals;
 
     return currIndex;
@@ -2611,13 +2604,13 @@ unsigned userfuncs_newfunc(SymbolTableEntry *sym)
 
 void reset_operand(vmarg *arg)
 {
-    arg->val = 0; //mipws prepei na ginei kati na min deixnei se pinaka? px -1?
+    arg->val = 0;
     //arg->type = unused_a;
 }
 
 unsigned currprocessedquad(quad *q)
 {
-    return (q - quads); //see again
+    return (q - quads);
 }
 
 void generate(enum vmopcode op, quad *q)
@@ -2645,7 +2638,7 @@ void generate_relational(enum vmopcode op, quad *q)
     make_operand(q->arg2, &t.arg2);
 
     t.result.type = label_a;
-    if (q->label < currprocessedquad(q)) //quad->x q->y => y-x = ?
+    if (q->label < currprocessedquad(q))
         t.result.val = quads[q->label].taddress;
     else
         add_incomplete_jump(nextinstructionlabel(), q->label);
@@ -2811,15 +2804,11 @@ void generate_FUNCSTART(quad *q)
     (f->value).funcVal->address = nextinstructionlabel();
     q->taddress = nextinstructionlabel();
 
-    //userfunctions.add(f->id, f->taddress, f->totallocals);
-    //userfuncs_newfunc(f);
-    //push(funcstack,f);
     FuncStack_push(targetFuncStack, f, currUserFuncs);
 
     instruction t;
     t.opcode = funcenter_v;
     t.srcLine = q->line;
-    //make_operand(q->result, &t.result);
     make_operand(q->arg1, &t.result);
     t.arg1.type = unused_a;
     t.arg1.val = 0;
@@ -2836,16 +2825,14 @@ void generate_RETURN(quad *q)
     t.opcode = assign_v;
     t.srcLine = q->line;
     make_retvaloperand(&t.result);
-    t.result.val = 10; //vlepoyme
+    t.result.val = 10;
     make_operand(q->result, &t.arg1);
-    //make_operand(q->arg1, &t.result);
 
     t.arg2.type = unused_a;
     t.arg2.val = 0;
     emitInstruction(t);
 
-    SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack); //top(funcstack);
-    // !append(f.returnList, nextinstructionlabel());
+    SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack);
     RetList_append(f, nextinstructionlabel());
 
     t.opcode = jump_v;
@@ -2869,8 +2856,6 @@ void backpatchInstructions(SymbolTableEntry *func, unsigned label)
 
     while (curr)
     {
-        //instructions[curr->label] = label;
-        //make_numberoperand(&instructions[curr->label].result, label);
         instructions[curr->label].result.type = label_a;
         instructions[curr->label].result.val = label;
         curr = curr->next;
@@ -2879,10 +2864,8 @@ void backpatchInstructions(SymbolTableEntry *func, unsigned label)
 
 void generate_FUNCEND(quad *q)
 {
-    SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack); //sto target code scope == index sto function table
+    SymbolTableEntry *f = FuncStack_topEntry(targetFuncStack);
     unsigned index = FuncStack_topScope(targetFuncStack);
-
-    //printf("Name of func %s, %d\n", (f->value.funcVal)->name, index);
 
     FuncStack_pop(targetFuncStack);
     backpatchInstructions(f, nextinstructionlabel());
@@ -2893,9 +2876,7 @@ void generate_FUNCEND(quad *q)
     t.srcLine = q->line;
     t.opcode = funcexit_v;
 
-    //make_operand(q->arg1, &t.result);
     t.result.type = userfunc_a;
-    //arg->val = e->sym->taddress;
     t.result.val = index;
     t.arg1.type = unused_a;
     t.arg1.val = 0;
@@ -2906,9 +2887,8 @@ void generate_FUNCEND(quad *q)
 
 void generate_UMINUS(quad *q)
 {
-    //generate(uminus_v, q);
     q->taddress = nextinstructionlabel();
-    instruction t; //arg1
+    instruction t;
     t.opcode = mul_op;
     t.srcLine = q->line;
 
@@ -2924,10 +2904,8 @@ void generateInstructions()
     unsigned i;
     for (i = 1; i < currQuad; ++i)
     {
-        //printf("aa\n"); //currQuad is total quad number at the end
-        //printf("went to %d\n", quads[i].op);
         quad *q = quads + i;
-        (*generators[quads[i].op])(quads + i); //q = quads + i | index = q - quads = i
+        (*generators[quads[i].op])(quads + i);
     }
 
     patch_incomplete_jumps();
@@ -3050,7 +3028,6 @@ void printInstructions(FILE *stream)
     fprintf(stream, "----- INSTRUCTIONS -----\n");
     for (i = 0; i < currInstruction; i++)
     {
-        //printf("%d\n", i);
         printInstruction(i, instructions[i], stream);
     }
 }
@@ -3096,7 +3073,6 @@ void createAVMfile(char *filename)
     fprintf(stream, "%u", currNamedLibfunc);
     for (i = 0; i < currNamedLibfunc; i++)
     {
-        //fprintf(stream, "[%u] : %s\n", i, namedLibfuncs[i]);
         fprintf(stream, " %lu %s", strlen(namedLibfuncs[i]), namedLibfuncs[i]);
     }
     fprintf(stream, "\n");
@@ -3115,8 +3091,6 @@ void createAVMfile(char *filename)
     fprintf(stream, "%u\n", currInstruction);
     for (i = 0; i < currInstruction; i++)
     {
-        //printf("%d\n", i);
-        //printInstruction(i, instructions[i], stream);
         fprintf(stream, "%d %d %u %d %u %d %u", instructions[i].opcode, instructions[i].result.type, instructions[i].result.val,
                 instructions[i].arg1.type, instructions[i].arg1.val, instructions[i].arg2.type, instructions[i].arg2.val);
         fprintf(stream, "\n");
