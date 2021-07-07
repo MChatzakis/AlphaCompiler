@@ -1,5 +1,5 @@
 # Alpha Compiler
-Alpha Compiler is a complete compiler (acc) and virtual machine (avm) for the Alpha programming language. (For the syntax etc. see the examples provided)
+Alpha Compiler is a complete compiler (acc) and virtual machine (avm) for the Alpha programming language. (For the syntax etc. see the examples provided).
 
 
 Created by Manos Chatzakis (csd4238@csd.uoc.gr) and Nikos Fanourakis (csd4237@csd.uoc.gr).\
