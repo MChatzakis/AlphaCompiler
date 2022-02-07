@@ -44,7 +44,7 @@ To compile the AVM executable, use:
 
 ``` language
 cd build
-make //"make avm" works as well
+make #"make avm" works as well
 ```
 
 Thus, to compile an alpha application, assuming the file is named "code.alpha" (extensions do not matter):
@@ -52,6 +52,6 @@ Thus, to compile an alpha application, assuming the file is named "code.alpha" (
 ``` language
 cd build
 make
-./acc -i code.alpha //produces the binary file called bin.abc
-./avm -f bin.abc //use avm to run the code
+./acc -i code.alpha #produces the binary file called bin.abc
+./avm -f bin.abc #use avm to run the code
 ```
